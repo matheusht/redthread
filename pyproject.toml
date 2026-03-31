@@ -1,0 +1,70 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "redthread"
+version = "0.1.0"
+description = "Autonomous AI red-teaming and self-healing defense engine"
+readme = "README.md"
+requires-python = ">=3.12,<3.14"
+license = { text = "MIT" }
+dependencies = [
+    # Core ML / LLM orchestration
+    "pyrit==0.12.0",
+    "langgraph>=0.2.0",
+    "langchain-core>=0.3.0",
+    "langchain-openai>=0.2.0",
+    "langchain-ollama>=0.2.0",
+    # API / data modeling
+    "pydantic>=2.7.0",
+    "pydantic-settings>=2.3.0",
+    # CLI + output
+    "click>=8.1.0",
+    "rich>=13.0.0",
+    # Config
+    "tomli>=2.0.0",
+    "python-dotenv>=1.0.0",
+    # Async
+    "anyio>=4.0.0",
+    # Evaluation
+    "openai>=1.30.0",      # for Judge (GPT-4o)
+    "tiktoken>=0.7.0",
+]
+
+[project.scripts]
+redthread = "redthread.cli:main"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=5.0.0",
+    "mypy>=1.10.0",
+    "ruff>=0.4.0",
+    "types-pyyaml",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/redthread"]
+
+# ── Ruff ────────────────────────────────────────────────────────────────────
+[tool.ruff]
+src = ["src"]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "ANN"]
+ignore = ["ANN101", "ANN102"]
+
+# ── Mypy ─────────────────────────────────────────────────────────────────────
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["src/redthread"]
+
+# ── Pytest ───────────────────────────────────────────────────────────────────
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
