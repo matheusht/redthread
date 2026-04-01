@@ -95,6 +95,30 @@ def main() -> None:
     default=".env",
     help="Path to .env file",
 )
+@click.option(
+    "--algorithm", "-a",
+    type=click.Choice(["pair", "tap"], case_sensitive=False),
+    default=None,
+    help="Attack algorithm (default: pair)",
+)
+@click.option(
+    "--depth", "-d",
+    type=int,
+    default=None,
+    help="TAP maximum search depth",
+)
+@click.option(
+    "--width", "-w",
+    type=int,
+    default=None,
+    help="TAP maximum tree width",
+)
+@click.option(
+    "--branching", "-b",
+    type=int,
+    default=None,
+    help="TAP branching factor",
+)
 def run(
     objective: str,
     system_prompt: str,
@@ -104,6 +128,10 @@ def run(
     dry_run: bool,
     verbose: bool,
     env_file: str,
+    algorithm: str | None,
+    depth: int | None,
+    width: int | None,
+    branching: int | None,
 ) -> None:
     """Execute a red-team campaign against a target LLM."""
 
@@ -113,6 +141,15 @@ def run(
     settings = RedThreadSettings(_env_file=env_file)
     if target_model:
         settings.target_model = target_model
+    if algorithm:
+        from redthread.config.settings import AlgorithmType
+        settings.algorithm = AlgorithmType(algorithm)
+    if depth is not None:
+        settings.tree_depth = depth
+    if width is not None:
+        settings.tree_width = width
+    if branching is not None:
+        settings.branching_factor = branching
     if dry_run:
         settings.dry_run = True
 
@@ -133,6 +170,13 @@ def run(
     table.add_row("[dim]Judge[/dim]", f"[blue]{settings.judge_model}[/blue]")
     table.add_row("[dim]Personas[/dim]", str(personas))
     table.add_row("[dim]Max iterations[/dim]", str(settings.max_iterations))
+    
+    from redthread.config.settings import AlgorithmType
+    if settings.algorithm == AlgorithmType.TAP:
+        table.add_row("[dim]Branching factor[/dim]", str(settings.branching_factor))
+        table.add_row("[dim]Tree depth[/dim]", str(settings.tree_depth))
+        table.add_row("[dim]Tree width[/dim]", str(settings.tree_width))
+        
     if dry_run:
         table.add_row("[dim]Mode[/dim]", "[yellow]DRY RUN[/yellow]")
     console.print(table)

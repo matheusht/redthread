@@ -71,6 +71,21 @@ class Persona(BaseModel):
 
 # ── Conversation ──────────────────────────────────────────────────────────────
 
+class AttackNode(BaseModel):
+    """A single node in a TAP/MCTS attack tree."""
+
+    id: str = Field(default_factory=lambda: str(uuid4())[:8])
+    parent_id: str | None = None          # None = root node
+    depth: int = 0                        # Tree depth level
+    attacker_prompt: str = ""
+    target_response: str = ""
+    score: float = 0.0                    # Judge score for this node
+    improvement_rationale: str = ""
+    is_pruned: bool = False               # Marked dead by pruning phase
+    pruned_reason: str = ""               # "off_topic" | "low_score" | "duplicate"
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
 class ConversationTurn(BaseModel):
     """A single turn in the attacker ↔ target dialogue."""
 
@@ -90,6 +105,7 @@ class AttackTrace(BaseModel):
     persona: Persona
     algorithm: str                      # "pair" | "tap" | "crescendo" | "mcts"
     turns: list[ConversationTurn] = Field(default_factory=list)
+    nodes: list[AttackNode] = Field(default_factory=list)  # TAP/MCTS tree nodes
     started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     ended_at: datetime | None = None
     outcome: AttackOutcome = AttackOutcome.FAILURE

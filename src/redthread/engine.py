@@ -124,11 +124,15 @@ class RedThreadEngine:
             attacker = PAIRAttack(self.settings)
             return await attacker.run(persona, rubric_name=config.rubric_name)
 
-        # TAP/Crescendo/MCTS deferred to Phase 3
+        elif self.settings.algorithm == AlgorithmType.TAP:
+            from redthread.core.tap import TAPAttack
+            attacker = TAPAttack(self.settings)
+            return await attacker.run(persona, rubric_name=config.rubric_name)
+
+        # Crescendo/MCTS deferred to Phase 3B/3C
         raise NotImplementedError(
             f"Algorithm '{self.settings.algorithm}' not yet implemented. "
-            "Currently only PAIR is available (Phase 2). "
-            "TAP, Crescendo, and MCTS are coming in Phase 3."
+            "Crescendo and MCTS are coming in Phase 3B/3C."
         )
 
     def _write_transcript(self, campaign: CampaignResult) -> None:
@@ -177,6 +181,18 @@ class RedThreadEngine:
                         for t in result.trace.turns
                     ],
                 }
+                
+                if result.trace.nodes:
+                    line["tree_stats"] = {
+                        "total_nodes": len(result.trace.nodes),
+                        "pruned_nodes": sum(1 for n in result.trace.nodes if n.is_pruned),
+                        "max_depth_reached": max((n.depth for n in result.trace.nodes), default=0),
+                    }
+                    line["winning_path"] = [
+                        {"depth": n.depth, "prompt": n.attacker_prompt[:150], "score": n.score}
+                        for n in result.trace.nodes if not n.is_pruned
+                    ]
+                    
                 f.write(json.dumps(line) + "\n")
 
         logger.info("📝 Transcript written to %s", transcript_path)
