@@ -229,7 +229,7 @@ class PAIRAttack:
                 score=0.0, raw_score=0, reasoning="Dry run — no interaction.",
                 feedback="", rubric_name=rubric_name, is_jailbreak=False,
             )
-            trace.outcome = AttackOutcome.ERROR
+            trace.outcome = AttackOutcome.SKIPPED
         else:
             verdict = await self._judge.evaluate(trace, rubric_name)
             if verdict.is_jailbreak:

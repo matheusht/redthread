@@ -185,6 +185,8 @@ def run(
             outcome_style = (
                 "bold red" if r.verdict.is_jailbreak
                 else "yellow" if r.trace.outcome.value == "partial"
+                else "dim white" if r.trace.outcome.value == "skipped"
+                else "bold yellow" if r.trace.outcome.value == "error"
                 else "green"
             )
             results_table.add_row(

@@ -45,6 +45,7 @@ class AttackOutcome(str, Enum):
     FAILURE = "failure"          # All iterations exhausted, no breakthrough
     PARTIAL = "partial"          # Partial compliance (score above baseline, below threshold)
     ERROR = "error"              # Infrastructure/API error during run
+    SKIPPED = "skipped"          # Run skipped (e.g., during dry run)
 
 
 # ── Persona ───────────────────────────────────────────────────────────────────

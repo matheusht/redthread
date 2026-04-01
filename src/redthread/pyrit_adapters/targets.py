@@ -17,16 +17,43 @@ Supported backends:
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 from uuid import uuid4
 
-from pyrit.models import Message
+from pyrit.models import ChatMessageRole, Message
 from pyrit.models.message_piece import MessagePiece
-from pyrit.models import ChatMessageRole
 from pyrit.prompt_target import OpenAIChatTarget, PromptChatTarget
 
 from redthread.config.settings import RedThreadSettings, TargetBackend
 
 logger = logging.getLogger(__name__)
+
+# ── PyRIT Central Memory (must be initialized before any target construction) ─
+_pyrit_memory_initialized = False
+
+
+def ensure_pyrit_memory_initialized(db_dir: Path | None = None) -> None:
+    """Initialize PyRIT's CentralMemory singleton (once per process).
+
+    PyRIT 0.12.0 requires this before ANY PromptTarget can be instantiated.
+    Uses SQLiteMemory for lightweight local persistence of conversation traces.
+    """
+    global _pyrit_memory_initialized
+    if _pyrit_memory_initialized:
+        return
+
+    from pyrit.memory import CentralMemory, SQLiteMemory
+
+    db_path = (db_dir or Path("./logs")) / ".pyrit_memory.db"
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+
+    memory = SQLiteMemory(db_path=db_path)
+    CentralMemory.set_memory_instance(memory)
+    _pyrit_memory_initialized = True
+    logger.debug("PyRIT CentralMemory initialized at %s", db_path)
+
+
+# ── Target Factory ────────────────────────────────────────────────────────────
 
 
 def _build_pyrit_target(
@@ -35,7 +62,12 @@ def _build_pyrit_target(
     base_url: str,
     api_key: str = "",
 ) -> PromptChatTarget:
-    """Factory — instantiate the correct PyRIT target class for each backend."""
+    """Factory — instantiate the correct PyRIT target class for each backend.
+
+    IMPORTANT: ensure_pyrit_memory_initialized() must be called before this.
+    """
+    # Guard — ensures CentralMemory is ready
+    ensure_pyrit_memory_initialized()
 
     if backend == TargetBackend.OLLAMA:
         # Ollama exposes an OpenAI-compatible /v1 endpoint
@@ -43,11 +75,14 @@ def _build_pyrit_target(
             model_name=model,
             endpoint=f"{base_url}/v1",
             api_key="ollama",  # Ollama ignores the key but OpenAITarget requires non-empty
+            max_tokens=2048,
         )
     elif backend == TargetBackend.OPENAI:
         return OpenAIChatTarget(
             model_name=model,
+            endpoint="https://api.openai.com/v1",
             api_key=api_key,
+            max_tokens=2048,
         )
     else:
         raise ValueError(f"Unsupported backend: {backend}")
@@ -89,7 +124,7 @@ class RedThreadTarget:
             conversation_id = str(uuid4())
 
         piece = MessagePiece(
-            role=ChatMessageRole.USER,
+            role="user",
             original_value=prompt,
             conversation_id=conversation_id,
         )
