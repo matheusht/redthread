@@ -1,12 +1,14 @@
-"""RedThreadEngine — Campaign lifecycle orchestrator.
+"""RedThreadEngine — Campaign lifecycle facade (Phase 4).
 
-Analog of Claude Code's QueryEngine. Owns the full lifecycle of a red-team campaign:
-  1. Create campaign task
-  2. Generate adversarial personas  
-  3. Run attack algorithm against each persona
-  4. Collect + score results
-  5. Write JSONL transcript
-  6. Return CampaignResult
+Phase 4 refactor: this module is now a strict facade over the LangGraph supervisor.
+All orchestration logic (persona generation, parallel attack fan-out, G-Eval judging,
+and defense synthesis) lives in `orchestration/supervisor.py`.
+
+This module only:
+  1. Initialises the SupervisorGraph with the provided settings.
+  2. Calls supervisor.invoke(config).
+  3. Writes the JSONL transcript.
+  4. Returns CampaignResult.
 """
 
 from __future__ import annotations
@@ -16,83 +18,45 @@ import logging
 from datetime import datetime, timezone
 from pathlib import Path
 
-from redthread.config.settings import AlgorithmType, RedThreadSettings
-from redthread.core.pair import PAIRAttack
+from redthread.config.settings import RedThreadSettings
 from redthread.models import CampaignConfig, CampaignResult
-from redthread.personas.generator import PersonaGenerator
+from redthread.orchestration.supervisor import RedThreadSupervisor
 from redthread.tasks.base import Task, TaskType
 
 logger = logging.getLogger(__name__)
 
 
 class RedThreadEngine:
-    """Orchestrates a complete red-team campaign.
+    """Facade over the LangGraph supervisor — Phase 4 orchestration entry point.
 
-    Usage:
+    Usage::
+
         engine = RedThreadEngine(settings)
         result = await engine.run(config)
     """
 
     def __init__(self, settings: RedThreadSettings) -> None:
         self.settings = settings
-        self._persona_gen = PersonaGenerator(settings)
+        self._supervisor = RedThreadSupervisor(settings)
         settings.log_dir.mkdir(parents=True, exist_ok=True)
         settings.memory_dir.mkdir(parents=True, exist_ok=True)
 
     async def run(self, config: CampaignConfig) -> CampaignResult:
-        """Execute a full red-team campaign."""
+        """Delegate campaign execution to the LangGraph supervisor."""
 
         campaign_task = Task.create(TaskType.CAMPAIGN)
         campaign_task.start()
 
         logger.info(
-            "🚀 Campaign starting | id=%s | objective=%s | algorithm=%s",
-            campaign_task.id,
+            "🚀 Campaign starting | objective=%s | algorithm=%s | personas=%d",
             config.objective,
-            self.settings.algorithm,
+            self.settings.algorithm.value,
+            config.num_personas,
         )
 
-        campaign = CampaignResult(config=config, started_at=datetime.now(timezone.utc))
-
         try:
-            # Phase 1: Generate personas
-            logger.info("👤 Generating %d adversarial personas...", config.num_personas)
-            personas = await self._persona_gen.generate_batch(
-                objective=config.objective,
-                count=config.num_personas,
-            )
+            campaign = await self._supervisor.invoke(config)
 
-            # Phase 2: Execute attacks
-            for i, persona in enumerate(personas, 1):
-                logger.info(
-                    "⚔️  Running attack %d/%d | persona=%s | tactic=%s",
-                    i,
-                    config.num_personas,
-                    persona.name,
-                    persona.tactic.value,
-                )
-
-                attack_task = Task.create(TaskType.ATTACK_RUN)
-                attack_task.start()
-
-                try:
-                    result = await self._run_algorithm(persona, config)
-                    campaign.results.append(result)
-                    attack_task.complete(result=result.trace.outcome.value)
-
-                    logger.info(
-                        "📊 Attack complete | outcome=%s | score=%.2f | iterations=%d",
-                        result.trace.outcome.value,
-                        result.verdict.score,
-                        result.iterations_used,
-                    )
-
-                except Exception as exc:
-                    attack_task.fail(str(exc))
-                    logger.exception("❌ Attack run failed for persona %s", persona.name)
-
-            # Phase 3: Finalize campaign
-            campaign.ended_at = datetime.now(timezone.utc)
             campaign_task.complete(result={"asr": campaign.attack_success_rate})
 
             logger.info(
@@ -103,7 +67,6 @@ class RedThreadEngine:
                 len(campaign.results),
             )
 
-            # Write JSONL transcript
             self._write_transcript(campaign)
 
         except Exception as exc:
@@ -112,28 +75,6 @@ class RedThreadEngine:
             raise
 
         return campaign
-
-    async def _run_algorithm(
-        self,
-        persona: "Persona",  # type: ignore[name-defined]  # noqa: F821
-        config: CampaignConfig,
-    ) -> "AttackResult":  # type: ignore[name-defined]  # noqa: F821
-        """Dispatch to the configured attack algorithm."""
-
-        if self.settings.algorithm == AlgorithmType.PAIR:
-            attacker = PAIRAttack(self.settings)
-            return await attacker.run(persona, rubric_name=config.rubric_name)
-
-        elif self.settings.algorithm == AlgorithmType.TAP:
-            from redthread.core.tap import TAPAttack
-            attacker = TAPAttack(self.settings)
-            return await attacker.run(persona, rubric_name=config.rubric_name)
-
-        # Crescendo/MCTS deferred to Phase 3B/3C
-        raise NotImplementedError(
-            f"Algorithm '{self.settings.algorithm}' not yet implemented. "
-            "Crescendo and MCTS are coming in Phase 3B/3C."
-        )
 
     def _write_transcript(self, campaign: CampaignResult) -> None:
         """Write campaign results to an append-only JSONL transcript."""

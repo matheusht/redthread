@@ -30,6 +30,8 @@ dependencies = [
     # Evaluation
     "openai>=1.30.0",      # for Judge (GPT-4o)
     "tiktoken>=0.7.0",
+    # Telemetry (Phase 4.5)
+    "numpy>=2.0.0",
 ]
 
 [project.scripts]
