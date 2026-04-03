@@ -65,8 +65,8 @@ class RedThreadSettings(BaseSettings):
         description="Backend for the attacker LLM",
     )
     attacker_model: str = Field(
-        default="llama3.2:3b",
-        description="Attacker model — lightweight for speed + fewer restrictions",
+        default="DeepHat/DeepHat-V1-7B",
+        description="Attacker model — DeepHat (WhiteRabbitNeo) for domain-expert offensive reasoning",
     )
     attacker_base_url: str = Field(
         default="http://localhost:11434",

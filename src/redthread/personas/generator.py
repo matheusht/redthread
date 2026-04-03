@@ -4,7 +4,7 @@ Generates Persona objects grounded in:
   - MITRE ATLAS tactics/techniques (structural taxonomy)
   - Psychological social engineering triggers (persuasion layer)
 
-Uses the attacker LLM (lightweight — Llama 3 / gpt-4o-mini) for generation.
+Uses the attacker LLM (DeepHat/DeepHat-V1-7B) for generation.
 """
 
 from __future__ import annotations

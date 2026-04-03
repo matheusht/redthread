@@ -53,6 +53,8 @@ def ensure_pyrit_memory_initialized(db_dir: Path | None = None) -> None:
     logger.debug("PyRIT CentralMemory initialized at %s", db_path)
 
 
+import json
+
 # ── Target Factory ────────────────────────────────────────────────────────────
 
 
@@ -70,12 +72,23 @@ def _build_pyrit_target(
     ensure_pyrit_memory_initialized()
 
     if backend == TargetBackend.OLLAMA:
+        # Normalize base_url (remove trailing slash to avoid //v1)
+        normalized_url = base_url.rstrip("/")
+        
+        # Tunnel bypass headers for ngrok/pinggy free tiers
+        extra_headers = {}
+        if "ngrok" in normalized_url:
+            extra_headers["ngrok-skip-browser-warning"] = "true"
+        if "pinggy" in normalized_url:
+            extra_headers["x-pinggy-no-screen"] = "true"
+
         # Ollama exposes an OpenAI-compatible /v1 endpoint
         return OpenAIChatTarget(
             model_name=model,
-            endpoint=f"{base_url}/v1",
+            endpoint=f"{normalized_url}/v1",
             api_key="ollama",  # Ollama ignores the key but OpenAITarget requires non-empty
             max_tokens=2048,
+            headers=json.dumps(extra_headers) if extra_headers else None,
         )
     elif backend == TargetBackend.OPENAI:
         return OpenAIChatTarget(

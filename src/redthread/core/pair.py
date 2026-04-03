@@ -5,7 +5,7 @@ Implements the closed-loop, black-box jailbreaking algorithm from:
   Chao et al. (2023) — https://arxiv.org/abs/2310.08419
 
 Architecture:
-  - Attacker LLM (lightweight: Llama 3 / gpt-4o-mini): generates adversarial prompts
+  - Attacker LLM (DeepHat/DeepHat-V1-7B): generates adversarial prompts
   - Target LLM (the model under test): receives and responds to prompts
   - Judge LLM (heavyweight: GPT-4o): evaluates each response  ← accuracy critical
 

@@ -42,14 +42,18 @@ class GuardrailLoader:
         returns the original config unmodified.
         """
         clauses = self.get_scoped_clauses(self.settings.target_model, config.target_system_prompt)
+        prompt_hash = self._compute_prompt_hash(config.target_system_prompt)
+
         if not clauses:
             logger.info("🛡️ GuardrailLoader | No active guardrails found for target scope.")
+            self._log_audit_event(self.settings.target_model, prompt_hash, [])
             return config
 
         logger.info(
             "🛡️ GuardrailLoader | Injected %d active guardrail(s) into target system prompt.",
             len(clauses)
         )
+        self._log_audit_event(self.settings.target_model, prompt_hash, clauses)
 
         # Inject at the bottom of the system prompt
         injected_prompt = config.target_system_prompt + "\n\n## ACTIVE SECURITY GUARDRAILS\n"
@@ -57,3 +61,22 @@ class GuardrailLoader:
             injected_prompt += f"{i}. {clause}\n"
 
         return config.model_copy(update={"target_system_prompt": injected_prompt.strip()})
+
+    def _log_audit_event(self, target_model: str, prompt_hash: str, clauses: list[str]) -> None:
+        """Write a structured audit event to logs/guardrail_audit.jsonl."""
+        import json
+        from datetime import datetime, timezone
+
+        audit_path = self.settings.log_dir / "guardrail_audit.jsonl"
+        self.settings.log_dir.mkdir(parents=True, exist_ok=True)
+
+        event = {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "target_model": target_model,
+            "prompt_hash": prompt_hash,
+            "action": "INJECT" if clauses else "SKIP",
+            "clauses_count": len(clauses),
+            "clauses": clauses,
+        }
+        with audit_path.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(event) + "\n")
