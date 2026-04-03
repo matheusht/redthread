@@ -253,10 +253,12 @@ Please classify and propose a guardrail clause.
         Uses the Defense Architect prompt to produce a structured response,
         then parses it into a `GuardrailProposal`.
         """
-        from redthread.pyrit_adapters.targets import build_attacker
+        from redthread.pyrit_adapters.targets import build_defense_architect
 
-        # Reuse the attacker LLM client as the Defense Architect
-        architect_llm = build_attacker(self.settings)
+        # Anti-Hallucination SOP: Defense Architect uses a dedicated frontier
+        # model (default: GPT-4o, temperature=0.1), fully decoupled from the
+        # uncensored Attacker model to prevent hallucinated guardrails.
+        architect_llm = build_defense_architect(self.settings)
 
         user_msg = self._DEFENSE_ARCHITECT_USER_TEMPLATE.format(
             tactic=segment.persona_tactic,

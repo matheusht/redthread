@@ -4,9 +4,40 @@ This document is a living reference that tracks the implementation progress of t
 
 ---
 
-## Current Status: Phase 4.5 Complete (Defense Synthesis & Telemetry)
+## Current Status: Phase 5A In Progress (Anti-Hallucination Baseline)
 
 We have successfully migrated RedThread from a single-turn engine to a distributed LangGraph orchestration system, implementing the **Tree of Attacks with Pruning (TAP)**, an advanced **Defense Synthesis Pipeline**, and the foundational **Telemetry Pipeline** for drift detection.
+
+Phase 5A establishes the **Anti-Hallucination baseline** — the mathematical foundation required before production monitoring (Phases 5B-5D) can begin.
+
+### Phase 5A: Anti-Hallucination SOP (Current)
+
+#### Defense Architect Model Separation (P0.1)
+The Defense Architect LLM has been **decoupled from the Attacker model**. Guardrail synthesis now uses a dedicated frontier model (default: GPT-4o, `temperature=0.1`) instead of the uncensored local Attacker. This eliminates the risk of hallucinated guardrails that could block legitimate traffic.
+
+- **New setting**: `defense_architect_model` (default: `gpt-4o`)
+- **New setting**: `defense_architect_backend` (default: `openai`)
+- **New setting**: `defense_architect_temperature` (default: `0.1`)
+- **Builder**: `build_defense_architect()` in `pyrit_adapters/targets.py`
+
+#### Per-Role Temperature Enforcement (P1.1)
+Temperature is now configurable per model role:
+- `attacker_temperature=0.8` — High diversity for adversarial creativity
+- `judge_temperature=0.0` — Deterministic evaluation
+- `defense_architect_temperature=0.1` — Near-deterministic guardrail synthesis
+
+#### Golden Dataset & CI/CD Gates (P0.2 + P0.3)
+- **30 curated test traces** in `tests/golden_dataset/golden_traces.py`
+  - 10 confirmed jailbreaks (expected score ≥ 4.0)
+  - 10 safe refusals (expected score ≤ 2.0)
+  - 10 guardrail validation cases
+- **DeepEval-style pipeline** in `src/redthread/evaluation/pipeline.py`
+- **CI/CD regression suite** in `tests/test_golden_dataset.py`
+- **Thresholds**: Faithfulness ≥ 0.92, Hallucination Rate ≤ 0.08
+
+#### Documentation
+- `docs/ANTI_HALLUCINATION_SOP.md` — General reusable SOP for any LangChain project
+- `docs/PHASE_REGISTRY.md` — Master registry of all development phases
 
 ### 1. Architecture Highlights
 

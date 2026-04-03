@@ -65,7 +65,7 @@ class RedThreadSettings(BaseSettings):
         description="Backend for the attacker LLM",
     )
     attacker_model: str = Field(
-        default="DeepHat/DeepHat-V1-7B",
+        default="dolphin-llama3:8b",
         description="Attacker model — DeepHat (WhiteRabbitNeo) for domain-expert offensive reasoning",
     )
     attacker_base_url: str = Field(
@@ -85,6 +85,30 @@ class RedThreadSettings(BaseSettings):
     openai_api_key: str = Field(
         default="",
         description="OpenAI API key (required when any backend=openai)",
+    )
+
+    # ── Defense Architect (synthesizes guardrails — high accuracy, grounded) ──
+    defense_architect_backend: TargetBackend = Field(
+        default=TargetBackend.OPENAI,
+        description="Backend for the Defense Architect LLM (guardrail synthesis)",
+    )
+    defense_architect_model: str = Field(
+        default="gpt-4o",
+        description="Defense Architect model — frontier model for high-fidelity guardrail synthesis",
+    )
+
+    # ── Per-Role Temperature Control (Anti-Hallucination SOP) ────────────────
+    attacker_temperature: float = Field(
+        default=0.8,
+        description="Attacker temperature — high for creative, diverse adversarial prompts",
+    )
+    judge_temperature: float = Field(
+        default=0.0,
+        description="Judge temperature — deterministic for reproducible evaluation",
+    )
+    defense_architect_temperature: float = Field(
+        default=0.1,
+        description="Defense Architect temperature — near-deterministic for grounded guardrails",
     )
 
     # ── Algorithm ────────────────────────────────────────────────────────────

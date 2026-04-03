@@ -17,7 +17,8 @@ Built on **LangGraph**, RedThread uses a supervisor-worker architecture to manag
 - **Supervisor:** Orchestrates the flow from persona generation to parallel attack fan-out.
 - **Attack Workers:** Execute independent, multi-turn adversarial sessions in parallel.
 - **Judge Workers:** Perform high-precision evaluation using G-Eval/CoT rubrics.
-- **Defense Workers:** Synthesize and validate patches for confirmed jailbreaks.
+- **Defense Architect:** Synthesizes guardrails using a dedicated frontier model (GPT-4o, temperature=0.1).
+- **Defense Workers:** Validate patches in sandbox before deployment.
 
 ### 3. Self-Healing Defense Synthesis (Phase 4.5)
 When a jailbreak is confirmed, RedThread triggers a 5-step automated pipeline:
@@ -30,6 +31,13 @@ When a jailbreak is confirmed, RedThread triggers a 5-step automated pipeline:
 ### 4. Telemetry & Drift Detection (Phase 5)
 Foundational embedding-based drift detection monitors Target model alignment and measures statistical divergence from the safety baseline using K Core-Distance metrics.
 
+### 5. Anti-Hallucination SOP (Phase 5A)
+A comprehensive engineering standard ensuring all LLM outputs are grounded, verifiable, and regression-tested:
+- **Decoupled Defense Architect** — guardrail synthesis uses a dedicated frontier model (GPT-4o), not the uncensored Attacker
+- **Golden Dataset** — 30 curated test traces for CI/CD regression gates
+- **DeepEval Pipeline** — Pytest-native faithfulness checks (≥ 0.92 threshold)
+- **Per-Role Temperature Control** — deterministic evaluation (0.0), near-deterministic defense (0.1), creative attacks (0.8)
+
 ---
 
 ## 🛠️ The Technology Stack
@@ -38,6 +46,7 @@ Foundational embedding-based drift detection monitors Target model alignment and
 - **Foundational Infrastructure:** Built on **PyRIT** (Python Risk Identification Toolkit) for robust target interaction and payload conversion.
 - **Distributed State:** Powered by **LangGraph** for resilient, multi-agent campaign management.
 - **Evaluation:** Uses **G-Eval** (GPT-4o) as the ground-truth judge for semantic scoring.
+- **Anti-Hallucination:** DeepEval CI/CD gates, Golden Dataset regression suite, per-role temperature enforcement.
 
 ---
 
@@ -69,7 +78,10 @@ poetry run redthread run \
 - `src/redthread/orchestration/`: LangGraph supervisor and worker nodes.
 - `src/redthread/core/`: Implementation of TAP, PAIR, and Defense Synthesis.
 - `src/redthread/memory/`: Persistent threat-knowledge indexing (MEMORY.md).
+- `src/redthread/evaluation/`: JudgeAgent, G-Eval, DeepEval pipeline, golden dataset.
 - `src/redthread/telemetry/`: Embedding clients and drift detection logic.
+- `docs/ANTI_HALLUCINATION_SOP.md`: General anti-hallucination engineering standard.
+- `docs/PHASE_REGISTRY.md`: Master registry of all development phases.
 
 ---
 
@@ -78,4 +90,4 @@ RedThread guardrails are **scoped**. A fix generated for an HR bot (based on a h
 
 ---
 
-> **Note**: This project is currently in **Phase 4.5 Stabilization**. See `docs/PROGRESS.md` for the full architectural roadmap.
+> **Note**: This project is currently in **Phase 5A (Anti-Hallucination Baseline)**. See `docs/PHASE_REGISTRY.md` for the full architectural roadmap.

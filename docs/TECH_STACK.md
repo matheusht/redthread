@@ -136,8 +136,29 @@ Every task gets a deterministic ID (prefixed by type), tracks `start_time`/`end_
 | **Judge Model** | Prometheus 2 (open-source) | Fine-tuned for direct assessment against custom security rubrics |
 | **Scoring Framework** | G-Eval (custom implementation) | Auto-CoT + probability-weighted token summation → continuous float scores |
 | **Rubric Source** | OWASP Top 10 for LLMs + MITRE ATLAS | Structured failure taxonomies for security-specific evaluation |
+| **CI/CD Evaluation** | DeepEval (Pytest-native) | Regression gates: faithfulness ≥ 0.92, hallucination rate ≤ 0.08 |
+| **Golden Dataset** | 30 curated traces | 10 jailbreak + 10 safe + 10 guardrail validation test cases |
+| **Observability** | LangSmith (planned Phase 5D) | First-party LangGraph tracing, prompt playground, regression monitoring |
 
----
+### Defense Architect Model (Phase 5A — Anti-Hallucination SOP)
+
+The Defense Architect is **decoupled from the Attacker model** as a critical anti-hallucination measure.
+
+| Setting | Default | Rationale |
+|---|---|---|
+| `defense_architect_model` | `gpt-4o` | Frontier model with highest instruction-following capability |
+| `defense_architect_backend` | `openai` | API access to frontier models |
+| `defense_architect_temperature` | `0.1` | Near-deterministic for grounded guardrail synthesis |
+
+**Rule**: Never use an uncensored or instruction-loose model for guardrail synthesis. The Defense Architect produces security policies that directly affect production systems.
+
+### Per-Role Temperature Matrix
+
+| Role | Setting | Default | Rationale |
+|---|---|---|---|
+| **Attacker** | `attacker_temperature` | `0.8` | Creative diversity for adversarial prompts |
+| **Judge** | `judge_temperature` | `0.0` | Deterministic, reproducible evaluation |
+| **Defense Architect** | `defense_architect_temperature` | `0.1` | Factually grounded guardrail synthesis |
 
 ## 7. Telemetry & Drift Detection
 

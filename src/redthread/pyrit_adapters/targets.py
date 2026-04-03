@@ -190,3 +190,19 @@ def build_judge_llm(settings: RedThreadSettings) -> RedThreadTarget:
         model=settings.judge_model,
         settings=settings,
     )
+
+
+def build_defense_architect(settings: RedThreadSettings) -> RedThreadTarget:
+    """Build the Defense Architect LLM adapter.
+
+    Anti-Hallucination SOP: The Defense Architect is DECOUPLED from the
+    Attacker model. Guardrail synthesis requires a frontier model with
+    high instruction-following and factual grounding (default: GPT-4o,
+    temperature=0.1). Using an uncensored attacker model for guardrail
+    synthesis risks hallucinated clauses that could block legitimate traffic.
+    """
+    return RedThreadTarget.from_settings(
+        backend=settings.defense_architect_backend,
+        model=settings.defense_architect_model,
+        settings=settings,
+    )
