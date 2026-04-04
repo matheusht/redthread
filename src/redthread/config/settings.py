@@ -23,9 +23,10 @@ class TargetBackend(str, Enum):
 
 class ModelRole(str, Enum):
     """Asymmetric deployment roles."""
-    ATTACKER = "attacker"   # Lightweight: fast, fewer safety filters
-    JUDGE = "judge"         # Heavyweight: maximum accuracy
-    TARGET = "target"       # Subject under test
+    ATTACKER = "attacker"           # Lightweight: fast, fewer safety filters
+    JUDGE = "judge"                 # Heavyweight: maximum accuracy
+    TARGET = "target"               # Subject under test
+    DEFENSE_ARCHITECT = "defense"   # Frontier: grounded guardrail synthesis
 
 
 class RedThreadSettings(BaseSettings):
@@ -152,4 +153,25 @@ class RedThreadSettings(BaseSettings):
     dry_run: bool = Field(
         default=False,
         description="Validate config + generate persona but do not send to target",
+    )
+
+    # ── Telemetry / ASI (Phase 5B) ────────────────────────────────────────────
+    telemetry_enabled: bool = Field(
+        default=True,
+        description="Enable Phase 5B telemetry collection and ASI computation",
+    )
+    asi_window_size: int = Field(
+        default=50,
+        description="Rolling window size for ASI computation (number of records)",
+    )
+    arima_confidence_level: float = Field(
+        default=0.95,
+        description="Confidence level for ARIMA anomaly intervals (0.0-1.0)",
+    )
+    asi_alert_threshold: float = Field(
+        default=60.0,
+        description=(
+            "ASI score below which an alert is triggered (0-100). "
+            "Default 60: tripwire for Phase 5C's Security Guard campaign."
+        ),
     )

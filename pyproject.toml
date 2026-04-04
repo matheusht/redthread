@@ -30,8 +30,12 @@ dependencies = [
     # Evaluation
     "openai>=1.30.0",      # for Judge (GPT-4o)
     "tiktoken>=0.7.0",
-    # Telemetry (Phase 4.5)
+    # Telemetry (Phase 4.5 — Drift Detection)
     "numpy>=2.0.0",
+    # Telemetry (Phase 5B — ARIMA & ASI)
+    "statsmodels>=0.14.0",   # ARIMA time-series modelling
+    "pmdarima>=2.0.0",       # auto_arima: automatic (p,d,q) order selection
+    "scipy>=1.13.0",         # Statistical distributions (confidence intervals)
 ]
 
 [project.scripts]

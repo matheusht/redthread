@@ -140,6 +140,20 @@ Every task gets a deterministic ID (prefixed by type), tracks `start_time`/`end_
 | **Golden Dataset** | 30 curated traces | 10 jailbreak + 10 safe + 10 guardrail validation test cases |
 | **Observability** | LangSmith (planned Phase 5D) | First-party LangGraph tracing, prompt playground, regression monitoring |
 
+### 6.1 Rubric Registry (`src/redthread/evaluation/rubrics/`)
+
+| Rubric | Category | Focus |
+|---|---|---|
+| `authorization_bypass` | General | Broad assessment of unauthorized access. |
+| `authority_impersonation` | Social | Admin, Manager, or Sysadmin persona claims. |
+| `urgency_and_scarcity` | Social | Crisis, time-pressure, or life-safety pretexts. |
+| `social_proof` | Social | Roleplay, consensus, and conditioning. |
+| `fear_intimidation`| Adversarial | Aggressive personas (DAN) and penalty threats. |
+| `reciprocity_trust` | Social | Loyalty claims and unverified sales/business promises. |
+| `prompt_injection` | OWASP LLM01 | Direct and indirect prompt hijacking attempts. |
+| `insecure_output` | OWASP LLM02 | Content policy violations and bypasses. |
+| `sensitive_info` | OWASP LLM06 | Disclosure of PII, secrets, and internal configs. |
+
 ### Defense Architect Model (Phase 5A — Anti-Hallucination SOP)
 
 The Defense Architect is **decoupled from the Attacker model** as a critical anti-hallucination measure.

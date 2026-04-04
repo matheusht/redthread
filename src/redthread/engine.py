@@ -42,8 +42,15 @@ class RedThreadEngine:
         settings.memory_dir.mkdir(parents=True, exist_ok=True)
 
     async def run(self, config: CampaignConfig) -> CampaignResult:
-        """Delegate campaign execution to the LangGraph supervisor."""
+        """Delegate campaign execution to the LangGraph supervisor.
 
+        Phase 5B: After the supervisor finishes, runs a post-campaign
+        telemetry pass if settings.telemetry_enabled is True. This:
+          1. Injects canary probes against the target
+          2. Computes the ASI health report
+          3. Attaches the report to CampaignResult.metadata
+          4. Appends the ASI summary to the JSONL transcript
+        """
         campaign_task = Task.create(TaskType.CAMPAIGN)
         campaign_task.start()
 
@@ -69,12 +76,80 @@ class RedThreadEngine:
 
             self._write_transcript(campaign)
 
+            # ── Phase 5B: Post-campaign telemetry ────────────────────────────
+            if self.settings.telemetry_enabled:
+                await self._run_telemetry_pass(campaign, config)
+
         except Exception as exc:
             campaign_task.fail(str(exc))
             logger.exception("💥 Campaign failed: %s", exc)
             raise
 
         return campaign
+
+    async def _run_telemetry_pass(
+        self, campaign: CampaignResult, config: CampaignConfig
+    ) -> None:
+        """Phase 5B post-campaign diagnostic.
+
+        Collects and embeds canary probes against the target, then
+        computes the ASI health report. The report is attached to
+        campaign.metadata and appended to the JSONL transcript.
+        """
+        from redthread.pyrit_adapters.targets import build_target
+        from redthread.telemetry.asi import AgentStabilityIndex
+        from redthread.telemetry.collector import TelemetryCollector
+
+        logger.info("📡 Phase 5B | running post-campaign telemetry pass...")
+
+        collector = TelemetryCollector(self.settings)
+        target = build_target(self.settings)
+
+        try:
+            # Inject canary batch to populate the RC sub-score control group
+            await collector.inject_canary_batch(target)
+
+            # Compute ASI report
+            asi = AgentStabilityIndex(settings=self.settings)
+            report = asi.compute(collector)
+
+            # Attach report to campaign metadata (non-destructive)
+            campaign.metadata["asi_report"] = report.model_dump(mode="json")
+
+            # Append to JSONL transcript
+            transcript_path = self.settings.log_dir / f"{campaign.id}.jsonl"
+            with transcript_path.open("a", encoding="utf-8") as f:
+                f.write(json.dumps({
+                    "type": "asi_report",
+                    "campaign_id": campaign.id,
+                    "asi_score": report.overall_score,
+                    "health_tier": report.health_tier,
+                    "is_alert": report.is_alert,
+                    "response_consistency": report.response_consistency,
+                    "semantic_drift": report.semantic_drift,
+                    "operational_health": report.operational_health,
+                    "behavioral_stability": report.behavioral_stability,
+                    "anomaly_count": sum(1 for a in report.anomalies if a.is_anomaly),
+                    "recommendation": report.recommendation,
+                }) + "\n")
+
+            # Export raw telemetry to JSONL for validation
+            tel_path = self.settings.log_dir / f"{campaign.id}_telemetry.jsonl"
+            collector.export_jsonl(tel_path)
+
+            logger.info(
+                "📡 Phase 5B | ASI=%0.1f [%s] | alert=%s | %s",
+                report.overall_score,
+                report.health_tier,
+                report.is_alert,
+                report.recommendation,
+            )
+
+        except Exception as exc:
+            logger.warning("📡 Phase 5B telemetry pass failed (non-critical): %s", exc)
+        finally:
+            target.close()
+
 
     def _write_transcript(self, campaign: CampaignResult) -> None:
         """Write campaign results to an append-only JSONL transcript."""
