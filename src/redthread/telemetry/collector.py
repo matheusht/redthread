@@ -22,6 +22,7 @@ from typing import Any
 
 from redthread.config.settings import RedThreadSettings
 from redthread.telemetry.models import TelemetryRecord
+from redthread.telemetry.storage import TelemetryStorage
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +73,7 @@ class TelemetryCollector:
 
     def __init__(self, settings: RedThreadSettings) -> None:
         self.settings = settings
-        self._records: list[TelemetryRecord] = []
+        self.storage = TelemetryStorage(settings)
         self._canary_injection_count = 0
         self._canary_interval = 10  # Inject canaries every N organic interactions
 
@@ -114,7 +115,7 @@ class TelemetryCollector:
             canary_id=canary_id,
         )
 
-        self._records.append(record)
+        self.storage.insert(record)
         self._canary_injection_count += 1 if not is_canary else 0
 
         logger.debug(
@@ -183,7 +184,7 @@ class TelemetryCollector:
         Injects once every `_canary_interval` organic interactions.
         Always injects if no canaries have been recorded yet.
         """
-        canary_count = sum(1 for r in self._records if r.is_canary)
+        canary_count = self.storage.get_total_canary_records()
         if canary_count == 0:
             return True
         return self._canary_injection_count >= self._canary_interval
@@ -198,51 +199,38 @@ class TelemetryCollector:
         window: int | None = None,
         organic_only: bool = True,
     ) -> list[float]:
-        """Extract a time-ordered series of a single metric from records.
-
-        Args:
-            metric: Field name on TelemetryRecord (e.g. "latency_ms")
-            window: Number of most recent records to include. None = all.
-            organic_only: If True, exclude canary records from operational metrics.
-        """
-        records = [r for r in self._records if not (organic_only and r.is_canary)]
-        if window:
-            records = records[-window:]
-        return [float(getattr(r, metric)) for r in records if hasattr(r, metric)]
+        """Extract a time-ordered series of a single metric from records."""
+        return self.storage.get_metric_series(metric, window, organic_only)
 
     def get_canary_records(self, canary_id: str | None = None) -> list[TelemetryRecord]:
         """Return all canary records, optionally filtered by canary_id."""
-        records = [r for r in self._records if r.is_canary]
-        if canary_id:
-            records = [r for r in records if r.canary_id == canary_id]
-        return records
+        return self.storage.get_canary_records(canary_id)
 
     def get_organic_records(self, window: int | None = None) -> list[TelemetryRecord]:
         """Return organic (non-canary) records, optionally windowed."""
-        records = [r for r in self._records if not r.is_canary]
-        if window:
-            records = records[-window:]
-        return records
+        return self.storage.get_organic_records(window)
 
     @property
     def total_records(self) -> int:
-        return len(self._records)
+        return self.storage.get_total_records()
 
     @property
     def total_canary_records(self) -> int:
-        return sum(1 for r in self._records if r.is_canary)
+        return self.storage.get_total_canary_records()
 
     def export_jsonl(self, path: Path) -> None:
         """Persist all telemetry records to a JSONL file for historical validation."""
         path.parent.mkdir(parents=True, exist_ok=True)
+        # We fetch all records just to export. In production an incremental approach might be better.
+        records = self.storage.get_organic_records() + self.storage.get_canary_records()
         with path.open("w", encoding="utf-8") as f:
-            for record in self._records:
+            for record in records:
                 # Omit the full embedding vector from JSONL (too large)
                 data = record.model_dump(mode="json")
                 data["response_embedding"] = f"[dim={len(record.response_embedding)}]"
                 f.write(json.dumps(data) + "\n")
         logger.info(
             "📝 TelemetryCollector | exported %d records to %s",
-            len(self._records),
+            len(records),
             path,
         )

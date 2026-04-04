@@ -109,8 +109,18 @@ class RedThreadEngine:
             # Inject canary batch to populate the RC sub-score control group
             await collector.inject_canary_batch(target)
 
+            # Load baseline for Semantic Drift if it exists
+            from redthread.telemetry.drift import DriftDetector
+            drift_detector = DriftDetector(k_neighbors=5, distance_metric="cosine")
+            baseline_embeddings = collector.storage.load_baseline()
+            if baseline_embeddings:
+                try:
+                    drift_detector.fit_baseline(baseline_embeddings)
+                except Exception as exc:
+                    logger.warning("Failed to fit loaded drift baseline: %s", exc)
+
             # Compute ASI report
-            asi = AgentStabilityIndex(settings=self.settings)
+            asi = AgentStabilityIndex(settings=self.settings, drift_detector=drift_detector)
             report = asi.compute(collector)
 
             # Attach report to campaign metadata (non-destructive)

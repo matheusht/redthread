@@ -159,6 +159,7 @@ class CampaignResult(BaseModel):
     results: list[AttackResult] = Field(default_factory=list)
     started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     ended_at: datetime | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
     @property
     def attack_success_rate(self) -> float:

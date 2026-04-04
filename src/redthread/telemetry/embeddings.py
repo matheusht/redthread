@@ -25,8 +25,11 @@ class EmbeddingClient:
         self.api_key = settings.openai_api_key
 
         # Decide on embedding model based on backend
-        if self.backend == TargetBackend.OLLAMA:
-            self.model = "nomic-embed-text" # Standard local dense embedding
+        if settings.telemetry_embedding_model:
+            self.model = settings.telemetry_embedding_model
+        elif self.backend == TargetBackend.OLLAMA:
+            # Fallback to a standard resident model confirmed in 'ollama list'
+            self.model = "llama3.2:3b"
         else:
             self.model = "text-embedding-3-small"
 
@@ -51,20 +54,22 @@ class EmbeddingClient:
             raise NotImplementedError(f"Embeddings not supported for {self.backend}")
 
     async def _embed_ollama(self, text: str) -> list[float]:
-        """Call Ollama /api/embeddings native endpoint."""
+        """Call Ollama /v1/embeddings (OpenAI-compatible) endpoint."""
         import httpx
         
-        url = f"{self.base_url.rstrip('/')}/api/embeddings"
+        # Using /v1/embeddings is the most robust way to support both native models and proxies
+        url = f"{self.base_url.rstrip('/')}/v1/embeddings"
         payload = {
             "model": self.model,
-            "prompt": text,
+            "input": text,
         }
         
         async with httpx.AsyncClient() as client:
             resp = await client.post(url, json=payload, timeout=10.0)
             resp.raise_for_status()
             data = resp.json()
-            return data["embedding"]  # type: ignore[no-any-return]
+            # /v1/embeddings returns {'data': [{'embedding': [...]}]}
+            return data["data"][0]["embedding"]  # type: ignore[no-any-return]
 
     async def _embed_openai(self, text: str) -> list[float]:
         """Call OpenAI /v1/embeddings API."""

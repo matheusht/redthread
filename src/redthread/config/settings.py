@@ -175,3 +175,28 @@ class RedThreadSettings(BaseSettings):
             "Default 60: tripwire for Phase 5C's Security Guard campaign."
         ),
     )
+    telemetry_embedding_model: str = Field(
+        default="",
+        description=(
+            "Model name for embeddings. If empty, defaults to 'text-embedding-3-small' "
+            "for OpenAI and 'llama3.2:3b' (or similar resident model) for Ollama."
+        ),
+    )
+    telemetry_embedding_endpoint: str = Field(
+        default="/v1/embeddings",
+        description="API endpoint for embedding generation",
+    )
+
+    # ── Security Guard Daemon (Phase 5C) ──────────────────────────────────────
+    monitor_probe_interval: int = Field(
+        default=300,
+        description="Interval in seconds between background daemon health checks",
+    )
+    monitor_auto_campaign: bool = Field(
+        default=True,
+        description="Whether the daemon should automatically run a campaign on drift alert",
+    )
+    monitor_cooldown_period: int = Field(
+        default=1800,
+        description="Seconds to wait after an alert is handled before another auto-campaign",
+    )

@@ -258,6 +258,69 @@ def version() -> None:
 
 
 @main.group()
+def monitor() -> None:
+    """Security Guard Daemon management."""
+    pass
+
+
+@monitor.command(name="start")
+@click.option("--env-file", type=click.Path(exists=False), default=".env")
+@click.option("--verbose", "-v", is_flag=True, default=False)
+def monitor_start(env_file: str, verbose: bool) -> None:
+    """Start the background monitoring daemon."""
+    from redthread.daemon.monitor import SecurityGuardDaemon
+    _setup_logging(verbose)
+    # We must set verbose flag directly if supplied
+    settings = RedThreadSettings(_env_file=env_file)
+    if verbose:
+        settings.verbose = True
+        
+    daemon = SecurityGuardDaemon(settings)
+    try:
+        asyncio.run(daemon.start())
+    except KeyboardInterrupt:
+        console.print("\n[yellow]Daemon interrupted. Stopping.[/yellow]")
+        daemon.stop()
+        sys.exit(0)
+
+
+@monitor.command(name="status")
+@click.option("--env-file", type=click.Path(exists=False), default=".env")
+def monitor_status(env_file: str) -> None:
+    """Print the current ASI health score from historical DB records."""
+    from redthread.telemetry.collector import TelemetryCollector
+    from redthread.telemetry.asi import AgentStabilityIndex
+    
+    settings = RedThreadSettings(_env_file=env_file)
+    collector = TelemetryCollector(settings)
+    
+    from redthread.telemetry.drift import DriftDetector
+    drift_detector = DriftDetector(k_neighbors=5, distance_metric="cosine")
+    baseline = collector.storage.load_baseline()
+    if baseline:
+        drift_detector.fit_baseline(baseline)
+        
+    asi = AgentStabilityIndex(settings, drift_detector=drift_detector)
+    report = asi.compute(collector)
+    
+    status_color = "red" if report.is_alert else "green"
+    from rich.panel import Panel
+    console.print()
+    console.print(
+        Panel(
+            f"[bold]ASI Score:[/bold] [{status_color}]{report.overall_score:.1f}[/{status_color}] ({report.health_tier})\n\n"
+            f"  Response Consistency: {report.response_consistency:.1f}/100\n"
+            f"  Semantic Drift:       {report.semantic_drift:.1f}/100\n"
+            f"  Operational Health:   {report.operational_health:.1f}/100\n"
+            f"  Behavioral Stability: {report.behavioral_stability:.1f}/100\n\n"
+            f"  Recommendation:       {report.recommendation}",
+            border_style=status_color,
+            title="Daemon Status",
+        )
+    )
+
+
+@main.group()
 def test() -> None:
     """Regression and evaluation test suites."""
     pass
