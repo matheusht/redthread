@@ -4,9 +4,9 @@ This document serves as the **historical source of truth** for the RedThread pro
 
 ---
 
-## 🚀 Current Status: Phase 5A Complete (Anti-Hallucination Baseline)
+## 🚀 Current Status: Phase 6A Complete (Crescendo — Multi-Turn Escalation)
 
-As of **2026-04-03**, RedThread has successfully established its **Anti-Hallucination Baseline**. The engine is now mathematically verified to be grounded, deterministic, and cost-efficient.
+As of **2026-04-04**, RedThread has successfully implemented **Crescendo**, the third core attack algorithm. The engine now supports three adversarial strategies: PAIR (iterative refinement), TAP (tree search with pruning), and Crescendo (multi-turn escalation).
 
 > [!TIP]
 > **Key Achievement**: The system achieved a **100% Pass Rate** across 30 curated traces in the Golden Dataset, maintaining a Faithfulness score of 1.00.

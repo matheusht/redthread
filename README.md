@@ -125,5 +125,4 @@ RedThread guardrails are **scoped**. A fix generated for an HR bot (based on a h
 
 ---
 
-> **Note**: This project is currently in **Phase 5D (CI/CD Integration)**. See `docs/PHASE_REGISTRY.md` for the full architectural roadmap.
-
+> **Note**: This project is currently in **Phase 6A (Crescendo — Multi-Turn Escalation)**. See `docs/PHASE_REGISTRY.md` for the full architectural roadmap.

@@ -16,7 +16,8 @@
 | 5A | Anti-Hallucination Baseline | ✅ Complete | 2026-04-03 | Golden Dataset, model separation, DeepEval pipeline, SOP |
 | 5B | ARIMA & ASI | ✅ Complete | 2026-04-03 | `arima.py`, `asi.py`, composite drift metrics |
 | 5C | Continuous Monitoring | ✅ Complete | 2026-04-04 | Monitor daemon, SQLite storage, drift-triggered campaigns |
-| 5D | CI/CD Integration | ⬜ Planned | — | GitHub Actions, regression gates, dashboard |
+| 5D | CI/CD Integration | ✅ Complete | 2026-04-04 | GitHub Actions, regression gates, dashboard |
+| 6A | Crescendo Algorithm | ✅ Complete | 2026-04-04 | `crescendo.py`, client-side history, escalation loop with backtracking |
 
 ---
 
@@ -235,3 +236,52 @@ push/PR → quality-gate (ruff + mypy) → unit-tests → golden-regression
 nightly → golden-regression (gpt-4o) → GitHub issue on failure
 ```
 
+---
+
+### Phase 6A: Crescendo Algorithm ✅
+**Objective**: Implement multi-turn conversational escalation as the third core attack algorithm.
+
+**Status**: Completed 2026-04-04
+
+**Background**: Crescendo exploits the *context-window accumulation effect* — safety training is progressively overridden by conversational coherence pressure as turns accumulate. Unlike PAIR/TAP (single-turn refinement or tree search), Crescendo builds a shared conversation history and advances through 6 escalation levels (0–5).
+
+**Deliverables**:
+- `src/redthread/core/crescendo.py` — Escalation loop with client-side history and backtracking
+- `tests/test_crescendo.py` — 8 tests covering all algorithm branches (mocked)
+- `src/redthread/models.py` — Removed MCTS residue; `AttackNode` now TAP-only
+- `src/redthread/config/settings.py` — Removed MCTS settings block; `AlgorithmType` is `[pair, tap, crescendo]`
+- `src/redthread/orchestration/graphs/attack_graph.py` — Removed MCTS dispatch branch
+- `src/redthread/cli.py` — Removed `mcts` choice and `--simulations` option
+- `src/redthread/evaluation/judge.py` — Removed MCTS formatting branch
+
+**Key Decisions**:
+| Decision | Choice | Rationale |
+|---|---|---|
+| Phase split | 6A only | Crescendo proves multi-turn pipeline before MCTS adds tree complexity |
+| Conversation persistence | Client-side `list[tuple[str,str]]` | Surgical backtracking; PyRIT remains stateless |
+| MCTS deferred | Entirely removed | No MCTS fields, settings, or code until Phase 6B |
+| Cost estimation | Deferred to 6B | MCTS is compute-heavy; Crescendo is bounded by `max_turns × backtrack_limit` |
+
+**Architecture**:
+```
+INITIALIZATION
+  → benign opener (escalation_level=0)
+  → history = []
+
+ESCALATION LOOP (1..max_turns)
+  → attacker generates next prompt (system + history + level)
+  → target receives full compiled conversation (stateless adapter)
+  → judge.evaluate_turn_raw() → per-turn heuristic score
+
+  IF score >= escalation_threshold → accept, advance level
+  IF score < threshold → backtrack (up to backtrack_limit times)
+  IF limit exceeded → accept partial, advance anyway
+  IF score >= success_threshold → early termination
+
+TERMINAL EVALUATION
+  → judge.evaluate(trace) → full G-Eval → JudgeVerdict
+```
+
+**Verification**:
+- 8/8 Crescendo tests pass
+- Full regression suite passes (no regressions from MCTS revert)

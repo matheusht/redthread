@@ -1,8 +1,8 @@
 """AttackGraph — LangGraph worker node for executing attack algorithms.
 
 Each AttackGraph instance runs ONE persona through the configured algorithm
-(PAIR or TAP) in an isolated context, so multiple can be fanned-out in
-parallel by the supervisor via LangGraph's Send API.
+(PAIR, TAP, Crescendo, or MCTS) in an isolated context, so multiple can be
+fanned-out in parallel by the supervisor via LangGraph's Send API.
 """
 
 from __future__ import annotations
@@ -30,7 +30,7 @@ class AttackWorkerState(TypedDict):
 # ── Worker node function ──────────────────────────────────────────────────────
 
 async def run_attack_worker(state: AttackWorkerState) -> AttackWorkerState:
-    """Executes a single attack run (PAIR or TAP) for one persona.
+    """Executes a single attack run for one persona.
 
     Called by the LangGraph supervisor as a worker node. Deserializes inputs,
     dispatches to the appropriate algorithm, and serializes the result back
@@ -56,6 +56,9 @@ async def run_attack_worker(state: AttackWorkerState) -> AttackWorkerState:
         elif settings.algorithm == AlgorithmType.TAP:
             from redthread.core.tap import TAPAttack
             attacker = TAPAttack(settings)
+        elif settings.algorithm == AlgorithmType.CRESCENDO:
+            from redthread.core.crescendo import CrescendoAttack
+            attacker = CrescendoAttack(settings)
         else:
             raise NotImplementedError(
                 f"Algorithm '{settings.algorithm}' not supported in AttackWorker."

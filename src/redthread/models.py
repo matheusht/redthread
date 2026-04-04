@@ -70,7 +70,7 @@ class Persona(BaseModel):
 # ── Conversation ──────────────────────────────────────────────────────────────
 
 class AttackNode(BaseModel):
-    """A single node in a TAP/MCTS attack tree."""
+    """A single node in a TAP attack tree."""
 
     id: str = Field(default_factory=lambda: str(uuid4())[:8])
     parent_id: str | None = None          # None = root node
@@ -81,6 +81,19 @@ class AttackNode(BaseModel):
     improvement_rationale: str = ""
     is_pruned: bool = False               # Marked dead by pruning phase
     pruned_reason: str = ""               # "off_topic" | "low_score" | "duplicate"
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class CrescendoTurn(BaseModel):
+    """A single turn in a Crescendo escalation dialogue."""
+
+    turn_number: int
+    escalation_level: int = 0             # 0 = benign, 1-5 = increasing pressure
+    attacker_prompt: str
+    target_response: str
+    score: float = 0.0                    # Per-turn G-Eval score
+    backtracked: bool = False             # Was this turn retried via backtracking?
+    backtrack_attempts: int = 0
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
@@ -101,9 +114,10 @@ class AttackTrace(BaseModel):
 
     id: str = Field(default_factory=lambda: f"trace-{str(uuid4())[:8]}")
     persona: Persona
-    algorithm: str                      # "pair" | "tap" | "crescendo" | "mcts"
+    algorithm: str                      # "pair" | "tap" | "crescendo"
     turns: list[ConversationTurn] = Field(default_factory=list)
     nodes: list[AttackNode] = Field(default_factory=list)  # TAP/MCTS tree nodes
+    crescendo_turns: list[CrescendoTurn] = Field(default_factory=list)  # Crescendo
     started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     ended_at: datetime | None = None
     outcome: AttackOutcome = AttackOutcome.FAILURE

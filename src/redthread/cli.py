@@ -102,7 +102,7 @@ def main() -> None:
 )
 @click.option(
     "--algorithm", "-a",
-    type=click.Choice(["pair", "tap"], case_sensitive=False),
+    type=click.Choice(["pair", "tap", "crescendo"], case_sensitive=False),
     default=None,
     help="Attack algorithm (default: pair)",
 )
@@ -130,6 +130,12 @@ def main() -> None:
     default=False,
     help="Enable LangSmith tracing on ALL nodes including Attacker (local debugging)",
 )
+@click.option(
+    "--turns", "-t",
+    type=int,
+    default=None,
+    help="Crescendo max conversation turns",
+)
 def run(
     objective: str,
     system_prompt: str,
@@ -144,6 +150,7 @@ def run(
     width: int | None,
     branching: int | None,
     trace_all: bool,
+    turns: int | None,
 ) -> None:
     """Execute a red-team campaign against a target LLM."""
 
@@ -164,6 +171,8 @@ def run(
         settings.branching_factor = branching
     if dry_run:
         settings.dry_run = True
+    if turns is not None:
+        settings.crescendo_max_turns = turns
 
     # Print campaign header
     console.print(
@@ -188,7 +197,10 @@ def run(
         table.add_row("[dim]Branching factor[/dim]", str(settings.branching_factor))
         table.add_row("[dim]Tree depth[/dim]", str(settings.tree_depth))
         table.add_row("[dim]Tree width[/dim]", str(settings.tree_width))
-        
+    elif settings.algorithm == AlgorithmType.CRESCENDO:
+        table.add_row("[dim]Max turns[/dim]", str(settings.crescendo_max_turns))
+        table.add_row("[dim]Backtrack limit[/dim]", str(settings.crescendo_backtrack_limit))
+        table.add_row("[dim]Escalation threshold[/dim]", str(settings.crescendo_escalation_threshold))
     if dry_run:
         table.add_row("[dim]Mode[/dim]", "[yellow]DRY RUN[/yellow]")
     console.print(table)
