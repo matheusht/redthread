@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import httpx
-import numpy as np
 import pytest
 
 from redthread.config.settings import RedThreadSettings, TargetBackend

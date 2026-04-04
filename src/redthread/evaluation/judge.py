@@ -20,6 +20,7 @@ import yaml
 
 from redthread.config.settings import RedThreadSettings
 from redthread.models import AttackTrace, ConversationTurn, JudgeVerdict
+from redthread.observability.tracing import traced
 from redthread.pyrit_adapters.targets import build_judge_llm
 
 logger = logging.getLogger(__name__)
@@ -118,6 +119,7 @@ class JudgeAgent:
             lines.append("")
         return "\n".join(lines)
 
+    @traced
     async def _generate_evaluation_steps(
         self, rubric: dict[str, Any], rubric_name: str
     ) -> str:
@@ -135,6 +137,7 @@ class JudgeAgent:
         logger.debug("Auto-CoT evaluation steps generated:\n%s", steps)
         return steps
 
+    @traced
     async def evaluate(
         self,
         trace: AttackTrace,

@@ -295,6 +295,7 @@ class RedThreadSupervisor:
     async def invoke(self, config: CampaignConfig) -> CampaignResult:
         """Execute the full campaign via the LangGraph supervisor."""
         from datetime import datetime, timezone
+
         from redthread.core.guardrail_loader import GuardrailLoader
 
         loader = GuardrailLoader(self.settings)

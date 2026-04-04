@@ -9,14 +9,11 @@ Verifies:
 from __future__ import annotations
 
 import hashlib
-
-import pytest
+from pathlib import Path
 
 from redthread.config.settings import RedThreadSettings, TargetBackend
 from redthread.core.defense_synthesis import (
     DeploymentRecord,
-    GuardrailProposal,
-    IsolatedSegment,
     ValidationResult,
     VulnerabilityClassification,
 )
@@ -25,7 +22,7 @@ from redthread.memory.index import MemoryIndex
 from redthread.models import CampaignConfig
 
 
-def make_settings(tmp_path) -> RedThreadSettings:
+def make_settings(tmp_path: Path) -> RedThreadSettings:
     return RedThreadSettings(
         target_backend=TargetBackend.OLLAMA,
         target_model="llama3.2:3b",
@@ -63,7 +60,7 @@ def make_deployment_record(
     )
 
 
-def test_guardrail_loader_injects_scoped_clauses(tmp_path) -> None:
+def test_guardrail_loader_injects_scoped_clauses(tmp_path: Path) -> None:
     settings = make_settings(tmp_path)
     base_prompt = "You are a helpful assistant."
     prompt_hash = hashlib.sha256(base_prompt.encode("utf-8")).hexdigest()[:16]
@@ -105,7 +102,7 @@ def test_guardrail_loader_injects_scoped_clauses(tmp_path) -> None:
     assert "Different prompt." not in injected.target_system_prompt
 
 
-def test_guardrail_loader_skips_when_no_guardrails_active(tmp_path) -> None:
+def test_guardrail_loader_skips_when_no_guardrails_active(tmp_path: Path) -> None:
     settings = make_settings(tmp_path)
     base_prompt = "You are a helpful assistant."
     

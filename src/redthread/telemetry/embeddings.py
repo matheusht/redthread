@@ -8,7 +8,6 @@ interface to generate embeddings by calling the backend provider directly
 from __future__ import annotations
 
 import logging
-from typing import Any
 
 from redthread.config.settings import RedThreadSettings, TargetBackend
 

@@ -200,3 +200,18 @@ class RedThreadSettings(BaseSettings):
         default=1800,
         description="Seconds to wait after an alert is handled before another auto-campaign",
     )
+
+    # ── LangSmith Observability (Phase 5D) ───────────────────────────────────
+    langsmith_enabled: bool = Field(
+        default=False,
+        description="Enable LangSmith tracing for targeted observability (JudgeAgent + DefenseSynthesis)",
+    )
+    langsmith_project: str = Field(
+        default="redthread",
+        description="LangSmith project name for trace grouping",
+    )
+    langsmith_api_key: str = Field(
+        default="",
+        description="LangSmith API key (required when langsmith_enabled=True)",
+    )
+

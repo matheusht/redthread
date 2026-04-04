@@ -9,13 +9,12 @@ Verifies:
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
 from redthread.config.settings import AlgorithmType, RedThreadSettings, TargetBackend
 from redthread.models import (
-    AttackNode,
     AttackOutcome,
     AttackResult,
     AttackTrace,
@@ -26,7 +25,6 @@ from redthread.models import (
     Persona,
     PsychologicalTrigger,
 )
-
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
 

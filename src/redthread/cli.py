@@ -124,6 +124,12 @@ def main() -> None:
     default=None,
     help="TAP branching factor",
 )
+@click.option(
+    "--trace-all",
+    is_flag=True,
+    default=False,
+    help="Enable LangSmith tracing on ALL nodes including Attacker (local debugging)",
+)
 def run(
     objective: str,
     system_prompt: str,
@@ -137,6 +143,7 @@ def run(
     depth: int | None,
     width: int | None,
     branching: int | None,
+    trace_all: bool,
 ) -> None:
     """Execute a red-team campaign against a target LLM."""
 
@@ -194,7 +201,7 @@ def run(
         num_personas=personas,
     )
 
-    engine = RedThreadEngine(settings)
+    engine = RedThreadEngine(settings, trace_all=trace_all)
 
     try:
         result = asyncio.run(engine.run(config))
@@ -288,8 +295,8 @@ def monitor_start(env_file: str, verbose: bool) -> None:
 @click.option("--env-file", type=click.Path(exists=False), default=".env")
 def monitor_status(env_file: str) -> None:
     """Print the current ASI health score from historical DB records."""
-    from redthread.telemetry.collector import TelemetryCollector
     from redthread.telemetry.asi import AgentStabilityIndex
+    from redthread.telemetry.collector import TelemetryCollector
     
     settings = RedThreadSettings(_env_file=env_file)
     collector = TelemetryCollector(settings)
@@ -348,8 +355,9 @@ def test() -> None:
 )
 def test_golden(model: str | None, env_file: str, verbose: bool) -> None:
     """Run regression tests across the Golden Dataset (30 traces)."""
-    from redthread.evaluation.pipeline import EvaluationPipeline
     from tests.golden_dataset.golden_traces import ALL_GOLDEN_TRACES
+
+    from redthread.evaluation.pipeline import EvaluationPipeline
 
     _setup_logging(verbose)
 
@@ -361,8 +369,8 @@ def test_golden(model: str | None, env_file: str, verbose: bool) -> None:
     # Header
     console.print(
         Panel.fit(
-            f"[bold cyan]🧪 Phase 5A: Golden Dataset Evaluation[/bold cyan]\n"
-            f"[dim]Verifying Anti-Hallucination Baseline[/dim]",
+            "[bold cyan]🧪 Phase 5A: Golden Dataset Evaluation[/bold cyan]\n"
+            "[dim]Verifying Anti-Hallucination Baseline[/dim]",
             border_style="cyan",
         )
     )
@@ -447,6 +455,31 @@ def test_golden(model: str | None, env_file: str, verbose: bool) -> None:
         if verbose:
             console.print_exception()
         sys.exit(1)
+
+
+
+@main.command()
+@click.option(
+    "--log-dir",
+    type=click.Path(exists=False),
+    default=None,
+    help="Directory containing campaign JSONL transcripts (default: settings.log_dir)",
+)
+@click.option(
+    "--env-file",
+    type=click.Path(exists=False),
+    default=".env",
+    help="Path to .env file",
+)
+def dashboard(log_dir: str | None, env_file: str) -> None:
+    """Display historical campaign health metrics from JSONL transcripts."""
+    from redthread.dashboard import load_campaign_history, render_dashboard
+
+    settings = RedThreadSettings(_env_file=env_file)  # type: ignore[call-arg]
+    target_dir = Path(log_dir) if log_dir else settings.log_dir
+
+    history = load_campaign_history(target_dir)
+    render_dashboard(history, console)
 
 
 if __name__ == "__main__":

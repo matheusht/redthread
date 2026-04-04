@@ -40,8 +40,9 @@ class SecurityGuardDaemon:
         logger.info("🛡️ Daemon | no drift baseline found, initiating warmup (10 probes)")
         baseline_embeddings = []
         # Run 10 random canary probes
-        from redthread.telemetry.collector import CANARY_PROMPTS
         import random
+
+        from redthread.telemetry.collector import CANARY_PROMPTS
         
         # Sort so choice is deterministic if seeded, mostly just converting values to list
         prompts = sorted(list(CANARY_PROMPTS.values()))
@@ -130,7 +131,7 @@ class SecurityGuardDaemon:
                 # 4. Sleep
                 try:
                     await asyncio.wait_for(self._stop_event.wait(), timeout=self.settings.monitor_probe_interval)
-                except asyncio.TimeoutError:
+                except TimeoutError:
                     pass # normal interval
 
         except asyncio.CancelledError:

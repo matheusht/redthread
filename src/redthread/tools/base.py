@@ -50,11 +50,11 @@ class ToolResult:
     metadata: dict[str, Any] = field(default_factory=dict)
 
     @classmethod
-    def ok(cls, data: Any = None, **meta: Any) -> "ToolResult":
+    def ok(cls, data: Any = None, **meta: Any) -> ToolResult:
         return cls(success=True, data=data, metadata=meta)
 
     @classmethod
-    def err(cls, error: str, **meta: Any) -> "ToolResult":
+    def err(cls, error: str, **meta: Any) -> ToolResult:
         return cls(success=False, error=error, metadata=meta)
 
 

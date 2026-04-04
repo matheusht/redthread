@@ -1,2 +1,54 @@
+# Secrets
 .env
+
+# Campaign artifacts (potentially sensitive)
 logs/
+memory/
+
+# Python caches
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Build artifacts
+*.egg-info/
+dist/
+build/
+*.egg
+MANIFEST
+
+# Type / lint caches
+.mypy_cache/
+.ruff_cache/
+.dmypy.json
+dmypy.json
+
+# Test caches
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Databases (PyRIT + telemetry)
+*.db
+.pyrit_memory.db
+
+# Jupyter
+.ipynb_checkpoints/
+ollama.ipynb
+
+# OS
+.DS_Store
+Thumbs.db

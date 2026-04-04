@@ -22,6 +22,7 @@ from typing import Any
 
 from redthread.config.settings import RedThreadSettings
 from redthread.models import AttackResult, AttackTrace, JudgeVerdict
+from redthread.observability.tracing import traced
 
 logger = logging.getLogger(__name__)
 
@@ -142,6 +143,7 @@ Please classify and propose a guardrail clause.
 
     # ── Public entrypoint ─────────────────────────────────────────────────────
 
+    @traced
     async def run(self, result: AttackResult) -> DeploymentRecord:
         """Execute all 5 synthesis steps and return the deployment record."""
 

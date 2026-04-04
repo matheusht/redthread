@@ -11,15 +11,14 @@ Verifies:
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from unittest.mock import AsyncMock, patch
+from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
 from redthread.config.settings import RedThreadSettings, TargetBackend
 from redthread.core.defense_synthesis import (
     DefenseSynthesisEngine,
-    IsolatedSegment,
     VulnerabilityClassification,
 )
 from redthread.models import (
@@ -33,7 +32,6 @@ from redthread.models import (
     Persona,
     PsychologicalTrigger,
 )
-
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
 
@@ -260,7 +258,7 @@ async def test_defense_synthesis_full_pipeline_dry_run() -> None:
 
 # ── MemoryIndex ───────────────────────────────────────────────────────────────
 
-def test_memory_index_append_and_deduplicate(tmp_path) -> None:  # type: ignore[no-untyped-def]
+def test_memory_index_append_and_deduplicate(tmp_path: Path) -> None:  # type: ignore[no-untyped-def]
     """MemoryIndex should write entries and skip duplicates."""
     from redthread.core.defense_synthesis import DeploymentRecord, ValidationResult
     from redthread.memory.index import MemoryIndex
@@ -300,7 +298,7 @@ def test_memory_index_append_and_deduplicate(tmp_path) -> None:  # type: ignore[
     assert "trace-abc123" in known
 
 
-def test_memory_index_content_format(tmp_path) -> None:  # type: ignore[no-untyped-def]
+def test_memory_index_content_format(tmp_path: Path) -> None:  # type: ignore[no-untyped-def]
     """MEMORY.md should contain the expected formatted entry content."""
     from redthread.core.defense_synthesis import DeploymentRecord, ValidationResult
     from redthread.memory.index import MemoryIndex

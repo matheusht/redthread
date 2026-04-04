@@ -26,7 +26,6 @@ Score tiers (same as ASIReport.health_tier):
 from __future__ import annotations
 
 import logging
-import math
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -34,7 +33,7 @@ import numpy as np
 from redthread.config.settings import RedThreadSettings
 from redthread.telemetry.arima import ArimaDetector
 from redthread.telemetry.drift import DriftDetector
-from redthread.telemetry.models import ArimaForecast, ASIReport, TelemetryRecord
+from redthread.telemetry.models import ArimaForecast, ASIReport
 
 if TYPE_CHECKING:
     from redthread.telemetry.collector import TelemetryCollector
@@ -73,7 +72,7 @@ class AgentStabilityIndex:
 
     # ── Sub-score calculators ─────────────────────────────────────────────────
 
-    def _score_response_consistency(self, collector: "TelemetryCollector") -> float:
+    def _score_response_consistency(self, collector: TelemetryCollector) -> float:
         """RC sub-score (0-100): variance of canary embeddings over time.
 
         For each canary_id, computes the mean pairwise cosine similarity
@@ -87,10 +86,22 @@ class AgentStabilityIndex:
         per_canary_scores: list[float] = []
         for cid in canary_ids:
             records = collector.get_canary_records(canary_id=cid)
-            embeddings = [r.response_embedding for r in records if r.response_embedding]
+            all_embeddings = [r.response_embedding for r in records if r.response_embedding]
+
+            if len(all_embeddings) < 2:
+                continue
+
+            # Ensure all embeddings in this group have the same dimension.
+            # Use the most recent dimension as the anchor.
+            target_dim = len(all_embeddings[-1])
+            embeddings = [e for e in all_embeddings if len(e) == target_dim]
 
             if len(embeddings) < 2:
-                continue  # Need at least 2 to measure variance
+                logger.warning(
+                    "ASI | RC | canary_id=%s | skipped %d records with mismatched dimensions (target_dim=%d)",
+                    cid, len(all_embeddings) - len(embeddings), target_dim
+                )
+                continue
 
             mat = np.array(embeddings, dtype=np.float64)
             norms = np.linalg.norm(mat, axis=1, keepdims=True)
@@ -114,7 +125,7 @@ class AgentStabilityIndex:
         logger.debug("ASI | RC | avg_cosine_sim=%.4f → score=%.1f", avg_sim, score)
         return score
 
-    def _score_semantic_drift(self, collector: "TelemetryCollector") -> float:
+    def _score_semantic_drift(self, collector: TelemetryCollector) -> float:
         """SD sub-score (0-100): inverse of K Core-Distance from baseline.
 
         Uses the Phase 4.5 DriftDetector. If no baseline is fitted, returns 100.
@@ -124,9 +135,20 @@ class AgentStabilityIndex:
             return 100.0
 
         organic = collector.get_organic_records(window=self.settings.asi_window_size)
-        embeddings = [r.response_embedding for r in organic if r.response_embedding]
+        all_embeddings = [r.response_embedding for r in organic if r.response_embedding]
+
+        if not all_embeddings:
+            return 100.0
+
+        # Filter by dimension to match baseline
+        baseline_dim = self._drift_detector._baseline_embeddings.shape[1]
+        embeddings = [e for e in all_embeddings if len(e) == baseline_dim]
 
         if not embeddings:
+            logger.warning(
+                "ASI | SD | skipped %d organic records with dimension != baseline_dim (%d)",
+                len(all_embeddings), baseline_dim
+            )
             return 100.0
 
         drift_metrics = self._drift_detector.compute_drift(embeddings)
@@ -159,7 +181,7 @@ class AgentStabilityIndex:
         logger.debug("ASI | OH | anomalies=%d/%d → score=%.1f", anomaly_count, total, score)
         return score
 
-    def _score_behavioral_stability(self, collector: "TelemetryCollector") -> float:
+    def _score_behavioral_stability(self, collector: TelemetryCollector) -> float:
         """BS sub-score (0-100): inverse of output token count coefficient of variation.
 
         CV = std/mean. High CV = unstable token counts = low score.
@@ -216,7 +238,7 @@ class AgentStabilityIndex:
 
     # ── Main compute method ───────────────────────────────────────────────────
 
-    def compute(self, collector: "TelemetryCollector") -> ASIReport:
+    def compute(self, collector: TelemetryCollector) -> ASIReport:
         """Compute the full ASI report from the collector's telemetry records.
 
         Steps:

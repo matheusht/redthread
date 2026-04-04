@@ -52,7 +52,7 @@ class DriftDetector:
         self._baseline_embeddings = np.array(embeddings, dtype=np.float64)
         N = self._baseline_embeddings.shape[0]
 
-        if N < self.k_neighbors:
+        if self.k_neighbors > N:
             logger.warning("Baseline size (%d) < k_neighbors (%d). Reducing k.", N, self.k_neighbors)
             self.k_neighbors = max(1, N - 1)
 

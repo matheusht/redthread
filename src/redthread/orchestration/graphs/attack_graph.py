@@ -36,7 +36,6 @@ async def run_attack_worker(state: AttackWorkerState) -> AttackWorkerState:
     dispatches to the appropriate algorithm, and serializes the result back
     into state for collection by the supervisor's collector node.
     """
-    import asyncio
 
     from redthread.config.settings import AlgorithmType, RedThreadSettings
     from redthread.models import Persona

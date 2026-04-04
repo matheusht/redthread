@@ -22,7 +22,6 @@ import warnings
 from typing import TYPE_CHECKING
 
 import numpy as np
-from numpy.typing import NDArray
 
 from redthread.telemetry.models import ArimaForecast
 
@@ -168,7 +167,7 @@ class ArimaDetector:
             return self._z_score_fallback(window, metric_name)
 
     def analyze_collector(
-        self, collector: "TelemetryCollector"
+        self, collector: TelemetryCollector
     ) -> list[ArimaForecast]:
         """Run anomaly detection across all monitored metric streams.
 

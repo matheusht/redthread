@@ -16,11 +16,12 @@ Supported backends:
 
 from __future__ import annotations
 
+import json
 import logging
 from pathlib import Path
 from uuid import uuid4
 
-from pyrit.models import ChatMessageRole, Message
+from pyrit.models import Message
 from pyrit.models.message_piece import MessagePiece
 from pyrit.prompt_target import OpenAIChatTarget, PromptChatTarget
 
@@ -52,8 +53,6 @@ def ensure_pyrit_memory_initialized(db_dir: Path | None = None) -> None:
     _pyrit_memory_initialized = True
     logger.debug("PyRIT CentralMemory initialized at %s", db_path)
 
-
-import json
 
 # ── Target Factory ────────────────────────────────────────────────────────────
 
@@ -119,7 +118,7 @@ class RedThreadTarget:
         model: str,
         settings: RedThreadSettings,
         base_url: str | None = None,
-    ) -> "RedThreadTarget":
+    ) -> RedThreadTarget:
         pyrit_target = _build_pyrit_target(
             backend=backend,
             model=model,

@@ -64,7 +64,7 @@ class Task:
     _total_paused_ms: int = field(default=0, repr=False)
 
     @classmethod
-    def create(cls, task_type: TaskType) -> "Task":
+    def create(cls, task_type: TaskType) -> Task:
         return cls(id=generate_task_id(task_type), type=task_type)
 
     def transition(self, new_status: TaskStatus) -> None:

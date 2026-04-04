@@ -15,8 +15,6 @@ from __future__ import annotations
 
 import json
 import logging
-from datetime import datetime, timezone
-from pathlib import Path
 
 from redthread.config.settings import RedThreadSettings
 from redthread.models import CampaignConfig, CampaignResult
@@ -35,11 +33,15 @@ class RedThreadEngine:
         result = await engine.run(config)
     """
 
-    def __init__(self, settings: RedThreadSettings) -> None:
+    def __init__(self, settings: RedThreadSettings, trace_all: bool = False) -> None:
         self.settings = settings
         self._supervisor = RedThreadSupervisor(settings)
         settings.log_dir.mkdir(parents=True, exist_ok=True)
         settings.memory_dir.mkdir(parents=True, exist_ok=True)
+
+        # Phase 5D: Initialize LangSmith targeted tracing
+        from redthread.observability.tracing import init_langsmith
+        init_langsmith(settings, trace_all=trace_all)
 
     async def run(self, config: CampaignConfig) -> CampaignResult:
         """Delegate campaign execution to the LangGraph supervisor.

@@ -6,14 +6,12 @@ These flow through the entire pipeline: Persona → AttackTrace → AttackResult
 
 from __future__ import annotations
 
-from dataclasses import field
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
-
 
 # ── Enumerations ─────────────────────────────────────────────────────────────
 

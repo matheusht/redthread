@@ -13,23 +13,20 @@ Validates the composite health score computation:
 
 from __future__ import annotations
 
-import asyncio
 import random
+from pathlib import Path
 
-import numpy as np
 import pytest
 
 from redthread.config.settings import RedThreadSettings, TargetBackend
-from redthread.telemetry.arima import ArimaDetector
 from redthread.telemetry.asi import AgentStabilityIndex
 from redthread.telemetry.collector import TelemetryCollector
 from redthread.telemetry.models import ArimaForecast, TelemetryRecord
 
-
 # ── Fixtures ──────────────────────────────────────────────────────────────────
 
 @pytest.fixture
-def settings() -> RedThreadSettings:
+def settings(tmp_path: Path) -> RedThreadSettings:
     return RedThreadSettings(
         target_backend=TargetBackend.OPENAI,
         target_model="gpt-4o",
@@ -43,6 +40,8 @@ def settings() -> RedThreadSettings:
         asi_window_size=50,
         arima_confidence_level=0.95,
         asi_alert_threshold=60.0,
+        log_dir=tmp_path / "logs",
+        memory_dir=tmp_path / "memory",
     )
 
 
@@ -75,7 +74,7 @@ def _populate_collector_stable(
             response_embedding=_make_embedding(base_seed),  # Same base cluster
             is_canary=False,
         )
-        collector._records.append(record)
+        collector.storage.insert(record)
 
 
 def _populate_canaries_stable(
@@ -98,7 +97,7 @@ def _populate_canaries_stable(
                 is_canary=True,
                 canary_id=cid,
             )
-            collector._records.append(record)
+            collector.storage.insert(record)
 
 
 # ── Test classes ──────────────────────────────────────────────────────────────

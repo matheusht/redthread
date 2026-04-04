@@ -85,7 +85,6 @@ class EvaluationPipeline:
         from redthread.models import (
             AttackOutcome,
             AttackTrace,
-            ConversationTurn,
             MitreAtlasTactic,
             Persona,
         )

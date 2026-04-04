@@ -124,7 +124,6 @@ class PAIRAttack:
         previous_response: str | None = None
         previous_score: float = 0.0
         previous_feedback: str = ""
-        successful_turn_idx: int | None = None
 
         for iteration in range(1, self.settings.max_iterations + 1):
 
@@ -196,7 +195,6 @@ class PAIRAttack:
             # Mark turn success if inline score is high
             if inline_score >= self.settings.success_threshold:
                 turn.is_successful = True
-                successful_turn_idx = len(trace.turns)
 
             trace.turns.append(turn)
             previous_prompt = candidate_prompt
