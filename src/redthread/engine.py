@@ -220,6 +220,29 @@ class RedThreadEngine:
                         {"depth": n.depth, "prompt": n.attacker_prompt[:150], "score": n.score}
                         for n in result.trace.nodes if not n.is_pruned
                     ]
+
+                if result.trace.mcts_nodes:
+                    visited = [n for n in result.trace.mcts_nodes if n.depth > 0 and n.visit_count > 0]
+                    best = max(visited, key=lambda n: n.total_reward / n.visit_count) if visited else None
+                    node_map = {n.id: n for n in result.trace.mcts_nodes}
+                    winning_path = []
+                    if best:
+                        cur = best
+                        while cur and cur.depth > 0:
+                            winning_path.append(cur)
+                            cur = node_map.get(cur.parent_id or "")  # type: ignore[arg-type]
+                        winning_path.reverse()
+                    line["mcts_stats"] = {
+                        "total_nodes": len(result.trace.mcts_nodes),
+                        "tokens_consumed": result.trace.metadata.get("tokens_consumed", 0),
+                        "max_depth_reached": max(
+                            (n.depth for n in result.trace.mcts_nodes), default=0
+                        ),
+                    }
+                    line["winning_strategy_path"] = [
+                        {"depth": n.depth, "strategy": n.strategy, "score": n.score}
+                        for n in winning_path
+                    ]
                     
                 f.write(json.dumps(line) + "\n")
 

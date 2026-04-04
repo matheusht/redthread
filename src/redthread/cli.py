@@ -102,7 +102,7 @@ def main() -> None:
 )
 @click.option(
     "--algorithm", "-a",
-    type=click.Choice(["pair", "tap", "crescendo"], case_sensitive=False),
+    type=click.Choice(["pair", "tap", "crescendo", "mcts"], case_sensitive=False),
     default=None,
     help="Attack algorithm (default: pair)",
 )
@@ -136,6 +136,18 @@ def main() -> None:
     default=None,
     help="Crescendo max conversation turns",
 )
+@click.option(
+    "--simulations",
+    type=int,
+    default=None,
+    help="GS-MCTS number of simulations (overrides mcts_simulations setting)",
+)
+@click.option(
+    "--max-budget-tokens",
+    type=int,
+    default=None,
+    help="GS-MCTS token budget ceiling for early stopping (heuristic: chars // 4)",
+)
 def run(
     objective: str,
     system_prompt: str,
@@ -151,6 +163,8 @@ def run(
     branching: int | None,
     trace_all: bool,
     turns: int | None,
+    simulations: int | None,
+    max_budget_tokens: int | None,
 ) -> None:
     """Execute a red-team campaign against a target LLM."""
 
@@ -173,6 +187,10 @@ def run(
         settings.dry_run = True
     if turns is not None:
         settings.crescendo_max_turns = turns
+    if simulations is not None:
+        settings.mcts_simulations = simulations
+    if max_budget_tokens is not None:
+        settings.mcts_max_budget_tokens = max_budget_tokens
 
     # Print campaign header
     console.print(
@@ -201,6 +219,12 @@ def run(
         table.add_row("[dim]Max turns[/dim]", str(settings.crescendo_max_turns))
         table.add_row("[dim]Backtrack limit[/dim]", str(settings.crescendo_backtrack_limit))
         table.add_row("[dim]Escalation threshold[/dim]", str(settings.crescendo_escalation_threshold))
+    elif settings.algorithm == AlgorithmType.MCTS:
+        table.add_row("[dim]Simulations[/dim]", str(settings.mcts_simulations))
+        table.add_row("[dim]Max depth[/dim]", str(settings.mcts_max_depth))
+        table.add_row("[dim]Strategy branches[/dim]", str(settings.mcts_strategy_count))
+        table.add_row("[dim]Exploration C[/dim]", str(settings.mcts_exploration_constant))
+        table.add_row("[dim]Budget (tokens)[/dim]", f"{settings.mcts_max_budget_tokens:,}")
     if dry_run:
         table.add_row("[dim]Mode[/dim]", "[yellow]DRY RUN[/yellow]")
     console.print(table)

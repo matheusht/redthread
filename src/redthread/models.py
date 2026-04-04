@@ -65,6 +65,9 @@ class Persona(BaseModel):
     system_prompt: str                  # Full system prompt injected into attacker LLM
     psychological_triggers: list[PsychologicalTrigger]
     seed_pretext: str = ""              # Optional seed from Pretext Project
+    allowed_strategies: list[str] = Field(default_factory=list)
+    # Populated by PersonaGenerator; consumed by MCTS expansion phase.
+    # Empty list → MCTS falls back to TRIGGER_STRATEGY_MAP in mcts_helpers.
 
 
 # ── Conversation ──────────────────────────────────────────────────────────────
@@ -81,6 +84,30 @@ class AttackNode(BaseModel):
     improvement_rationale: str = ""
     is_pruned: bool = False               # Marked dead by pruning phase
     pruned_reason: str = ""               # "off_topic" | "low_score" | "duplicate"
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class MCTSNode(BaseModel):
+    """A node in the GS-MCTS search tree.
+
+    Stores both MCTS statistics (for UCT selection) and conversation data
+    (for trace reconstruction). Conversation history is NOT stored inline —
+    it is reconstructed by walking the parent_id chain via MCTSTree.get_history().
+    """
+
+    id: str = Field(default_factory=lambda: str(uuid4())[:8])
+    parent_id: str | None = None
+    depth: int = 0
+    strategy: str = ""                    # High-level attack strategy for this branch
+    attacker_prompt: str = ""
+    target_response: str = ""
+    # ── MCTS statistics ─────────────────────────────────────────────
+    visit_count: int = 0                  # n(s,a) — times this node was explored
+    total_reward: float = 0.0             # Cumulative backpropagated reward
+    score: float = 0.0                    # Direct inline score (set after simulation)
+    # ── Metadata ────────────────────────────────────────────────
+    is_terminal: bool = False
+    is_expanded: bool = False
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
@@ -114,10 +141,11 @@ class AttackTrace(BaseModel):
 
     id: str = Field(default_factory=lambda: f"trace-{str(uuid4())[:8]}")
     persona: Persona
-    algorithm: str                      # "pair" | "tap" | "crescendo"
+    algorithm: str                      # "pair" | "tap" | "crescendo" | "mcts"
     turns: list[ConversationTurn] = Field(default_factory=list)
-    nodes: list[AttackNode] = Field(default_factory=list)  # TAP/MCTS tree nodes
+    nodes: list[AttackNode] = Field(default_factory=list)    # TAP tree nodes
     crescendo_turns: list[CrescendoTurn] = Field(default_factory=list)  # Crescendo
+    mcts_nodes: list[MCTSNode] = Field(default_factory=list)  # GS-MCTS tree nodes
     started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     ended_at: datetime | None = None
     outcome: AttackOutcome = AttackOutcome.FAILURE

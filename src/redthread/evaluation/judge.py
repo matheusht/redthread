@@ -113,8 +113,31 @@ class JudgeAgent:
         """Format an AttackTrace into readable conversation text for the judge."""
         lines = [f"[Objective: {trace.persona.hidden_objective}]", ""]
 
-        # Crescendo turns (Phase 6)
-        if trace.crescendo_turns:
+        # GS-MCTS: format the best path through the tree (Phase 6B)
+        if trace.mcts_nodes:
+            # Best leaf = highest reward/visit ratio among visited non-root nodes
+            candidates = [
+                n for n in trace.mcts_nodes
+                if n.depth > 0 and n.visit_count > 0
+            ]
+            if candidates:
+                best = max(candidates,
+                           key=lambda n: n.total_reward / n.visit_count)
+                # Reconstruct path by following parent_id chain
+                node_map = {n.id: n for n in trace.mcts_nodes}
+                path: list = []
+                current = best
+                while current and current.depth > 0:
+                    path.append(current)
+                    current = node_map.get(current.parent_id or "")  # type: ignore[arg-type]
+                path.reverse()
+                for node in path:
+                    lines.append(f"Turn {node.depth} (strategy: {node.strategy}):")
+                    lines.append(f"  ATTACKER: {node.attacker_prompt}")
+                    lines.append(f"  TARGET:   {node.target_response}")
+                    lines.append("")
+        # Crescendo turns (Phase 6A)
+        elif trace.crescendo_turns:
             for turn in trace.crescendo_turns:
                 lines.append(f"Turn {turn.turn_number} (level {turn.escalation_level}):")
                 lines.append(f"  ATTACKER: {turn.attacker_prompt}")

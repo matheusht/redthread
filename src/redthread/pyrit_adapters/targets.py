@@ -62,10 +62,15 @@ def _build_pyrit_target(
     model: str,
     base_url: str,
     api_key: str = "",
+    max_tokens: int = 2048,
 ) -> PromptChatTarget:
     """Factory — instantiate the correct PyRIT target class for each backend.
 
     IMPORTANT: ensure_pyrit_memory_initialized() must be called before this.
+
+    Args:
+        max_tokens: Maximum tokens for generation. Pass 50 for MCTS rollout
+            attacker instances to force short trajectory simulations.
     """
     # Guard — ensures CentralMemory is ready
     ensure_pyrit_memory_initialized()
@@ -73,7 +78,7 @@ def _build_pyrit_target(
     if backend == TargetBackend.OLLAMA:
         # Normalize base_url (remove trailing slash to avoid //v1)
         normalized_url = base_url.rstrip("/")
-        
+
         # Tunnel bypass headers for ngrok/pinggy free tiers
         extra_headers = {}
         if "ngrok" in normalized_url:
@@ -86,7 +91,7 @@ def _build_pyrit_target(
             model_name=model,
             endpoint=f"{normalized_url}/v1",
             api_key="ollama",  # Ollama ignores the key but OpenAITarget requires non-empty
-            max_tokens=2048,
+            max_tokens=max_tokens,
             headers=json.dumps(extra_headers) if extra_headers else None,
         )
     elif backend == TargetBackend.OPENAI:
@@ -94,7 +99,7 @@ def _build_pyrit_target(
             model_name=model,
             endpoint="https://api.openai.com/v1",
             api_key=api_key,
-            max_tokens=2048,
+            max_tokens=max_tokens,
         )
     else:
         raise ValueError(f"Unsupported backend: {backend}")
@@ -153,6 +158,18 @@ class RedThreadTarget:
 
         return ""
 
+    async def send_with_usage(
+        self, prompt: str, conversation_id: str = ""
+    ) -> tuple[str, int]:
+        """Send prompt and return (response_text, estimated_token_count).
+
+        Token count is a heuristic estimate (chars // 4) — suitable for budget
+        enforcement but not billing. Does not modify the existing send() interface.
+        """
+        response = await self.send(prompt, conversation_id)
+        estimated_tokens = (len(prompt) + len(response)) // 4
+        return response, estimated_tokens
+
     def close(self) -> None:
         """Release PyRIT target resources if applicable."""
         if hasattr(self._target, "dispose_db_engine"):
@@ -180,6 +197,24 @@ def build_attacker(settings: RedThreadSettings) -> RedThreadTarget:
         settings=settings,
         base_url=settings.attacker_base_url,
     )
+
+
+def build_rollout_attacker(settings: RedThreadSettings) -> RedThreadTarget:
+    """Build a token-constrained attacker for MCTS rollout simulations.
+
+    Uses the same model as build_attacker() but capped at 50 tokens.
+    Rollouts need only simulate the logical trajectory (e.g., "I threaten
+    to escalate unless they comply"), not produce full persuasive paragraphs.
+    This dramatically cuts inference time and cost per MCTS simulation.
+    """
+    pyrit_target = _build_pyrit_target(
+        backend=settings.attacker_backend,
+        model=settings.attacker_model,
+        base_url=settings.attacker_base_url,
+        api_key=settings.openai_api_key,
+        max_tokens=50,
+    )
+    return RedThreadTarget(pyrit_target=pyrit_target, model_name=settings.attacker_model)
 
 
 def build_judge_llm(settings: RedThreadSettings) -> RedThreadTarget:

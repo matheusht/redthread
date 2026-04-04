@@ -59,6 +59,9 @@ async def run_attack_worker(state: AttackWorkerState) -> AttackWorkerState:
         elif settings.algorithm == AlgorithmType.CRESCENDO:
             from redthread.core.crescendo import CrescendoAttack
             attacker = CrescendoAttack(settings)
+        elif settings.algorithm == AlgorithmType.MCTS:
+            from redthread.core.mcts import MCTSAttack
+            attacker = MCTSAttack(settings)
         else:
             raise NotImplementedError(
                 f"Algorithm '{settings.algorithm}' not supported in AttackWorker."

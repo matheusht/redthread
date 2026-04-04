@@ -13,6 +13,7 @@ class AlgorithmType(str, Enum):
     PAIR = "pair"
     TAP = "tap"
     CRESCENDO = "crescendo"
+    MCTS = "mcts"
 
 
 class TargetBackend(str, Enum):
@@ -137,7 +138,7 @@ class RedThreadSettings(BaseSettings):
         description="TAP max retained leaves per level (W)",
     )
 
-    # ── Crescendo (Phase 6) ────────────────────────────────────────────────────
+    # ── Crescendo (Phase 6A) ───────────────────────────────────────────────────
     crescendo_max_turns: int = Field(
         default=10,
         description="Maximum conversation turns for Crescendo escalation",
@@ -149,6 +150,35 @@ class RedThreadSettings(BaseSettings):
     crescendo_escalation_threshold: float = Field(
         default=3.0,
         description="G-Eval score threshold to advance to next escalation level",
+    )
+
+    # ── GS-MCTS (Phase 6B) ──────────────────────────────────────────────────
+    mcts_simulations: int = Field(
+        default=50,
+        description="Total MCTS iterations (select → expand → simulate → backprop)",
+    )
+    mcts_max_depth: int = Field(
+        default=8,
+        description="Maximum conversation depth per MCTS path",
+    )
+    mcts_exploration_constant: float = Field(
+        default=1.41,
+        description="Exploration constant C in UCT formula (√2 ≈ 1.41 is standard)",
+    )
+    mcts_rollout_max_turns: int = Field(
+        default=5,
+        description="Maximum turns in a single MCTS rollout simulation",
+    )
+    mcts_strategy_count: int = Field(
+        default=3,
+        description="Number of strategy branches generated per MCTS expansion",
+    )
+    mcts_max_budget_tokens: int = Field(
+        default=500_000,
+        description=(
+            "Token budget ceiling for MCTS early stopping (heuristic: chars // 4). "
+            "When exceeded, the loop terminates and evaluates the best path found."
+        ),
     )
 
     # ── Persistence ──────────────────────────────────────────────────────────
