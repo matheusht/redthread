@@ -987,6 +987,172 @@ def research_mutate_revert(env_file: str) -> None:
     )
 
 
+@research.group(name="daemon")
+def research_daemon() -> None:
+    """Resume-safe daemon commands for bounded research execution."""
+    pass
+
+
+@research_daemon.command(name="start")
+@click.option("--create-session", default=None, help="Optionally create a Phase 3 session before starting.")
+@click.option(
+    "--env-file",
+    type=click.Path(exists=False),
+    default=".env",
+    help="Path to .env file",
+)
+@click.option(
+    "--verbose",
+    "-v",
+    is_flag=True,
+    default=False,
+    help="Enable debug logging",
+)
+def research_daemon_start(create_session: str | None, env_file: str, verbose: bool) -> None:
+    """Start the bounded research daemon."""
+    from redthread.research.daemon import ResearchDaemon
+
+    _setup_logging(verbose)
+    settings = RedThreadSettings(_env_file=env_file)
+    daemon = ResearchDaemon(settings, Path.cwd())
+    state = asyncio.run(daemon.start(create_session_tag=create_session))
+    console.print(
+        Panel(
+            f"[bold]Research daemon stopped[/bold]\n\n"
+            f"  Session:   {state.session_tag}\n"
+            f"  Branch:    {state.branch}\n"
+            f"  Status:    {state.status}\n"
+            f"  Step:      {state.last_completed_step}\n"
+            f"  Failures:  {state.consecutive_failures}",
+            border_style="cyan",
+        )
+    )
+
+
+@research_daemon.command(name="status")
+@click.option(
+    "--env-file",
+    type=click.Path(exists=False),
+    default=".env",
+    help="Path to .env file",
+)
+def research_daemon_status(env_file: str) -> None:
+    """Show the current research daemon status."""
+    from redthread.research.daemon import ResearchDaemon
+
+    status = ResearchDaemon(RedThreadSettings(_env_file=env_file), Path.cwd()).status()
+    console.print(
+        Panel(
+            f"[bold]Research daemon status[/bold]\n\n"
+            f"  Session:    {status.session_tag}\n"
+            f"  Branch:     {status.branch}\n"
+            f"  Active:     {status.active_lock}\n"
+            f"  Stale:      {status.stale_lock}\n"
+            f"  Heartbeat:  {status.last_heartbeat_at}\n"
+            f"  Step:       {status.current_step}\n"
+            f"  Status:     {status.status}\n"
+            f"  Failures:   {status.consecutive_failures}\n"
+            f"  Cooldown:   {status.cooldown_until}",
+            border_style="yellow",
+        )
+    )
+
+
+@research_daemon.command(name="stop")
+@click.option(
+    "--env-file",
+    type=click.Path(exists=False),
+    default=".env",
+    help="Path to .env file",
+)
+def research_daemon_stop(env_file: str) -> None:
+    """Request a clean research daemon shutdown."""
+    from redthread.research.daemon import ResearchDaemon
+
+    state = ResearchDaemon(RedThreadSettings(_env_file=env_file), Path.cwd()).stop()
+    console.print(
+        Panel(
+            f"[bold]Research daemon stop requested[/bold]\n\n"
+            f"  Session: {state.session_tag}\n"
+            f"  Status:  {state.status}",
+            border_style="magenta",
+        )
+    )
+
+
+@research.command(name="resume")
+@click.option("--create-session", default=None, help="Optionally create a Phase 3 session before resuming.")
+@click.option(
+    "--env-file",
+    type=click.Path(exists=False),
+    default=".env",
+    help="Path to .env file",
+)
+@click.option(
+    "--verbose",
+    "-v",
+    is_flag=True,
+    default=False,
+    help="Enable debug logging",
+)
+def research_resume(create_session: str | None, env_file: str, verbose: bool) -> None:
+    """Resume bounded research execution from the last safe checkpoint."""
+    from redthread.research.daemon import ResearchDaemon
+
+    _setup_logging(verbose)
+    settings = RedThreadSettings(_env_file=env_file)
+    state = asyncio.run(ResearchDaemon(settings, Path.cwd()).resume(create_session_tag=create_session))
+    console.print(
+        Panel(
+            f"[bold]Research resume complete[/bold]\n\n"
+            f"  Session:  {state.session_tag}\n"
+            f"  Status:   {state.status}\n"
+            f"  Step:     {state.last_completed_step}",
+            border_style="green",
+        )
+    )
+
+
+@research.group(name="checkpoints")
+def research_checkpoints() -> None:
+    """Inspect resumable research and promotion checkpoints."""
+    pass
+
+
+@research_checkpoints.command(name="list")
+@click.option(
+    "--env-file",
+    type=click.Path(exists=False),
+    default=".env",
+    help="Path to .env file",
+)
+def research_checkpoints_list(env_file: str) -> None:
+    """List known checkpoint artifacts."""
+    from redthread.research.checkpoints import list_checkpoint_paths
+    from redthread.research.workspace import ResearchWorkspace
+
+    workspace = ResearchWorkspace(Path.cwd())
+    workspace.ensure_layout()
+    rows = list_checkpoint_paths(workspace.runtime_dir)
+    body = "\n".join(f"  {path}" for path in rows) if rows else "  none"
+    console.print(Panel(f"[bold]Research checkpoints[/bold]\n\n{body}", border_style="blue"))
+
+
+@research_checkpoints.command(name="inspect")
+@click.option("--path", "checkpoint_path", required=True, help="Checkpoint artifact path to inspect.")
+def research_checkpoints_inspect(checkpoint_path: str) -> None:
+    """Inspect one checkpoint artifact."""
+    from redthread.research.checkpoints import inspect_checkpoint
+
+    payload = inspect_checkpoint(Path(checkpoint_path))
+    console.print(
+        Panel(
+            f"[bold]Checkpoint[/bold]\n\n{payload}",
+            border_style="green",
+        )
+    )
+
+
 @research.command(name="clean-runtime")
 @click.option(
     "--env-file",

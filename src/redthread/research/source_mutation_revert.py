@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from typing import Callable
+
 from redthread.research.source_mutation_models import SourceMutationManifest
 
 
@@ -13,7 +15,7 @@ def load_manifest(path_str: str) -> SourceMutationManifest:
     return SourceMutationManifest.model_validate(json.loads(Path(path_str).read_text(encoding="utf-8")))
 
 
-def matches_fingerprints(root: Path, fingerprints: dict[str, str], hash_fn: callable) -> bool:
+def matches_fingerprints(root: Path, fingerprints: dict[str, str], hash_fn: Callable[[str], str]) -> bool:
     """Return True when current file hashes match the expected fingerprint map."""
     for rel_path, expected in fingerprints.items():
         path = root / rel_path

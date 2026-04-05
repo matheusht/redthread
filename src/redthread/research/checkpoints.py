@@ -45,3 +45,15 @@ def save_promotion_checkpoint(path: Path, checkpoint: PromotionCheckpoint) -> No
     checkpoint.updated_at = datetime.now(timezone.utc)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(checkpoint.model_dump_json(indent=2), encoding="utf-8")
+
+
+def list_checkpoint_paths(root: Path) -> list[Path]:
+    """Return known research and promotion checkpoint artifact paths."""
+    batch = sorted(root.glob("checkpoints/*.json"))
+    promotion = sorted(root.glob("promotions/*/promotion_checkpoint.json"))
+    return batch + promotion
+
+
+def inspect_checkpoint(path: Path) -> dict[str, object]:
+    """Load a checkpoint artifact as a plain JSON payload."""
+    return json.loads(path.read_text(encoding="utf-8"))

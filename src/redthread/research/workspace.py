@@ -31,6 +31,10 @@ class ResearchWorkspace:
         self.baseline_registry_path = self.runtime_dir / "baseline_registry.json"
         self.promotions_dir = self.runtime_dir / "promotions"
         self.research_memory_dir = self.runtime_dir / "research_memory"
+        self.daemon_state_path = self.runtime_dir / "daemon_state.json"
+        self.heartbeat_path = self.runtime_dir / "heartbeat.json"
+        self.session_lock_path = self.runtime_dir / "session_lock.json"
+        self.failure_log_path = self.runtime_dir / "failure_log.jsonl"
 
     def ensure_layout(self) -> None:
         """Create tracked templates and migrate legacy runtime files if present."""
