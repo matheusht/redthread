@@ -130,8 +130,8 @@ class PersonaGenerator:
 
                 return candidate
 
-            except (ValueError, json.JSONDecodeError) as e:
-                logger.warning(f"Persona generation attempt {attempt + 1} failed: {e}")
+            except (ValueError, json.JSONDecodeError, KeyError) as e:
+                logger.warning(f"Persona generation attempt {attempt + 1} failed (missing keys or bad JSON): {e}")
                 if attempt == max_retries - 1:
                     raise
 

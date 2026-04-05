@@ -22,6 +22,7 @@ class AttackWorkerState(TypedDict):
 
     settings_dict: dict[str, Any]       # Serialized RedThreadSettings
     persona_dict: dict[str, Any]        # Serialized Persona
+    target_system_prompt: str           # The target LLM's defense prompt
     rubric_name: str
     result_dict: dict[str, Any] | None  # Serialized AttackResult (output)
     error: str | None
@@ -67,7 +68,12 @@ async def run_attack_worker(state: AttackWorkerState) -> AttackWorkerState:
                 f"Algorithm '{settings.algorithm}' not supported in AttackWorker."
             )
 
-        result = await attacker.run(persona, rubric_name=state["rubric_name"])
+        # Execute the attack algorithm
+        result = await attacker.run(
+            persona=persona,
+            target_system_prompt=state.get("target_system_prompt", ""),
+            rubric_name=state["rubric_name"],
+        )
 
         return {
             **state,

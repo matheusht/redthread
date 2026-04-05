@@ -167,7 +167,7 @@ async def test_mcts_dry_run() -> None:
             target=mock_target,
             judge=mock_judge,
         )
-        result = await mcts.run(persona)
+        result = await mcts.run(persona, target_system_prompt="You are a helpful assistant.")
 
     assert result.trace.outcome == AttackOutcome.SKIPPED
     assert result.iterations_used == 0
@@ -196,7 +196,7 @@ async def test_mcts_single_simulation() -> None:
             target=mock_target,
             judge=mock_judge,
         )
-        result = await mcts.run(persona)
+        result = await mcts.run(persona, target_system_prompt="You are a helpful assistant.")
 
     assert result.trace.algorithm == "mcts"
     assert len(result.trace.mcts_nodes) >= 2  # root + at least 1 child
@@ -272,7 +272,7 @@ async def test_mcts_expansion_uses_persona_strategies() -> None:
             target=mock_target,
             judge=mock_judge,
         )
-        await mcts.run(persona)
+        await mcts.run(persona, target_system_prompt="You are a helpful assistant.")
 
     # Every expansion prompt must reference one of the persona's strategies
     for strategy in persona.allowed_strategies:
@@ -367,7 +367,7 @@ async def test_mcts_jailbreak_detected() -> None:
             target=mock_target,
             judge=mock_judge,
         )
-        result = await mcts.run(persona)
+        result = await mcts.run(persona, target_system_prompt="You are a helpful assistant.")
 
     assert result.trace.outcome == AttackOutcome.SUCCESS
     assert result.verdict.is_jailbreak is True
@@ -409,7 +409,7 @@ async def test_mcts_budget_early_stop() -> None:
             target=mock_target,
             judge=mock_judge,
         )
-        result = await mcts.run(persona)
+        result = await mcts.run(persona, target_system_prompt="You are a helpful assistant.")
 
     # Budget was exceeded — algorithm terminated early (not all 10 sims ran)
     assert result.trace.metadata["tokens_consumed"] >= 1
@@ -441,7 +441,7 @@ async def test_mcts_trace_structure() -> None:
             target=mock_target,
             judge=mock_judge,
         )
-        result = await mcts.run(persona)
+        result = await mcts.run(persona, target_system_prompt="You are a helpful assistant.")
 
     trace = result.trace
     assert trace.algorithm == "mcts"
@@ -477,6 +477,45 @@ def test_mcts_tree_path_reconstruction() -> None:
     assert len(history) == 2
     assert history[0] == (child.attacker_prompt, child.target_response)
     assert history[1] == (grandchild.attacker_prompt, grandchild.target_response)
+
+
+@pytest.mark.asyncio
+async def test_mcts_respects_target_system_prompt() -> None:
+    """Algorithm must prepend the target system prompt to all target queries."""
+    settings = make_settings(mcts_simulations=1, mcts_strategy_count=1)
+    persona = make_persona()
+    target_system = "SPECIAL_GUARDRAIL_PROMPT"
+
+    captured_target_prompts: list[str] = []
+
+    async def capture_target(prompt: str, conversation_id: str = "") -> tuple[str, int]:
+        captured_target_prompts.append(prompt)
+        return "Refused.", 2
+
+    mock_attacker, mock_rollout, _, mock_judge = _make_mocks(
+        attacker_responses=["Attack!"],
+        target_responses=[],
+        inline_scores=[1.0],
+        final_verdict=make_verdict(score=1.0, is_jailbreak=False),
+    )
+    mock_target = AsyncMock(spec=RedThreadTarget)
+    mock_target.send_with_usage = AsyncMock(side_effect=capture_target)
+    mock_target.model_name = "llama3.2:3b"
+
+    with patch("redthread.pyrit_adapters.targets._build_pyrit_target"):
+        mcts = MCTSAttack(
+            settings,
+            attacker=mock_attacker,
+            rollout_attacker=mock_rollout,
+            target=mock_target,
+            judge=mock_judge,
+        )
+        await mcts.run(persona, target_system_prompt=target_system)
+
+    # Every prompt sent to target must include the system prompt
+    assert len(captured_target_prompts) > 0
+    for p in captured_target_prompts:
+        assert f"[SYSTEM]: {target_system}" in p
 
 
 def test_derive_strategies_uses_persona_list() -> None:

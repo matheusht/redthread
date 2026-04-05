@@ -86,6 +86,7 @@ class MCTSAttack:
     async def run(
         self,
         persona: Persona,
+        target_system_prompt: str = "",
         rubric_name: str = "authorization_bypass",
     ) -> AttackResult:
         """Execute the full GS-MCTS loop for a given persona."""
@@ -130,14 +131,15 @@ class MCTSAttack:
 
             # Phase 2: EXPANSION
             children = await self._expand(
-                leaf, tree, trace, persona, strategies, attacker_system, rubric_name
+                leaf, tree, trace, persona, strategies, attacker_system,
+                target_system_prompt, rubric_name
             )
             if not children:
                 continue
 
             # Phase 3: SIMULATION (rollout from first child)
             child = children[0]
-            reward = await self._simulate(child, tree, persona, rubric_name)
+            reward = await self._simulate(child, tree, persona, target_system_prompt, rubric_name)
             child.score = reward
 
             # Phase 4: BACKPROPAGATION
@@ -185,6 +187,7 @@ class MCTSAttack:
         persona: Persona,
         strategies: list[str],
         attacker_system: str,
+        target_system_prompt: str,
         rubric_name: str,
     ) -> list[MCTSNode]:
         """Generate strategy-guided child nodes at the leaf."""
@@ -212,7 +215,9 @@ class MCTSAttack:
             self._tokens_consumed += tokens
             attacker_msg = attacker_msg.strip()
 
-            target_input = self._compile_target_prompt(history, attacker_msg)
+            target_input = self._compile_target_prompt(
+                history, attacker_msg, target_system_prompt
+            )
             target_resp, t_tokens = await self._target.send_with_usage(
                 prompt=target_input,
                 conversation_id=f"mcts-target-{trace.id}-d{turn_number}",
@@ -238,6 +243,7 @@ class MCTSAttack:
         node: MCTSNode,
         tree: MCTSTree,
         persona: Persona,
+        target_system_prompt: str,
         rubric_name: str,
     ) -> float:
         """CoT rollout: simulate from node using token-constrained attacker."""
@@ -260,8 +266,11 @@ class MCTSAttack:
             )
             self._tokens_consumed += tokens
 
+            target_input = self._compile_target_prompt(
+                sim_history, rollout_msg.strip(), target_system_prompt
+            )
             target_resp, t_tokens = await self._target.send_with_usage(
-                prompt=self._compile_target_prompt(sim_history, rollout_msg.strip()),
+                prompt=target_input,
                 conversation_id=f"mcts-rollout-tgt-{node.id}-t{turn_number}",
             )
             self._tokens_consumed += t_tokens
@@ -353,11 +362,18 @@ class MCTSAttack:
         )
 
     def _compile_target_prompt(
-        self, history: list[tuple[str, str]], next_msg: str
+        self,
+        history: list[tuple[str, str]],
+        next_msg: str,
+        target_system_prompt: str = "",
     ) -> str:
         """Compile full conversation + new turn for stateless target."""
-        if not history:
-            return next_msg
-        parts = [f"User: {a}\nAssistant: {t}" for a, t in history]
+        parts = []
+        if target_system_prompt:
+            parts.append(f"[SYSTEM]: {target_system_prompt}")
+
+        for a, t in history:
+            parts.append(f"User: {a}\nAssistant: {t}")
+
         parts.append(f"User: {next_msg}")
         return "\n\n".join(parts)
