@@ -20,15 +20,20 @@ class EmbeddingClient:
     def __init__(self, settings: RedThreadSettings) -> None:
         self.settings = settings
         self.backend = settings.target_backend
-        self.base_url = settings.target_base_url
         self.api_key = settings.openai_api_key
+        
+        # Determine base URL based on backend
+        if self.backend == TargetBackend.LLAMA_CPP:
+            self.base_url = settings.llama_cpp_base_url
+        else:
+            self.base_url = settings.target_base_url
 
         # Decide on embedding model based on backend
         if settings.telemetry_embedding_model:
             self.model = settings.telemetry_embedding_model
-        elif self.backend == TargetBackend.OLLAMA:
-            # Fallback to a standard resident model confirmed in 'ollama list'
-            self.model = "llama3.2:3b"
+        elif self.backend in [TargetBackend.OLLAMA, TargetBackend.LLAMA_CPP]:
+            # Fallback to a standard resident model
+            self.model = "gemma4:e4b"
         else:
             self.model = "text-embedding-3-small"
 
@@ -45,15 +50,15 @@ class EmbeddingClient:
             norm = sum(x*x for x in base) ** 0.5
             return [x/norm for x in base]
 
-        if self.backend == TargetBackend.OLLAMA:
-            return await self._embed_ollama(text)
+        if self.backend in [TargetBackend.OLLAMA, TargetBackend.LLAMA_CPP]:
+            return await self._embed_generic_openai_compatible(text)
         elif self.backend == TargetBackend.OPENAI:
             return await self._embed_openai(text)
         else:
             raise NotImplementedError(f"Embeddings not supported for {self.backend}")
 
-    async def _embed_ollama(self, text: str) -> list[float]:
-        """Call Ollama /v1/embeddings (OpenAI-compatible) endpoint."""
+    async def _embed_generic_openai_compatible(self, text: str) -> list[float]:
+        """Call OpenAI-compatible /v1/embeddings endpoint (Ollama or llama.cpp)."""
         import httpx
         
         # Using /v1/embeddings is the most robust way to support both native models and proxies

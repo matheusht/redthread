@@ -53,3 +53,14 @@ monitor:  ## Start the Security Guard daemon
 
 status:  ## Show current ASI health status
 	.venv/bin/redthread monitor status
+
+# ── Local Models & Inference ──────────────────────────────────────────────────
+
+llama-cpp-setup:  ## Clone and build llama.cpp from source (macOS Metal optimized)
+	@if [ ! -d "vendor/llama.cpp" ]; then \
+		mkdir -p vendor && git clone https://github.com/ggml-org/llama.cpp vendor/llama.cpp; \
+	fi
+	cd vendor/llama.cpp && make -j
+
+model-setup:  ## Pull Gemma 4 E4B model via Ollama
+	ollama pull gemma4:e4b

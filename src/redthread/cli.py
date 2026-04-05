@@ -518,5 +518,316 @@ def dashboard(log_dir: str | None, env_file: str) -> None:
     render_dashboard(history, console)
 
 
+@main.group()
+def research() -> None:
+    """Phase 1 autoresearch harness commands."""
+    pass
+
+
+@research.command(name="init")
+@click.option(
+    "--env-file",
+    type=click.Path(exists=False),
+    default=".env",
+    help="Path to .env file",
+)
+def research_init(env_file: str) -> None:
+    """Create default autoresearch config and ledger files."""
+    from redthread.research.runner import PhaseOneResearchHarness
+
+    settings = RedThreadSettings(_env_file=env_file)
+    harness = PhaseOneResearchHarness(settings, Path.cwd())
+    console.print(
+        Panel(
+            f"[bold]Autoresearch initialized[/bold]\n\n"
+            f"  Config:  {harness.config_path}\n"
+            f"  Results: {harness.results_path}",
+            border_style="cyan",
+        )
+    )
+
+
+@research.command(name="baseline")
+@click.option(
+    "--env-file",
+    type=click.Path(exists=False),
+    default=".env",
+    help="Path to .env file",
+)
+@click.option(
+    "--verbose",
+    "-v",
+    is_flag=True,
+    default=False,
+    help="Enable debug logging",
+)
+def research_baseline(env_file: str, verbose: bool) -> None:
+    """Run the frozen Phase 1 benchmark pack and write it to results.tsv."""
+    from redthread.research.runner import PhaseOneResearchHarness
+
+    _setup_logging(verbose)
+    settings = RedThreadSettings(_env_file=env_file)
+    harness = PhaseOneResearchHarness(settings, Path.cwd())
+
+    async def _run() -> None:
+        summary = await harness.run_baseline()
+        console.print(
+            Panel(
+                f"[bold]Baseline complete[/bold]\n\n"
+                f"  Campaigns:            {summary.total_campaigns}\n"
+                f"  Confirmed jailbreaks: {summary.confirmed_jailbreaks}\n"
+                f"  Near misses:          {summary.near_misses}\n"
+                f"  Average ASR:          {summary.average_asr:.1%}\n"
+                f"  Average score:        {summary.average_score:.2f}\n"
+                f"  Composite score:      {summary.composite_score:.2f}\n"
+                f"  Results:              {harness.results_path}",
+                border_style="cyan",
+            )
+        )
+
+    asyncio.run(_run())
+
+
+@research.command(name="run")
+@click.option(
+    "--cycles",
+    type=int,
+    default=1,
+    show_default=True,
+    help="Number of bounded experiment cycles to run.",
+)
+@click.option(
+    "--baseline-first",
+    is_flag=True,
+    default=False,
+    help="Run the frozen baseline pack before the experiment cycles.",
+)
+@click.option(
+    "--env-file",
+    type=click.Path(exists=False),
+    default=".env",
+    help="Path to .env file",
+)
+@click.option(
+    "--verbose",
+    "-v",
+    is_flag=True,
+    default=False,
+    help="Enable debug logging",
+)
+def research_run(cycles: int, baseline_first: bool, env_file: str, verbose: bool) -> None:
+    """Run bounded Phase 1 experiment batches and write them to results.tsv."""
+    from redthread.research.runner import PhaseOneResearchHarness
+
+    _setup_logging(verbose)
+    settings = RedThreadSettings(_env_file=env_file)
+    harness = PhaseOneResearchHarness(settings, Path.cwd())
+
+    async def _run() -> None:
+        summaries = await harness.run_experiments(cycles=cycles, baseline_first=baseline_first)
+        final_summary = summaries[-1]
+        console.print(
+            Panel(
+                f"[bold]Research batch complete[/bold]\n\n"
+                f"  Batches logged:       {len(summaries)}\n"
+                f"  Final mode:           {final_summary.mode}\n"
+                f"  Campaigns:            {final_summary.total_campaigns}\n"
+                f"  Confirmed jailbreaks: {final_summary.confirmed_jailbreaks}\n"
+                f"  Near misses:          {final_summary.near_misses}\n"
+                f"  Average ASR:          {final_summary.average_asr:.1%}\n"
+                f"  Average score:        {final_summary.average_score:.2f}\n"
+                f"  Composite score:      {final_summary.composite_score:.2f}\n"
+                f"  Results:              {harness.results_path}",
+                border_style="magenta",
+            )
+        )
+
+    asyncio.run(_run())
+
+
+@research.command(name="supervise")
+@click.option(
+    "--cycles",
+    type=int,
+    default=1,
+    show_default=True,
+    help="Number of supervised Phase 2 cycles to run.",
+)
+@click.option(
+    "--baseline-first",
+    is_flag=True,
+    default=False,
+    help="Run the frozen baseline pack before each supervised cycle.",
+)
+@click.option(
+    "--env-file",
+    type=click.Path(exists=False),
+    default=".env",
+    help="Path to .env file",
+)
+@click.option(
+    "--verbose",
+    "-v",
+    is_flag=True,
+    default=False,
+    help="Enable debug logging",
+)
+def research_supervise(cycles: int, baseline_first: bool, env_file: str, verbose: bool) -> None:
+    """Run Phase 2 supervisor cycles over offense, regression, and control lanes."""
+    from redthread.research.supervisor import PhaseTwoResearchHarness
+
+    _setup_logging(verbose)
+    settings = RedThreadSettings(_env_file=env_file)
+    harness = PhaseTwoResearchHarness(settings, Path.cwd())
+
+    async def _run() -> None:
+        last_cycle = None
+        total_cycles = cycles if cycles > 0 else 1
+        for _ in range(total_cycles):
+            last_cycle = await harness.run_cycle(baseline_first=baseline_first)
+        if last_cycle is None:
+            return
+        console.print(
+            Panel(
+                f"[bold]Phase 2 supervised cycle complete[/bold]\n\n"
+                f"  Accepted:      {last_cycle.accepted}\n"
+                f"  Winning lane:  {last_cycle.winning_lane}\n"
+                f"  Rationale:     {last_cycle.rationale}\n"
+                f"  Results:       {harness.results_path}",
+                border_style="blue",
+            )
+        )
+
+    asyncio.run(_run())
+
+
+@research.group(name="phase3")
+def research_phase3() -> None:
+    """Phase 3 scheduling and git-backed evaluation."""
+    pass
+
+
+@research_phase3.command(name="start")
+@click.option("--tag", required=True, help="Run tag for the dedicated autoresearch branch.")
+@click.option(
+    "--env-file",
+    type=click.Path(exists=False),
+    default=".env",
+    help="Path to .env file",
+)
+def research_phase3_start(tag: str, env_file: str) -> None:
+    """Create a Phase 3 session on a dedicated autoresearch branch."""
+    from redthread.research.phase3 import PhaseThreeHarness
+
+    settings = RedThreadSettings(_env_file=env_file)
+    harness = PhaseThreeHarness(settings, Path.cwd())
+    session = harness.start_session(tag)
+    console.print(
+        Panel(
+            f"[bold]Phase 3 session started[/bold]\n\n"
+            f"  Branch:      {session.branch}\n"
+            f"  Base commit: {session.base_commit}\n"
+            f"  Session:     {harness.session_path}",
+            border_style="green",
+        )
+    )
+
+
+@research_phase3.command(name="cycle")
+@click.option(
+    "--baseline-first",
+    is_flag=True,
+    default=False,
+    help="Run the frozen baseline pack before the supervised cycle.",
+)
+@click.option(
+    "--env-file",
+    type=click.Path(exists=False),
+    default=".env",
+    help="Path to .env file",
+)
+@click.option(
+    "--verbose",
+    "-v",
+    is_flag=True,
+    default=False,
+    help="Enable debug logging",
+)
+def research_phase3_cycle(baseline_first: bool, env_file: str, verbose: bool) -> None:
+    """Run one history-aware Phase 3 cycle and emit an accept/reject proposal."""
+    from redthread.research.phase3 import PhaseThreeHarness
+
+    _setup_logging(verbose)
+    settings = RedThreadSettings(_env_file=env_file)
+    harness = PhaseThreeHarness(settings, Path.cwd())
+
+    async def _run() -> None:
+        proposal = await harness.run_cycle(baseline_first=baseline_first)
+        console.print(
+            Panel(
+                f"[bold]Phase 3 proposal ready[/bold]\n\n"
+                f"  Proposal:    {proposal.proposal_id}\n"
+                f"  Recommended: {proposal.recommended_action}\n"
+                f"  Winning:     {proposal.cycle.winning_lane}\n"
+                f"  Rationale:   {proposal.rationale}\n"
+                f"  Proposals:   {harness.proposals_dir}",
+                border_style="yellow",
+            )
+        )
+
+    asyncio.run(_run())
+
+
+@research_phase3.command(name="accept")
+@click.option(
+    "--message",
+    default=None,
+    help="Optional git commit message override.",
+)
+@click.option(
+    "--env-file",
+    type=click.Path(exists=False),
+    default=".env",
+    help="Path to .env file",
+)
+def research_phase3_accept(message: str | None, env_file: str) -> None:
+    """Commit current changes for the latest accepted Phase 3 proposal."""
+    from redthread.research.phase3 import PhaseThreeHarness
+
+    settings = RedThreadSettings(_env_file=env_file)
+    harness = PhaseThreeHarness(settings, Path.cwd())
+    commit = harness.accept_latest(message)
+    console.print(
+        Panel(
+            f"[bold]Phase 3 proposal accepted[/bold]\n\n"
+            f"  Commit: {commit}",
+            border_style="magenta",
+        )
+    )
+
+
+@research_phase3.command(name="reject")
+@click.option(
+    "--env-file",
+    type=click.Path(exists=False),
+    default=".env",
+    help="Path to .env file",
+)
+def research_phase3_reject(env_file: str) -> None:
+    """Reset the worktree back to the current Phase 3 session base commit."""
+    from redthread.research.phase3 import PhaseThreeHarness
+
+    settings = RedThreadSettings(_env_file=env_file)
+    harness = PhaseThreeHarness(settings, Path.cwd())
+    proposal_id = harness.reject_latest()
+    console.print(
+        Panel(
+            f"[bold]Phase 3 proposal rejected[/bold]\n\n"
+            f"  Proposal: {proposal_id}",
+            border_style="red",
+        )
+    )
+
+
 if __name__ == "__main__":
     main()
