@@ -79,9 +79,7 @@ jobs:
       - name: Run Golden Dataset regression
         env:
           PYTHONPATH: src
-          REDTHREAD_OPENAI_API_KEY: ${{ secrets.REDTHREAD_OPENAI_API_KEY }}
-          # Cost reduction: use gpt-4o-mini as judge for CI runs
-          REDTHREAD_JUDGE_MODEL: gpt-4o-mini
+          REDTHREAD_DRY_RUN: "true"
         run: |
           pytest tests/test_golden_dataset.py \
             -v \

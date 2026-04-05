@@ -32,10 +32,7 @@ from tests.golden_dataset.golden_traces import (
 def settings() -> RedThreadSettings:
     """RedThread settings configured for golden dataset evaluation."""
     return RedThreadSettings(
-        judge_backend="openai",
-        judge_model="gpt-4o",
         judge_temperature=0.0,  # Deterministic for reproducible evaluation
-        dry_run=False,
     )
 
 

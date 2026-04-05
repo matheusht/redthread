@@ -76,10 +76,10 @@ def _build_pyrit_target(
     # Guard — ensures CentralMemory is ready
     ensure_pyrit_memory_initialized()
 
-    # PyRIT 0.12.0 enforces a strict check for REDTHREAD_OPENAI_API_KEY via environment
+    # PyRIT 0.12.0 enforces a strict check for OPENAI_CHAT_KEY via environment
     # even when api_key is provided to the constructor. We bridge this gap here.
     if api_key:
-        os.environ["REDTHREAD_OPENAI_API_KEY"] = api_key
+        os.environ["OPENAI_CHAT_KEY"] = api_key
 
     if backend == TargetBackend.OLLAMA:
         # Normalize base_url (remove trailing slash to avoid //v1)
