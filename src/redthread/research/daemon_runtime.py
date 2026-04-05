@@ -16,13 +16,16 @@ from redthread.research.daemon_models import (
     ResearchDaemonState,
     ResearchHeartbeat,
     ResearchSessionLock,
+    ResearchStep,
 )
+from redthread.research.models import PhaseThreeSession
+from redthread.research.phase3 import PhaseThreeHarness
 from redthread.research.workspace import ResearchWorkspace
 
 _STALE_AFTER_SECONDS = 60
 
 
-def ensure_session(phase3: object, create_session_tag: str | None) -> object:
+def ensure_session(phase3: PhaseThreeHarness, create_session_tag: str | None) -> PhaseThreeSession:
     """Load an active session or create one explicitly when requested."""
     try:
         return phase3._load_session()
@@ -56,7 +59,7 @@ def release_lock(workspace: ResearchWorkspace) -> None:
         workspace.session_lock_path.unlink()
 
 
-def beat(workspace: ResearchWorkspace, owner_id: str, step: str, *, session_tag: str) -> None:
+def beat(workspace: ResearchWorkspace, owner_id: str, step: ResearchStep, *, session_tag: str) -> None:
     """Write a fresh daemon heartbeat."""
     save_json_model(
         workspace.heartbeat_path,

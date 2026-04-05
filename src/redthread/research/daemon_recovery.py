@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from redthread.research.models import PhaseThreeProposal
 from redthread.research.phase3 import PhaseThreeHarness
 from redthread.research.promotion import ResearchPromotionManager
 from redthread.research.workspace import ResearchWorkspace
@@ -28,7 +29,7 @@ def resume_promotion_if_needed(workspace: ResearchWorkspace, promoter: ResearchP
     return True
 
 
-def latest_proposal_or_none(phase3: PhaseThreeHarness) -> object | None:
+def latest_proposal_or_none(phase3: PhaseThreeHarness) -> PhaseThreeProposal | None:
     """Return the latest proposal when one exists."""
     try:
         return phase3.latest_proposal()

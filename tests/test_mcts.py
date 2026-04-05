@@ -15,7 +15,6 @@ from redthread.core.mcts import MCTSAttack
 from redthread.core.mcts_helpers import (
     MCTSTree,
     derive_strategies,
-    format_mcts_history,
 )
 from redthread.evaluation.judge import JudgeAgent
 from redthread.models import (
@@ -27,7 +26,6 @@ from redthread.models import (
     PsychologicalTrigger,
 )
 from redthread.pyrit_adapters.targets import RedThreadTarget
-
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
 
@@ -336,7 +334,6 @@ async def test_mcts_max_depth_enforced() -> None:
             judge=mock_judge,
         )
         # Call _expand directly on the deep node
-        import asyncio
         children = await mcts._expand(
             deep_node, tree, None, persona,  # type: ignore[arg-type]
             persona.allowed_strategies, "", "authorization_bypass"

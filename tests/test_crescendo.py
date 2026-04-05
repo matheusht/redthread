@@ -22,7 +22,6 @@ from redthread.models import (
 )
 from redthread.pyrit_adapters.targets import RedThreadTarget
 
-
 # ── Fixtures ──────────────────────────────────────────────────────────────────
 
 def make_settings(**overrides: object) -> RedThreadSettings:

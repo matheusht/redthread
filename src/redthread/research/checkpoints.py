@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import cast
 
 from redthread.research.models import BatchCheckpoint, PromotionCheckpoint
 
@@ -56,4 +58,5 @@ def list_checkpoint_paths(root: Path) -> list[Path]:
 
 def inspect_checkpoint(path: Path) -> dict[str, object]:
     """Load a checkpoint artifact as a plain JSON payload."""
-    return json.loads(path.read_text(encoding="utf-8"))
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    return dict(cast(Mapping[str, object], payload))

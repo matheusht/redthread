@@ -6,6 +6,8 @@ import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+from pydantic import BaseModel
+
 from redthread.research.daemon_models import (
     ResearchDaemonState,
     ResearchFailureEntry,
@@ -14,14 +16,14 @@ from redthread.research.daemon_models import (
 )
 
 
-def load_json_model(path: Path, model_type: type) -> object | None:
+def load_json_model[ModelT: BaseModel](path: Path, model_type: type[ModelT]) -> ModelT | None:
     """Load a JSON artifact into the requested Pydantic model type."""
     if not path.exists():
         return None
     return model_type.model_validate(json.loads(path.read_text(encoding="utf-8")))
 
 
-def save_json_model(path: Path, model: object) -> None:
+def save_json_model(path: Path, model: BaseModel) -> None:
     """Persist a Pydantic model as pretty JSON."""
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(model.model_dump_json(indent=2), encoding="utf-8")
@@ -42,12 +44,12 @@ def is_stale(heartbeat: ResearchHeartbeat | None, stale_after_seconds: int) -> b
 
 
 def load_state(path: Path) -> ResearchDaemonState | None:
-    return load_json_model(path, ResearchDaemonState)  # type: ignore[return-value]
+    return load_json_model(path, ResearchDaemonState)
 
 
 def load_lock(path: Path) -> ResearchSessionLock | None:
-    return load_json_model(path, ResearchSessionLock)  # type: ignore[return-value]
+    return load_json_model(path, ResearchSessionLock)
 
 
 def load_heartbeat(path: Path) -> ResearchHeartbeat | None:
-    return load_json_model(path, ResearchHeartbeat)  # type: ignore[return-value]
+    return load_json_model(path, ResearchHeartbeat)

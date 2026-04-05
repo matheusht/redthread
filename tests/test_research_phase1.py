@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from pathlib import Path
 
 from redthread.research.ledger import ResearchLedger
 from redthread.research.models import ResearchBatchSummary
@@ -10,7 +11,7 @@ from redthread.research.supervisor import PhaseTwoResearchHarness
 from redthread.research.workspace import ResearchWorkspace
 
 
-def test_ensure_config_creates_default_file(tmp_path) -> None:
+def test_ensure_config_creates_default_file(tmp_path: Path) -> None:
     config_path = tmp_path / "autoresearch" / "config.json"
     config = ensure_config(config_path)
 
@@ -19,7 +20,7 @@ def test_ensure_config_creates_default_file(tmp_path) -> None:
     assert config.experiment_objectives
 
 
-def test_research_ledger_writes_header_and_row(tmp_path) -> None:
+def test_research_ledger_writes_header_and_row(tmp_path: Path) -> None:
     ledger_path = tmp_path / "autoresearch" / "results.tsv"
     ledger = ResearchLedger(ledger_path)
     summary = ResearchBatchSummary(
@@ -57,7 +58,7 @@ def test_phase_two_scheduler_resolves_default_lanes() -> None:
     assert len(scheduler.objectives_for_lane(lanes[2])) == 4
 
 
-def test_phase_two_decision_rejects_when_control_exceeds_thresholds(tmp_path) -> None:
+def test_phase_two_decision_rejects_when_control_exceeds_thresholds(tmp_path: Path) -> None:
     from redthread.config.settings import RedThreadSettings
 
     phase_two = PhaseTwoResearchHarness(RedThreadSettings(), tmp_path)
@@ -118,7 +119,7 @@ def test_phase_two_decision_rejects_when_control_exceeds_thresholds(tmp_path) ->
     assert cycle.winning_lane == "offense"
 
 
-def test_research_workspace_scopes_runtime_memory(tmp_path) -> None:
+def test_research_workspace_scopes_runtime_memory(tmp_path: Path) -> None:
     from redthread.config.settings import RedThreadSettings
 
     workspace = ResearchWorkspace(tmp_path)

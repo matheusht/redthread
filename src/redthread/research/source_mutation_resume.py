@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
 from pathlib import Path
 
 from redthread.research.source_mutation_models import PatchFileArtifact, SourceMutationCandidate
@@ -17,7 +18,7 @@ def latest_candidate(root: Path) -> SourceMutationCandidate | None:
     return SourceMutationCandidate.model_validate(json.loads(paths[-1].read_text(encoding="utf-8")))
 
 
-def live_state(root: Path, candidate: SourceMutationCandidate, hash_fn: callable) -> str:
+def live_state(root: Path, candidate: SourceMutationCandidate, hash_fn: Callable[[str], str]) -> str:
     """Inspect the workspace and classify the candidate's live mutation state."""
     manifest = load_manifest(candidate.patch_manifest_path)
     forward_payload = _load_patch(candidate.forward_patch_path)
@@ -33,7 +34,11 @@ def live_state(root: Path, candidate: SourceMutationCandidate, hash_fn: callable
     return "diverged"
 
 
-def apply_candidate(root: Path, candidate: SourceMutationCandidate, hash_fn: callable) -> SourceMutationCandidate:
+def apply_candidate(
+    root: Path,
+    candidate: SourceMutationCandidate,
+    hash_fn: Callable[[str], str],
+) -> SourceMutationCandidate:
     """Apply a generated candidate if the workspace still matches its before-state."""
     manifest = load_manifest(candidate.patch_manifest_path)
     if not matches_fingerprints(root, manifest.before_fingerprints, hash_fn):

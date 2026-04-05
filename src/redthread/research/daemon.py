@@ -19,6 +19,7 @@ from redthread.research.daemon_models import (
     ResearchDaemonState,
     ResearchDaemonStatus,
     ResearchFailureEntry,
+    ResearchStep,
 )
 from redthread.research.daemon_recovery import (
     baseline_needed,
@@ -157,7 +158,12 @@ class ResearchDaemon:
         save_daemon_state(self.workspace, state)
         return state
 
-    def _complete_step(self, step: str, latest_candidate_id: str | None = None, latest_proposal_id: str | None = None) -> None:
+    def _complete_step(
+        self,
+        step: ResearchStep,
+        latest_candidate_id: str | None = None,
+        latest_proposal_id: str | None = None,
+    ) -> None:
         state = load_daemon_state_required(self.workspace)
         state.status = "running"
         state.current_step = step

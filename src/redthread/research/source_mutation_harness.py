@@ -6,6 +6,7 @@ from pathlib import Path
 
 from redthread.config.settings import RedThreadSettings
 from redthread.research.history import ObjectiveHistoryAnalyzer
+from redthread.research.models import PhaseThreeProposal
 from redthread.research.phase3 import PhaseThreeHarness
 from redthread.research.source_mutation_models import SourceMutationCandidate
 from redthread.research.source_mutation_worker import SourceMutationWorker
@@ -23,7 +24,7 @@ class SourceMutationHarness:
         self.worker = SourceMutationWorker(root)
         self.phase3 = PhaseThreeHarness(settings, root)
 
-    async def run_cycle(self, baseline_first: bool) -> tuple[SourceMutationCandidate, object]:
+    async def run_cycle(self, baseline_first: bool) -> tuple[SourceMutationCandidate, PhaseThreeProposal]:
         """Apply one bounded source mutation and emit a normal Phase 3 proposal."""
         ranked = ObjectiveHistoryAnalyzer(self.workspace.results_path).rank()
         candidate = self.worker.generate_and_apply([item.slug for item in ranked])
