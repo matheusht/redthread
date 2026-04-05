@@ -4,6 +4,7 @@
 # Campaign artifacts (potentially sensitive)
 logs/
 memory/
+autoresearch/runtime/
 
 # Python caches
 __pycache__/
