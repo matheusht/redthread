@@ -8,18 +8,19 @@ from redthread.research.runtime import apply_runtime_overrides
 
 
 def test_prompt_profiles_are_created_and_loaded(tmp_path) -> None:
-    profiles = load_prompt_profiles(tmp_path / "autoresearch" / "prompt_profiles.json")
+    profiles = load_prompt_profiles(tmp_path / "autoresearch" / "runtime" / "prompt_profiles.json")
     assert "pair" in profiles
     assert "tap" in profiles
     assert "crescendo" in profiles
+    assert "mcts" in profiles
 
 
 def test_apply_mutation_writes_profile_and_state(tmp_path) -> None:
     candidate = next_mutation(tmp_path, ["prompt_injection"])
     apply_mutation(tmp_path, candidate)
 
-    profile_path = tmp_path / "autoresearch" / "prompt_profiles.json"
-    state_path = tmp_path / "autoresearch" / "mutation_state.json"
+    profile_path = tmp_path / "autoresearch" / "runtime" / "prompt_profiles.json"
+    state_path = tmp_path / "autoresearch" / "runtime" / "mutation_state.json"
 
     assert profile_path.exists()
     assert state_path.exists()
@@ -32,7 +33,7 @@ def test_apply_mutation_writes_profile_and_state(tmp_path) -> None:
 
 
 def test_runtime_overrides_apply_from_state(tmp_path) -> None:
-    state_path = tmp_path / "autoresearch" / "mutation_state.json"
+    state_path = tmp_path / "autoresearch" / "runtime" / "mutation_state.json"
     state_path.parent.mkdir(parents=True, exist_ok=True)
     state_path.write_text(
         json.dumps({"attacker_temperature": 0.95, "tree_depth": 7}),

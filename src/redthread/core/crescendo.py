@@ -37,7 +37,7 @@ from redthread.models import (
     Persona,
 )
 from redthread.pyrit_adapters.targets import RedThreadTarget, build_attacker, build_target
-from redthread.research.prompt_profiles import load_prompt_profiles
+from redthread.research.prompt_profiles import load_prompt_profiles, resolve_prompt_profiles_path
 
 logger = logging.getLogger(__name__)
 
@@ -126,7 +126,7 @@ class CrescendoAttack:
             self.settings.crescendo_max_turns,
         )
 
-        profiles = load_prompt_profiles(self.settings.log_dir.parent / "autoresearch" / "prompt_profiles.json")
+        profiles = load_prompt_profiles(resolve_prompt_profiles_path(self.settings))
         cresc_profile = profiles.get("crescendo", {})
         attacker_system = (
             f"{persona.system_prompt}\n\n"

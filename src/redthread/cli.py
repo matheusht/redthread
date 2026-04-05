@@ -540,8 +540,9 @@ def research_init(env_file: str) -> None:
     console.print(
         Panel(
             f"[bold]Autoresearch initialized[/bold]\n\n"
-            f"  Config:  {harness.config_path}\n"
-            f"  Results: {harness.results_path}",
+            f"  Template config: {harness.workspace.template_config_path}\n"
+            f"  Runtime config:  {harness.config_path}\n"
+            f"  Results:         {harness.results_path}",
             border_style="cyan",
         )
     )
@@ -693,6 +694,7 @@ def research_supervise(cycles: int, baseline_first: bool, env_file: str, verbose
                 f"  Accepted:      {last_cycle.accepted}\n"
                 f"  Winning lane:  {last_cycle.winning_lane}\n"
                 f"  Rationale:     {last_cycle.rationale}\n"
+                f"  Calibration:   {harness.workspace.baseline_registry_path}\n"
                 f"  Results:       {harness.results_path}",
                 border_style="blue",
             )
@@ -873,12 +875,62 @@ def research_phase4_cycle(baseline_first: bool, env_file: str, verbose: bool) ->
                 f"  Description:  {candidate.description}\n"
                 f"  Recommendation: {proposal.recommended_action}\n"
                 f"  Winning lane: {proposal.cycle.winning_lane}\n"
-                f"  Rationale:    {proposal.rationale}",
+                f"  Rationale:    {proposal.rationale}\n"
+                f"  Runtime dir:  {harness.workspace.runtime_dir}",
                 border_style="cyan",
             )
         )
 
     asyncio.run(_run())
+
+
+@research.command(name="clean-runtime")
+@click.option(
+    "--env-file",
+    type=click.Path(exists=False),
+    default=".env",
+    help="Path to .env file",
+)
+def research_clean_runtime(env_file: str) -> None:
+    """Delete untracked autoresearch runtime artifacts and recreate the runtime layout."""
+    from redthread.research.runner import PhaseOneResearchHarness
+
+    settings = RedThreadSettings(_env_file=env_file)
+    harness = PhaseOneResearchHarness(settings, Path.cwd())
+    harness.workspace.clean_runtime()
+    console.print(
+        Panel(
+            f"[bold]Autoresearch runtime cleaned[/bold]\n\n"
+            f"  Runtime dir: {harness.workspace.runtime_dir}",
+            border_style="red",
+        )
+    )
+
+
+@research.command(name="promote")
+@click.option(
+    "--env-file",
+    type=click.Path(exists=False),
+    default=".env",
+    help="Path to .env file",
+)
+def research_promote(env_file: str) -> None:
+    """Explicitly promote accepted research memory into production memory."""
+    from redthread.research.promotion import ResearchPromotionManager
+
+    settings = RedThreadSettings(_env_file=env_file)
+    manager = ResearchPromotionManager(settings, Path.cwd())
+    promotion = manager.promote_latest()
+    console.print(
+        Panel(
+            f"[bold]Research promotion complete[/bold]\n\n"
+            f"  Promotion: {promotion.promotion_id}\n"
+            f"  Proposal:  {promotion.proposal_id}\n"
+            f"  Entries:   {promotion.promoted_deployments}\n"
+            f"  Target:    {promotion.target_memory_dir}",
+            border_style="green",
+        )
+    )
 
 
 if __name__ == "__main__":

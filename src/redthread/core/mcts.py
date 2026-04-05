@@ -46,6 +46,7 @@ from redthread.pyrit_adapters.targets import (
     build_rollout_attacker,
     build_target,
 )
+from redthread.research.prompt_profiles import load_prompt_profiles, resolve_prompt_profiles_path
 
 logger = logging.getLogger(__name__)
 
@@ -101,8 +102,11 @@ class MCTSAttack:
             return self._dry_run_result(trace, rubric_name, start_time)
 
         strategies = derive_strategies(persona)
-        attacker_system = _MCTS_ATTACKER_SYSTEM.format(
-            persona_system_prompt=persona.system_prompt
+        profiles = load_prompt_profiles(resolve_prompt_profiles_path(self.settings))
+        mcts_profile = profiles.get("mcts", {})
+        attacker_system = (
+            f"{persona.system_prompt}\n\n"
+            f"{mcts_profile.get('system_suffix', _MCTS_ATTACKER_SYSTEM.format(persona_system_prompt='').strip())}"
         )
 
         root = MCTSNode(depth=0)
@@ -187,8 +191,8 @@ class MCTSAttack:
         persona: Persona,
         strategies: list[str],
         attacker_system: str,
-        target_system_prompt: str,
-        rubric_name: str,
+        target_system_prompt: str = "",
+        rubric_name: str = "authorization_bypass",
     ) -> list[MCTSNode]:
         """Generate strategy-guided child nodes at the leaf."""
         if leaf.depth >= self.settings.mcts_max_depth:

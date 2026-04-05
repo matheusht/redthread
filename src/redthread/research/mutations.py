@@ -9,6 +9,7 @@ from uuid import uuid4
 from pydantic import BaseModel, Field
 
 from redthread.research.prompt_profiles import default_prompt_profiles, load_prompt_profiles
+from redthread.research.workspace import ResearchWorkspace
 
 
 class MutationCandidate(BaseModel):
@@ -62,10 +63,11 @@ def next_mutation(root: Path, ranked_slugs: list[str]) -> MutationCandidate:
 
 def apply_mutation(root: Path, candidate: MutationCandidate) -> None:
     """Apply a bounded mutation to prompt profile and runtime state files."""
-    autoresearch = root / "autoresearch"
-    profiles_path = autoresearch / "prompt_profiles.json"
-    state_path = autoresearch / "mutation_state.json"
-    mutations_dir = autoresearch / "mutations"
+    workspace = ResearchWorkspace(root)
+    workspace.ensure_layout()
+    profiles_path = workspace.prompt_profiles_path
+    state_path = workspace.mutation_state_path
+    mutations_dir = workspace.mutations_dir
     mutations_dir.mkdir(parents=True, exist_ok=True)
 
     profiles = load_prompt_profiles(profiles_path)
@@ -92,4 +94,3 @@ def apply_mutation(root: Path, candidate: MutationCandidate) -> None:
         candidate.model_dump_json(indent=2),
         encoding="utf-8",
     )
-

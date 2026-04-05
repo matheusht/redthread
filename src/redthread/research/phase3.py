@@ -14,19 +14,22 @@ from redthread.research.models import PhaseThreeProposal, PhaseThreeSession, Res
 from redthread.research.objectives import ensure_config
 from redthread.research.runtime import apply_runtime_overrides
 from redthread.research.supervisor import PhaseTwoResearchHarness
+from redthread.research.workspace import ResearchWorkspace
 
 
 class PhaseThreeHarness:
     """Add dynamic scheduling and safe git accept/reject control."""
 
     def __init__(self, settings: RedThreadSettings, root: Path) -> None:
-        self.settings = apply_runtime_overrides(settings, root)
         self.root = root
-        self.autoresearch_dir = root / "autoresearch"
-        self.config_path = self.autoresearch_dir / "config.json"
-        self.session_path = self.autoresearch_dir / "session.json"
-        self.proposals_dir = self.autoresearch_dir / "proposals"
-        self.config = ensure_config(self.config_path)
+        self.workspace = ResearchWorkspace(root)
+        self.workspace.ensure_layout()
+        self.settings = apply_runtime_overrides(self.workspace.research_settings(settings), root)
+        self.autoresearch_dir = self.workspace.base_dir
+        self.config_path = self.workspace.runtime_config_path
+        self.session_path = self.workspace.session_path
+        self.proposals_dir = self.workspace.proposals_dir
+        self.config = ensure_config(self.config_path, self.workspace.template_config_path)
         self.git = GitWorkspaceManager(root)
 
     def start_session(self, tag: str) -> PhaseThreeSession:
@@ -41,7 +44,7 @@ class PhaseThreeHarness:
     async def run_cycle(self, baseline_first: bool) -> PhaseThreeProposal:
         """Run one Phase 3 cycle with dynamic objective selection."""
         session = self._load_session()
-        ranked = ObjectiveHistoryAnalyzer(self.autoresearch_dir / "results.tsv").rank()
+        ranked = ObjectiveHistoryAnalyzer(self.workspace.results_path).rank()
         ranked_slugs = [item.slug for item in ranked]
         self.config.lane_configs = self._dynamic_lanes(ranked_slugs)
         self._write_json(self.config_path, self.config.model_dump(mode="json"))
@@ -67,7 +70,7 @@ class PhaseThreeHarness:
 
     def accept_latest(self, message: str | None = None) -> str:
         """Commit current changes for the latest accepted proposal."""
-        proposal = self._latest_proposal()
+        proposal = self.latest_proposal()
         if proposal.recommended_action != "accept":
             raise RuntimeError("Latest Phase 3 proposal is not accepted.")
         commit_message = message or f"autoresearch: accept {proposal.proposal_id} [{proposal.cycle.winning_lane}]"
@@ -79,10 +82,14 @@ class PhaseThreeHarness:
 
     def reject_latest(self) -> str:
         """Reset the worktree back to the session base commit."""
-        proposal = self._latest_proposal()
+        proposal = self.latest_proposal()
         session = self._load_session()
         self.git.hard_reset(session.base_commit)
         return proposal.proposal_id
+
+    def latest_proposal(self) -> PhaseThreeProposal:
+        """Return the latest Phase 3 proposal."""
+        return self._latest_proposal()
 
     def _dynamic_lanes(self, ranked_slugs: list[str]) -> list[ResearchLaneConfig]:
         """Build Phase 3 lane assignments from history-aware slug ranking."""

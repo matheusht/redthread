@@ -9,7 +9,7 @@ from pathlib import Path
 class GitWorkspaceManager:
     """Wrap git commands with conservative safety checks."""
 
-    _IGNORED_PREFIXES = ("autoresearch/", "logs/")
+    _IGNORED_PREFIXES = ("autoresearch/runtime/", "logs/")
 
     def __init__(self, root: Path) -> None:
         self.root = root

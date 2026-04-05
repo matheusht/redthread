@@ -8,7 +8,8 @@ from uuid import uuid4
 from redthread.config.settings import AlgorithmType, RedThreadSettings
 from redthread.engine import RedThreadEngine
 from redthread.models import CampaignConfig
-from redthread.research.models import ResearchBatchSummary, ResearchObjective
+from redthread.research.checkpoints import CheckpointStore
+from redthread.research.models import BatchCheckpoint, ResearchBatchSummary, ResearchObjective
 
 
 async def run_objective(
@@ -50,18 +51,23 @@ async def run_batch(
     objectives: list[ResearchObjective],
     mode: str,
     lane: str | None = None,
+    checkpoint_store: CheckpointStore | None = None,
+    checkpoint_id: str | None = None,
 ) -> ResearchBatchSummary:
     """Run a bounded batch and compute a composite research score."""
-    campaign_ids: list[str] = []
-    objective_slugs: list[str] = []
-    asr_values: list[float] = []
-    score_values: list[float] = []
-    confirmed_total = 0
-    near_miss_total = 0
-    result_total = 0
-    started_at = datetime.now(timezone.utc)
+    checkpoint = _load_checkpoint(checkpoint_store, checkpoint_id, mode, lane, objectives)
+    campaign_ids = list(checkpoint.campaign_ids)
+    objective_slugs = list(checkpoint.completed_objectives)
+    asr_values = list(checkpoint.asr_values)
+    score_values = list(checkpoint.score_values)
+    confirmed_total = checkpoint.confirmed_total
+    near_miss_total = checkpoint.near_miss_total
+    result_total = checkpoint.result_total
+    started_at = checkpoint.started_at
 
     for objective in objectives:
+        if objective.slug in checkpoint.completed_objectives:
+            continue
         campaign_id, asr, avg_score, confirmed, near_misses = await run_objective(settings, objective)
         campaign_ids.append(campaign_id)
         objective_slugs.append(objective.slug)
@@ -70,12 +76,21 @@ async def run_batch(
         confirmed_total += confirmed
         near_miss_total += near_misses
         result_total += objective.personas
+        checkpoint.completed_objectives.append(objective.slug)
+        checkpoint.campaign_ids = campaign_ids
+        checkpoint.asr_values = asr_values
+        checkpoint.score_values = score_values
+        checkpoint.confirmed_total = confirmed_total
+        checkpoint.near_miss_total = near_miss_total
+        checkpoint.result_total = result_total
+        if checkpoint_store is not None:
+            checkpoint_store.save(checkpoint)
 
     average_asr = sum(asr_values) / len(asr_values) if asr_values else 0.0
     average_score = sum(score_values) / len(score_values) if score_values else 0.0
     composite_score = (confirmed_total * 10.0) + (near_miss_total * 2.0) + (average_asr * 5.0) + average_score
 
-    return ResearchBatchSummary(
+    summary = ResearchBatchSummary(
         run_id=f"research-{uuid4().hex[:8]}",
         mode=mode,
         lane=lane,
@@ -90,4 +105,29 @@ async def run_batch(
         composite_score=composite_score,
         started_at=started_at,
         completed_at=datetime.now(timezone.utc),
+    )
+    if checkpoint_store is not None and checkpoint_id is not None:
+        checkpoint_store.clear(checkpoint_id)
+    return summary
+
+
+def _load_checkpoint(
+    checkpoint_store: CheckpointStore | None,
+    checkpoint_id: str | None,
+    mode: str,
+    lane: str | None,
+    objectives: list[ResearchObjective],
+) -> BatchCheckpoint:
+    if checkpoint_store is not None and checkpoint_id is not None:
+        existing = checkpoint_store.load(checkpoint_id)
+        expected = [objective.slug for objective in objectives]
+        if existing is not None and existing.objective_slugs == expected:
+            return existing
+
+    return BatchCheckpoint(
+        checkpoint_id=checkpoint_id or f"{mode}-{lane or 'default'}",
+        mode=mode,
+        lane=lane,
+        objective_slugs=[objective.slug for objective in objectives],
+        started_at=datetime.now(timezone.utc),
     )

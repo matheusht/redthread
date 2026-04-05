@@ -7,6 +7,7 @@ from redthread.research.models import ResearchBatchSummary
 from redthread.research.objectives import default_research_config, ensure_config
 from redthread.research.scheduler import PhaseTwoScheduler
 from redthread.research.supervisor import PhaseTwoResearchHarness
+from redthread.research.workspace import ResearchWorkspace
 
 
 def test_ensure_config_creates_default_file(tmp_path) -> None:
@@ -115,3 +116,16 @@ def test_phase_two_decision_rejects_when_control_exceeds_thresholds(tmp_path) ->
     cycle = phase_two._decide(lane_summaries, started)
     assert cycle.accepted is False
     assert cycle.winning_lane == "offense"
+
+
+def test_research_workspace_scopes_runtime_memory(tmp_path) -> None:
+    from redthread.config.settings import RedThreadSettings
+
+    workspace = ResearchWorkspace(tmp_path)
+    workspace.ensure_layout()
+    settings = workspace.research_settings(RedThreadSettings())
+
+    assert workspace.template_config_path.exists()
+    assert workspace.runtime_config_path.exists()
+    assert settings.memory_dir == workspace.research_memory_dir
+    assert settings.research_runtime_dir == workspace.runtime_dir

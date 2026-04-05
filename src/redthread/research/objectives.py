@@ -125,11 +125,13 @@ def default_research_config() -> ResearchConfig:
     )
 
 
-def ensure_config(path: Path) -> ResearchConfig:
+def ensure_config(path: Path, template_path: Path | None = None) -> ResearchConfig:
     """Load config from disk, creating the default file if absent."""
     if not path.exists():
         path.parent.mkdir(parents=True, exist_ok=True)
-        config = default_research_config()
-        path.write_text(config.model_dump_json(indent=2), encoding="utf-8")
-        return config
+        if template_path is not None and template_path.exists():
+            path.write_text(template_path.read_text(encoding="utf-8"), encoding="utf-8")
+        else:
+            config = default_research_config()
+            path.write_text(config.model_dump_json(indent=2), encoding="utf-8")
     return ResearchConfig.model_validate(json.loads(path.read_text(encoding="utf-8")))

@@ -32,6 +32,23 @@ class ResearchConfig(BaseModel):
     control_max_average_score: float = 2.50
 
 
+class BaselineCalibration(BaseModel):
+    """Baseline-derived control thresholds persisted to runtime state."""
+
+    sample_count: int = 0
+    asr_mean: float = 0.0
+    asr_stdev: float = 0.0
+    asr_p95: float = 0.0
+    asr_max: float = 0.0
+    score_mean: float = 0.0
+    score_stdev: float = 0.0
+    score_p95: float = 0.0
+    score_max: float = 0.0
+    control_max_average_asr: float = 0.0
+    control_max_average_score: float = 0.0
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
 class ResearchLaneConfig(BaseModel):
     """One Phase 2 supervisor lane."""
 
@@ -104,3 +121,32 @@ class PhaseThreeProposal(BaseModel):
     cycle: SupervisorCycleSummary
     started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     completed_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class BatchCheckpoint(BaseModel):
+    """Partial batch execution state used for resumable research runs."""
+
+    checkpoint_id: str
+    mode: str
+    lane: str | None = None
+    objective_slugs: list[str] = Field(default_factory=list)
+    completed_objectives: list[str] = Field(default_factory=list)
+    campaign_ids: list[str] = Field(default_factory=list)
+    asr_values: list[float] = Field(default_factory=list)
+    score_values: list[float] = Field(default_factory=list)
+    confirmed_total: int = 0
+    near_miss_total: int = 0
+    result_total: int = 0
+    started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class PromotionRecord(BaseModel):
+    """Audit record for explicit research-to-production promotion steps."""
+
+    promotion_id: str
+    proposal_id: str
+    promoted_deployments: int
+    source_memory_dir: str
+    target_memory_dir: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

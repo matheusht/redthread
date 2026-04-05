@@ -20,15 +20,22 @@ idempotent on `trace_id` (it checks for duplicates before writing).
 from __future__ import annotations
 
 import logging
+import json
+from dataclasses import asdict
 from datetime import datetime, timezone
 from pathlib import Path
 
 from redthread.config.settings import RedThreadSettings
-from redthread.core.defense_synthesis import DeploymentRecord
+from redthread.core.defense_synthesis import (
+    DeploymentRecord,
+    ValidationResult,
+    VulnerabilityClassification,
+)
 
 logger = logging.getLogger(__name__)
 
 _MEMORY_FILENAME = "MEMORY.md"
+_DEPLOYMENTS_FILENAME = "deployments.jsonl"
 
 _ENTRY_TEMPLATE = """\
 ## {timestamp} | {category} | {severity}
@@ -58,6 +65,7 @@ class MemoryIndex:
 
     def __init__(self, settings: RedThreadSettings) -> None:
         self._path: Path = settings.memory_dir / _MEMORY_FILENAME
+        self._deployments_path: Path = settings.memory_dir / _DEPLOYMENTS_FILENAME
         self._ensure_header()
 
     # ── Public API ────────────────────────────────────────────────────────────
@@ -78,6 +86,8 @@ class MemoryIndex:
         entry = self._format_entry(record)
         with self._path.open("a", encoding="utf-8") as f:
             f.write(entry)
+        with self._deployments_path.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(asdict(record)) + "\n")
 
         logger.info(
             "📚 MemoryIndex updated | trace=%s | category=%s",
@@ -94,14 +104,39 @@ class MemoryIndex:
 
     def known_trace_ids(self) -> list[str]:
         """Return all trace IDs already indexed."""
+        deployments = self.iter_deployments()
+        if deployments:
+            return [record.trace_id for record in deployments]
+
         raw = self.all_entries_raw()
         ids: list[str] = []
         for line in raw.splitlines():
             if line.startswith("**Trace:**"):
-                # Format: **Trace:** `<trace_id>`
                 trace_id = line.replace("**Trace:**", "").strip().strip("`")
                 ids.append(trace_id)
         return ids
+
+    def iter_deployments(self) -> list[DeploymentRecord]:
+        """Return structured deployment records when the JSONL sidecar exists."""
+        if not self._deployments_path.exists():
+            return []
+        records: list[DeploymentRecord] = []
+        for line in self._deployments_path.read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            payload = json.loads(line)
+            records.append(
+                DeploymentRecord(
+                    trace_id=payload["trace_id"],
+                    guardrail_clause=payload["guardrail_clause"],
+                    classification=VulnerabilityClassification(**payload["classification"]),
+                    validation=ValidationResult(**payload["validation"]),
+                    target_model=payload["target_model"],
+                    target_system_prompt_hash=payload["target_system_prompt_hash"],
+                    metadata=payload.get("metadata", {}),
+                )
+            )
+        return records
 
     def load_scoped_guardrails(self, target_model: str, prompt_hash: str) -> list[str]:
         """Parse MEMORY.md for all active guardrail clauses matching the scope."""
@@ -150,6 +185,8 @@ class MemoryIndex:
             )
             self._path.write_text(header, encoding="utf-8")
             logger.info("📝 Initialized MEMORY.md at %s", self._path)
+        if not self._deployments_path.exists():
+            self._deployments_path.touch()
 
     def _is_duplicate(self, trace_id: str) -> bool:
         return trace_id in self.known_trace_ids()

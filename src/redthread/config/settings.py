@@ -195,6 +195,10 @@ class RedThreadSettings(BaseSettings):
         default=Path("./memory"),
         description="Directory for attack knowledge consolidation (Dream system)",
     )
+    research_runtime_dir: Path | None = Field(
+        default=None,
+        description="Optional autoresearch runtime directory for isolated prompt profiles and state",
+    )
 
     # ── Development ──────────────────────────────────────────────────────────
     verbose: bool = Field(default=False, description="Verbose logging")
