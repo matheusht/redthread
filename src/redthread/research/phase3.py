@@ -12,6 +12,7 @@ from redthread.research.git_ops import GitWorkspaceManager
 from redthread.research.history import ObjectiveHistoryAnalyzer
 from redthread.research.models import PhaseThreeProposal, PhaseThreeSession, ResearchLaneConfig
 from redthread.research.objectives import ensure_config
+from redthread.research.runtime import apply_runtime_overrides
 from redthread.research.supervisor import PhaseTwoResearchHarness
 
 
@@ -19,7 +20,7 @@ class PhaseThreeHarness:
     """Add dynamic scheduling and safe git accept/reject control."""
 
     def __init__(self, settings: RedThreadSettings, root: Path) -> None:
-        self.settings = settings
+        self.settings = apply_runtime_overrides(settings, root)
         self.root = root
         self.autoresearch_dir = root / "autoresearch"
         self.config_path = self.autoresearch_dir / "config.json"

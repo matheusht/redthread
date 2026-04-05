@@ -9,6 +9,7 @@ from redthread.research.baseline import run_batch
 from redthread.research.ledger import ResearchLedger
 from redthread.research.models import ResearchBatchSummary
 from redthread.research.objectives import ensure_config
+from redthread.research.runtime import apply_runtime_overrides
 
 
 class PhaseOneResearchHarness:
@@ -19,7 +20,7 @@ class PhaseOneResearchHarness:
         settings: RedThreadSettings,
         root: Path,
     ) -> None:
-        self.settings = settings
+        self.settings = apply_runtime_overrides(settings, root)
         self.root = root
         self.config_path = root / "autoresearch" / "config.json"
         self.results_path = root / "autoresearch" / "results.tsv"
@@ -60,4 +61,3 @@ class PhaseOneResearchHarness:
             )
             summaries.append(summary)
         return summaries
-

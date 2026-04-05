@@ -9,7 +9,7 @@ This file explains:
 
 ## Short Answer
 
-Autoresearch is now implemented through **Phase 3**.
+Autoresearch is now implemented through **Phase 4**.
 
 What exists already:
 - campaign execution via `redthread run`
@@ -22,17 +22,20 @@ What exists already:
 - bounded experiment runner via `redthread research run`
 - Phase 2 supervisor via `redthread research supervise`
 - Phase 3 git session workflow via `redthread research phase3 ...`
+- Phase 4 bounded mutation automation via `redthread research phase4 cycle`
 - TSV ledger at `autoresearch/results.tsv`
 - default config at `autoresearch/config.json`
 - proposal artifacts in `autoresearch/proposals/`
 - session state in `autoresearch/session.json`
+- prompt profiles in `autoresearch/prompt_profiles.json`
+- runtime mutation state in `autoresearch/mutation_state.json`
 
 What does **not** exist yet:
 - automatic branch-advance / revert loop
 - automatic code mutation loop inside the repo
 - fully autonomous git-backed keep/discard over self-generated code patches
 
-So the system now supports bounded baseline, supervised research, dynamic scheduling, and git-backed accept/reject workflow, but it is still not a fully self-editing indefinite research system.
+So the system now supports bounded baseline, supervised research, dynamic scheduling, git-backed accept/reject workflow, and bounded mutation automation, but it is still not a fully self-editing indefinite research system.
 
 ## Existing Files You Should Read
 
@@ -139,6 +142,12 @@ Reject the latest proposal:
 ./.venv/bin/python -m redthread.cli research phase3 reject
 ```
 
+Run one Phase 4 bounded mutation cycle:
+
+```bash
+./.venv/bin/python -m redthread.cli research phase4 cycle --baseline-first
+```
+
 ## How The Full Autoresearch Flow Should Work
 
 Once implemented, the intended loop is:
@@ -184,13 +193,22 @@ Implemented:
 - session/proposal files
 - accept/reject workflow over a dedicated research branch
 
+### Phase 4
+Implemented:
+- `src/redthread/research/prompt_profiles.py`
+- `src/redthread/research/runtime.py`
+- `src/redthread/research/mutations.py`
+- `src/redthread/research/phase4.py`
+- bounded attacker prompt and runtime parameter mutation
+- Phase 4 mutation cycle CLI
+
 ## Exact Prompt To Give The Agent Today
 
-Use this if you want the agent to run the implemented Phase 1 through Phase 3 harness and continue bounded research work.
+Use this if you want the agent to run the implemented Phase 1 through Phase 4 harness and continue bounded research work.
 
 ```text
 Read /Users/matheusvsky/Documents/personal/original/program.md and /Users/matheusvsky/Documents/personal/redthread/program.md.
-Then inspect the RedThread repository and operate the implemented Phase 1 through Phase 3 autoresearch harness.
+Then inspect the RedThread repository and operate the implemented Phase 1 through Phase 4 autoresearch harness.
 
 Requirements:
 - Run `uv run redthread research init` if the autoresearch files do not exist
@@ -200,13 +218,14 @@ Requirements:
 - Then run supervised Phase 2 cycles with offense, regression, and control lanes
 - When the tree is clean, start a Phase 3 session on a dedicated autoresearch branch
 - Use the Phase 3 proposal/accept/reject flow for git-backed evaluation
+- Use Phase 4 bounded mutation cycles to evolve attacker prompt profiles and runtime search parameters
 - Keep judge/evaluation and defense deployment layers fixed
 - Explain the outcome and suggest the next phase to implement
 ```
 
 ## Exact Prompt To Give The Agent After Phase 1 Exists
 
-Use this when you want the agent to execute Phase 1 through Phase 3 repeatedly.
+Use this when you want the agent to execute Phase 1 through Phase 4 repeatedly.
 
 ```text
 Read /Users/matheusvsky/Documents/personal/redthread/program.md.
@@ -215,6 +234,7 @@ Run the frozen baseline benchmark first and record it in autoresearch/results.ts
 Then run bounded autoresearch cycles with `uv run redthread research run --baseline-first --cycles 1`.
 Then run supervised cycles with `./.venv/bin/python -m redthread.cli research supervise --baseline-first --cycles 1`.
 If the git tree is clean, start a Phase 3 session and run `./.venv/bin/python -m redthread.cli research phase3 cycle --baseline-first`.
+Then run `./.venv/bin/python -m redthread.cli research phase4 cycle --baseline-first` to apply a bounded mutation before evaluation.
 Use the resulting proposal to decide whether to run `research phase3 accept` or `research phase3 reject`.
 
 Rules:
@@ -224,7 +244,7 @@ Rules:
 - Keep running bounded experiments autonomously
 - Log every experiment result
 - Use the supervisor control lane as a veto against fake gains
-- Treat Phases 1-3 as bounded harnesses around research and git evaluation, not self-editing loops
+- Treat Phases 1-4 as bounded harnesses around research, git evaluation, and bounded mutation, not full self-editing loops
 - Do not stop to ask me for confirmation
 ```
 
@@ -253,13 +273,14 @@ Supervisor rules:
 
 Do not give the agent a “self-edit forever” prompt yet.
 
-Phases 1-3 now contain:
+Phases 1-4 now contain:
 - the research runner
 - the results ledger
 - the default objective portfolio
 - the offense / regression / control supervisor
 - history-aware scheduling
 - git-backed session/proposal workflow
+- bounded attacker prompt/runtime mutation
 
 But it still does not contain:
 - automatic keep/discard code mutation
@@ -274,7 +295,8 @@ The correct order is:
 1. Verify Phase 1 baseline runner and results ledger
 2. Verify Phase 2 supervisor and control gate
 3. Verify Phase 3 session/proposal/accept/reject workflow on a clean branch
-4. Only then build the next phase: actual code mutation automation
+4. Verify Phase 4 bounded mutation behavior and evaluation
+5. Only then build the next phase: actual source patch generation
 
 ## Important Safety Note
 

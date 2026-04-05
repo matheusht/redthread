@@ -11,6 +11,7 @@ from redthread.research.baseline import run_batch
 from redthread.research.ledger import ResearchLedger
 from redthread.research.models import ResearchBatchSummary, SupervisorCycleSummary
 from redthread.research.objectives import ensure_config
+from redthread.research.runtime import apply_runtime_overrides
 from redthread.research.scheduler import PhaseTwoScheduler
 
 
@@ -18,7 +19,7 @@ class PhaseTwoResearchHarness:
     """Run supervisor-controlled multi-lane research cycles."""
 
     def __init__(self, settings: RedThreadSettings, root: Path) -> None:
-        self.settings = settings
+        self.settings = apply_runtime_overrides(settings, root)
         self.root = root
         self.config_path = root / "autoresearch" / "config.json"
         self.results_path = root / "autoresearch" / "results.tsv"

@@ -36,6 +36,7 @@ from redthread.models import (
     Persona,
 )
 from redthread.pyrit_adapters.targets import RedThreadTarget, build_attacker, build_target
+from redthread.research.prompt_profiles import load_prompt_profiles
 
 logger = logging.getLogger(__name__)
 
@@ -116,8 +117,11 @@ class PAIRAttack:
             self.settings.max_iterations,
         )
 
-        attacker_system_prompt = _ATTACKER_SYSTEM_PROMPT_TEMPLATE.format(
-            persona_system_prompt=persona.system_prompt,
+        profiles = load_prompt_profiles(self.settings.log_dir.parent / "autoresearch" / "prompt_profiles.json")
+        pair_profile = profiles.get("pair", {})
+        attacker_system_prompt = (
+            f"{persona.system_prompt}\n\n"
+            f"{pair_profile.get('system_suffix', _ATTACKER_SYSTEM_PROMPT_TEMPLATE.format(persona_system_prompt='').strip())}"
         )
 
         previous_prompt: str | None = None

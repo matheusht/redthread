@@ -19,7 +19,6 @@ from redthread.models import (
     PsychologicalTrigger,
 )
 from redthread.personas.atlas_taxonomy import TECHNIQUES_BY_TACTIC
-from redthread.pyrit_adapters.targets import build_attacker
 
 logger = logging.getLogger(__name__)
 
@@ -64,6 +63,7 @@ class PersonaGenerator:
 
     def __init__(self, settings: RedThreadSettings) -> None:
         self.settings = settings
+        from redthread.pyrit_adapters.targets import build_attacker
         self._attacker = build_attacker(settings)
 
     async def generate(
@@ -106,6 +106,7 @@ class PersonaGenerator:
             try:
                 # Parse JSON from attacker response
                 persona_data = self._parse_persona_json(raw_response)
+                persona_data = self._normalize_persona_data(persona_data)
 
                 # Populate allowed_strategies — primary: LLM-generated, fallback: trigger-derived
                 from redthread.core.mcts_helpers import derive_strategies
@@ -131,7 +132,12 @@ class PersonaGenerator:
                 return candidate
 
             except (ValueError, json.JSONDecodeError) as e:
-                logger.warning(f"Persona generation attempt {attempt + 1} failed: {e}")
+                logger.warning(
+                    "Persona generation attempt %d failed: %s | raw=%s",
+                    attempt + 1,
+                    e,
+                    raw_response[:300].replace("\n", " "),
+                )
                 if attempt == max_retries - 1:
                     raise
 
@@ -186,3 +192,41 @@ class PersonaGenerator:
             raise ValueError(f"No JSON object found in persona response:\n{raw[:200]}")
 
         return json.loads(raw[start:end])  # type: ignore[no-any-return]
+
+    def _normalize_persona_data(self, raw_data: dict) -> dict[str, str]:
+        """Normalize common key variants and validate required persona fields."""
+        aliases = {
+            "name": ["name", "full_name"],
+            "cover_story": ["cover_story", "coverStory", "cover", "pretext"],
+            "hidden_objective": ["hidden_objective", "hiddenObjective", "objective", "goal"],
+            "system_prompt": ["system_prompt", "systemPrompt", "prompt", "role_prompt"],
+            "allowed_strategies": ["allowed_strategies", "allowedStrategies", "strategies"],
+        }
+
+        normalized: dict[str, str | list[str]] = {}
+        for canonical_key, candidates in aliases.items():
+            for candidate in candidates:
+                if candidate in raw_data:
+                    normalized[canonical_key] = raw_data[candidate]
+                    break
+
+        required = ["name", "cover_story", "hidden_objective", "system_prompt"]
+        missing = [key for key in required if key not in normalized]
+        if missing:
+            raise ValueError(f"Missing required persona fields: {', '.join(missing)}")
+
+        for key in required:
+            value = normalized[key]
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError(f"Persona field '{key}' must be a non-empty string")
+            normalized[key] = value.strip()
+
+        strategies = normalized.get("allowed_strategies", [])
+        if isinstance(strategies, list):
+            normalized["allowed_strategies"] = [
+                str(item).strip() for item in strategies if str(item).strip()
+            ]
+        else:
+            normalized["allowed_strategies"] = []
+
+        return normalized  # type: ignore[return-value]

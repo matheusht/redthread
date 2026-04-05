@@ -829,5 +829,57 @@ def research_phase3_reject(env_file: str) -> None:
     )
 
 
+@research.group(name="phase4")
+def research_phase4() -> None:
+    """Phase 4 bounded mutation automation."""
+    pass
+
+
+@research_phase4.command(name="cycle")
+@click.option(
+    "--baseline-first",
+    is_flag=True,
+    default=False,
+    help="Run the frozen baseline pack before the evaluation cycle.",
+)
+@click.option(
+    "--env-file",
+    type=click.Path(exists=False),
+    default=".env",
+    help="Path to .env file",
+)
+@click.option(
+    "--verbose",
+    "-v",
+    is_flag=True,
+    default=False,
+    help="Enable debug logging",
+)
+def research_phase4_cycle(baseline_first: bool, env_file: str, verbose: bool) -> None:
+    """Apply one bounded runtime mutation and evaluate it through Phase 3."""
+    from redthread.research.phase4 import PhaseFourHarness
+
+    _setup_logging(verbose)
+    settings = RedThreadSettings(_env_file=env_file)
+    harness = PhaseFourHarness(settings, Path.cwd())
+
+    async def _run() -> None:
+        candidate, proposal = await harness.run_cycle(baseline_first=baseline_first)
+        console.print(
+            Panel(
+                f"[bold]Phase 4 mutation cycle complete[/bold]\n\n"
+                f"  Mutation:     {candidate.id}\n"
+                f"  Kind:         {candidate.kind}\n"
+                f"  Description:  {candidate.description}\n"
+                f"  Recommendation: {proposal.recommended_action}\n"
+                f"  Winning lane: {proposal.cycle.winning_lane}\n"
+                f"  Rationale:    {proposal.rationale}",
+                border_style="cyan",
+            )
+        )
+
+    asyncio.run(_run())
+
+
 if __name__ == "__main__":
     main()
