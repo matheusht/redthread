@@ -37,6 +37,7 @@ from redthread.models import (
     Persona,
 )
 from redthread.pyrit_adapters.targets import RedThreadTarget, build_attacker, build_target
+from redthread.research.prompt_profiles import load_prompt_profiles
 
 logger = logging.getLogger(__name__)
 
@@ -125,8 +126,11 @@ class CrescendoAttack:
             self.settings.crescendo_max_turns,
         )
 
-        attacker_system = _ATTACKER_SYSTEM_PROMPT.format(
-            persona_system_prompt=persona.system_prompt,
+        profiles = load_prompt_profiles(self.settings.log_dir.parent / "autoresearch" / "prompt_profiles.json")
+        cresc_profile = profiles.get("crescendo", {})
+        attacker_system = (
+            f"{persona.system_prompt}\n\n"
+            f"{cresc_profile.get('system_suffix', _ATTACKER_SYSTEM_PROMPT.format(persona_system_prompt='').strip())}"
         )
 
         # Client-side history: list of (attacker_msg, target_response)

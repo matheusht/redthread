@@ -19,6 +19,7 @@ class AlgorithmType(str, Enum):
 class TargetBackend(str, Enum):
     OLLAMA = "ollama"
     OPENAI = "openai"
+    LLAMA_CPP = "llama_cpp"
 
 
 class ModelRole(str, Enum):
@@ -49,15 +50,19 @@ class RedThreadSettings(BaseSettings):
     # ── Target (the model being attacked) ───────────────────────────────────
     target_backend: TargetBackend = Field(
         default=TargetBackend.OLLAMA,
-        description="Backend for the target LLM (ollama | openai)",
+        description="Backend for the target LLM (ollama | openai | llama_cpp)",
     )
     target_model: str = Field(
-        default="llama3.2:3b",
-        description="Model name for the target LLM",
+        default="gemma4:e4b",
+        description="Model name for the target LLM (e.g., gemma4:e4b)",
     )
     target_base_url: str = Field(
         default="http://localhost:11434",
-        description="Base URL for Ollama (ignored for OpenAI target)",
+        description="Base URL for Ollama target (ignored for OpenAI)",
+    )
+    llama_cpp_base_url: str = Field(
+        default="http://localhost:8080",
+        description="Base URL for llama.cpp server (llama-server)",
     )
 
     # ── Attacker (generates adversarial prompts) ─────────────────────────────
@@ -71,7 +76,7 @@ class RedThreadSettings(BaseSettings):
     )
     attacker_base_url: str = Field(
         default="http://localhost:11434",
-        description="Base URL for Ollama attacker (ignored for OpenAI)",
+        description="Base URL for Ollama attacker (ignored for OpenAI/llama_cpp)",
     )
 
     # ── Judge (evaluates attack results — heavyweight, high-accuracy) ────────

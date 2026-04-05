@@ -101,6 +101,14 @@ def _build_pyrit_target(
             api_key=api_key,
             max_tokens=max_tokens,
         )
+    elif backend == TargetBackend.LLAMA_CPP:
+        # llama-server exposes an OpenAI-compatible /v1 endpoint
+        return OpenAIChatTarget(
+            model_name=model,
+            endpoint=f"{base_url.rstrip('/')}/v1",
+            api_key="llama-cpp",  # Placeholder
+            max_tokens=max_tokens,
+        )
     else:
         raise ValueError(f"Unsupported backend: {backend}")
 

@@ -1,0 +1,105 @@
+"""Phase 2 supervisor over offense, regression, and control lanes."""
+
+from __future__ import annotations
+
+from datetime import datetime, timezone
+from pathlib import Path
+from uuid import uuid4
+
+from redthread.config.settings import RedThreadSettings
+from redthread.research.baseline import run_batch
+from redthread.research.ledger import ResearchLedger
+from redthread.research.models import ResearchBatchSummary, SupervisorCycleSummary
+from redthread.research.objectives import ensure_config
+from redthread.research.runtime import apply_runtime_overrides
+from redthread.research.scheduler import PhaseTwoScheduler
+
+
+class PhaseTwoResearchHarness:
+    """Run supervisor-controlled multi-lane research cycles."""
+
+    def __init__(self, settings: RedThreadSettings, root: Path) -> None:
+        self.settings = apply_runtime_overrides(settings, root)
+        self.root = root
+        self.config_path = root / "autoresearch" / "config.json"
+        self.results_path = root / "autoresearch" / "results.tsv"
+        self.config = ensure_config(self.config_path)
+        self.ledger = ResearchLedger(self.results_path)
+        self.scheduler = PhaseTwoScheduler(self.config)
+
+    async def run_cycle(self, baseline_first: bool) -> SupervisorCycleSummary:
+        """Run one supervised cycle across all configured lanes."""
+        started_at = datetime.now(timezone.utc)
+        lane_summaries: list[ResearchBatchSummary] = []
+
+        if baseline_first:
+            baseline = await run_batch(
+                self.settings,
+                self.config.benchmark_objectives,
+                mode="baseline",
+            )
+            self.ledger.append(baseline, status="keep", description="phase2 baseline before supervised cycle")
+
+        for lane in self.scheduler.lanes():
+            objectives = self.scheduler.objectives_for_lane(lane)
+            summary = await run_batch(
+                self.settings,
+                objectives,
+                mode="supervised_lane",
+                lane=lane.lane,
+            )
+            self.ledger.append(summary, status="keep", description=f"phase2 {lane.lane} lane")
+            lane_summaries.append(summary)
+
+        cycle = self._decide(lane_summaries, started_at)
+        self.ledger.append_decision(cycle)
+        return cycle
+
+    def _decide(
+        self,
+        lane_summaries: list[ResearchBatchSummary],
+        started_at: datetime,
+    ) -> SupervisorCycleSummary:
+        """Apply the Phase 2 control gate and pick the winning lane."""
+        by_lane = {summary.lane or "unknown": summary for summary in lane_summaries}
+        control = by_lane.get("control")
+        offense = by_lane.get("offense")
+        regression = by_lane.get("regression")
+
+        control_ok = bool(
+            control
+            and control.average_asr <= self.config.control_max_average_asr
+            and control.average_score <= self.config.control_max_average_score
+        )
+
+        candidates = [summary for summary in lane_summaries if summary.lane != "control"]
+        winner = max(candidates, key=lambda summary: summary.composite_score) if candidates else None
+
+        accepted = bool(winner and control_ok)
+        rationale = (
+            f"accepted {winner.lane} lane; control within thresholds"
+            if accepted
+            else "rejected cycle; control lane exceeded thresholds or no candidate lane produced output"
+        )
+
+        if accepted and offense and regression:
+            rationale = (
+                f"accepted {winner.lane} lane; offense={offense.composite_score:.2f}, "
+                f"regression={regression.composite_score:.2f}, "
+                f"control_asr={control.average_asr:.2%}, control_score={control.average_score:.2f}"
+            )
+        elif control:
+            rationale = (
+                f"rejected cycle; control_asr={control.average_asr:.2%}, "
+                f"control_score={control.average_score:.2f}"
+            )
+
+        return SupervisorCycleSummary(
+            run_id=f"supervisor-{uuid4().hex[:8]}",
+            accepted=accepted,
+            winning_lane=winner.lane if winner and winner.lane else "none",
+            rationale=rationale,
+            lane_summaries=lane_summaries,
+            started_at=started_at,
+            completed_at=datetime.now(timezone.utc),
+        )
