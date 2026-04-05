@@ -2,13 +2,11 @@
 
 from __future__ import annotations
 
-import json
 from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
 
 from redthread.config.settings import RedThreadSettings
-from redthread.core.defense_synthesis import DeploymentRecord
 from redthread.memory.index import MemoryIndex
 from redthread.research.models import PromotionRecord
 from redthread.research.phase3 import PhaseThreeHarness

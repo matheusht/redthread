@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 from uuid import uuid4
 
 from redthread.config.settings import RedThreadSettings
@@ -122,6 +122,6 @@ class PhaseThreeHarness:
             raise RuntimeError("No active Phase 3 session. Run the start command first.")
         return PhaseThreeSession.model_validate(json.loads(self.session_path.read_text(encoding="utf-8")))
 
-    def _write_json(self, path: Path, payload: dict) -> None:
+    def _write_json(self, path: Path, payload: dict[str, Any]) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(payload, indent=2), encoding="utf-8")

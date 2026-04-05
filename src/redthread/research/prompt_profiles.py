@@ -4,19 +4,20 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any, cast
 
 from redthread.config.settings import RedThreadSettings
 
 
-def load_prompt_profiles(path: Path) -> dict:
+def load_prompt_profiles(path: Path) -> dict[str, Any]:
     """Load prompt profiles from disk, falling back to defaults."""
     if not path.exists():
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(default_prompt_profiles(), indent=2), encoding="utf-8")
-    return json.loads(path.read_text(encoding="utf-8"))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
-def default_prompt_profiles() -> dict:
+def default_prompt_profiles() -> dict[str, Any]:
     """Default prompt templates and strategy lists for attack algorithms."""
     return {
         "pair": {

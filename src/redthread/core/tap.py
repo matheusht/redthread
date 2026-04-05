@@ -90,6 +90,7 @@ class TAPAttack:
     async def run(
         self,
         persona: Persona,
+        target_system_prompt: str = "",
         rubric_name: str = "authorization_bypass",
     ) -> AttackResult:
         """Execute the full TAP loop for a given persona."""

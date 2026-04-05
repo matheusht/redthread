@@ -5,7 +5,7 @@ from __future__ import annotations
 import csv
 from pathlib import Path
 
-from redthread.research.models import ResearchBatchSummary
+from redthread.research.models import ResearchBatchSummary, SupervisorCycleSummary
 
 _HEADER = [
     "timestamp",
@@ -59,7 +59,7 @@ class ResearchLedger:
                 description,
             ])
 
-    def append_decision(self, summary) -> None:
+    def append_decision(self, summary: SupervisorCycleSummary) -> None:
         """Append a supervisor decision row to the ledger."""
         self.append(
             ResearchBatchSummary(

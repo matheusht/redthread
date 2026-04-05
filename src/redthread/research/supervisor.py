@@ -106,13 +106,11 @@ class PhaseTwoResearchHarness:
         winner = max(candidates, key=lambda summary: summary.composite_score) if candidates else None
 
         accepted = bool(winner and control_ok)
-        rationale = (
-            f"accepted {winner.lane} lane; control within thresholds"
-            if accepted
-            else "rejected cycle; control lane exceeded thresholds or no candidate lane produced output"
-        )
+        rationale = "rejected cycle; control lane exceeded thresholds or no candidate lane produced output"
+        if accepted and winner:
+            rationale = f"accepted {winner.lane} lane; control within thresholds"
 
-        if accepted and offense and regression:
+        if accepted and winner and offense and regression and control:
             rationale = (
                 f"accepted {winner.lane} lane; offense={offense.composite_score:.2f}, "
                 f"regression={regression.composite_score:.2f}, "

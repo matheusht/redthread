@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
@@ -18,8 +19,8 @@ class MutationCandidate(BaseModel):
     id: str = Field(default_factory=lambda: f"mutation-{uuid4().hex[:8]}")
     kind: str
     description: str
-    prompt_patch: dict = Field(default_factory=dict)
-    state_patch: dict = Field(default_factory=dict)
+    prompt_patch: dict[str, Any] = Field(default_factory=dict)
+    state_patch: dict[str, Any] = Field(default_factory=dict)
 
 
 def next_mutation(root: Path, ranked_slugs: list[str]) -> MutationCandidate:

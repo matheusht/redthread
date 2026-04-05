@@ -27,7 +27,7 @@ class ResearchConfig(BaseModel):
 
     benchmark_objectives: list[ResearchObjective] = Field(default_factory=list)
     experiment_objectives: list[ResearchObjective] = Field(default_factory=list)
-    lane_configs: list["ResearchLaneConfig"] = Field(default_factory=list)
+    lane_configs: list[ResearchLaneConfig] = Field(default_factory=list)
     control_max_average_asr: float = 0.10
     control_max_average_score: float = 2.50
 
