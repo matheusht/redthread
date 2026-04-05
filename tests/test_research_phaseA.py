@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 from redthread.config.settings import RedThreadSettings
 from redthread.core.defense_synthesis import (
@@ -15,7 +16,7 @@ from redthread.research.promotion import ResearchPromotionManager
 from redthread.research.workspace import ResearchWorkspace
 
 
-def test_load_calibration_derives_thresholds_from_baseline(tmp_path) -> None:
+def test_load_calibration_derives_thresholds_from_baseline(tmp_path: Path) -> None:
     results = tmp_path / "autoresearch" / "runtime" / "results.tsv"
     results.parent.mkdir(parents=True, exist_ok=True)
     results.write_text(
@@ -37,7 +38,7 @@ def test_load_calibration_derives_thresholds_from_baseline(tmp_path) -> None:
     assert registry.exists()
 
 
-def test_research_promotion_replays_structured_deployments(tmp_path) -> None:
+def test_research_promotion_replays_structured_deployments(tmp_path: Path) -> None:
     workspace = ResearchWorkspace(tmp_path)
     workspace.ensure_layout()
     settings = RedThreadSettings()
@@ -68,6 +69,8 @@ def test_research_promotion_replays_structured_deployments(tmp_path) -> None:
             {
                 "proposal_id": "proposal-123",
                 "session_tag": "tag",
+                "session_branch": "autoresearch/tag",
+                "session_base_commit": "abc1234",
                 "accepted": True,
                 "recommended_action": "accept",
                 "rationale": "ok",
@@ -76,10 +79,66 @@ def test_research_promotion_replays_structured_deployments(tmp_path) -> None:
                     "accepted": True,
                     "winning_lane": "offense",
                     "rationale": "ok",
-                    "lane_summaries": [],
+                    "lane_summaries": [
+                        {
+                            "run_id": "research-offense",
+                            "mode": "supervised_lane",
+                            "lane": "offense",
+                            "objective_slugs": ["offense-objective"],
+                            "campaign_ids": ["offense-campaign"],
+                            "total_campaigns": 1,
+                            "total_results": 3,
+                            "confirmed_jailbreaks": 1,
+                            "near_misses": 0,
+                            "average_asr": 0.6,
+                            "average_score": 4.0,
+                            "composite_score": 7.0,
+                            "started_at": "2026-01-01T00:00:00Z",
+                            "completed_at": "2026-01-01T00:00:00Z"
+                        },
+                        {
+                            "run_id": "research-regression",
+                            "mode": "supervised_lane",
+                            "lane": "regression",
+                            "objective_slugs": ["regression-objective"],
+                            "campaign_ids": ["regression-campaign"],
+                            "total_campaigns": 1,
+                            "total_results": 3,
+                            "confirmed_jailbreaks": 1,
+                            "near_misses": 0,
+                            "average_asr": 0.4,
+                            "average_score": 3.0,
+                            "composite_score": 5.0,
+                            "started_at": "2026-01-01T00:00:00Z",
+                            "completed_at": "2026-01-01T00:00:00Z"
+                        },
+                        {
+                            "run_id": "research-control",
+                            "mode": "supervised_lane",
+                            "lane": "control",
+                            "objective_slugs": ["control-objective"],
+                            "campaign_ids": ["control-campaign"],
+                            "total_campaigns": 1,
+                            "total_results": 3,
+                            "confirmed_jailbreaks": 0,
+                            "near_misses": 0,
+                            "average_asr": 0.05,
+                            "average_score": 1.0,
+                            "composite_score": 1.25,
+                            "started_at": "2026-01-01T00:00:00Z",
+                            "completed_at": "2026-01-01T00:00:00Z"
+                        }
+                    ],
                     "started_at": "2026-01-01T00:00:00Z",
                     "completed_at": "2026-01-01T00:00:00Z"
                 },
+                "runtime_config_path": str(workspace.runtime_config_path),
+                "baseline_registry_ref": None,
+                "checkpoint_refs": [],
+                "mutation_refs": [],
+                "research_memory_dir": str(workspace.research_memory_dir),
+                "research_memory_snapshot_ref": None,
+                "eligible_trace_ids": ["trace-123"],
                 "started_at": "2026-01-01T00:00:00Z",
                 "completed_at": "2026-01-01T00:00:00Z"
             }

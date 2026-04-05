@@ -21,7 +21,6 @@ class ResearchObjective(BaseModel):
     branching: int | None = None
     turns: int | None = None
 
-
 class ResearchConfig(BaseModel):
     """Autoresearch configuration."""
 
@@ -30,7 +29,6 @@ class ResearchConfig(BaseModel):
     lane_configs: list[ResearchLaneConfig] = Field(default_factory=list)
     control_max_average_asr: float = 0.10
     control_max_average_score: float = 2.50
-
 
 class BaselineCalibration(BaseModel):
     """Baseline-derived control thresholds persisted to runtime state."""
@@ -48,14 +46,12 @@ class BaselineCalibration(BaseModel):
     control_max_average_score: float = 0.0
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
-
 class ResearchLaneConfig(BaseModel):
     """One Phase 2 supervisor lane."""
 
     lane: str
     source: str
     objective_slugs: list[str] = Field(default_factory=list)
-
 
 class ResearchBatchSummary(BaseModel):
     """Aggregate metrics from a research batch."""
@@ -75,7 +71,6 @@ class ResearchBatchSummary(BaseModel):
     started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     completed_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
-
 class SupervisorCycleSummary(BaseModel):
     """Phase 2 supervisor decision over lane results."""
 
@@ -86,7 +81,6 @@ class SupervisorCycleSummary(BaseModel):
     lane_summaries: list[ResearchBatchSummary] = Field(default_factory=list)
     started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     completed_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
 
 class ObjectiveScore(BaseModel):
     """Historical score used by the Phase 3 scheduler."""
@@ -99,7 +93,6 @@ class ObjectiveScore(BaseModel):
     average_score: float = 0.0
     weighted_score: float = 0.0
 
-
 class PhaseThreeSession(BaseModel):
     """Git-backed autoresearch session metadata."""
 
@@ -109,19 +102,26 @@ class PhaseThreeSession(BaseModel):
     started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     status: str = "active"
 
-
 class PhaseThreeProposal(BaseModel):
     """Supervisor proposal for accept/reject after a Phase 3 cycle."""
 
     proposal_id: str
     session_tag: str
+    session_branch: str
+    session_base_commit: str
     accepted: bool
     recommended_action: str
     rationale: str
     cycle: SupervisorCycleSummary
+    runtime_config_path: str
+    baseline_registry_ref: str | None = None
+    checkpoint_refs: list[str] = Field(default_factory=list)
+    mutation_refs: list[str] = Field(default_factory=list)
+    research_memory_dir: str
+    research_memory_snapshot_ref: str | None = None
+    eligible_trace_ids: list[str] = Field(default_factory=list)
     started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     completed_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
 
 class BatchCheckpoint(BaseModel):
     """Partial batch execution state used for resumable research runs."""
@@ -140,13 +140,55 @@ class BatchCheckpoint(BaseModel):
     started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
-
 class PromotionRecord(BaseModel):
     """Audit record for explicit research-to-production promotion steps."""
 
     promotion_id: str
     proposal_id: str
+    manifest_ref: str
+    validation_ref: str
     promoted_deployments: int
+    promoted_trace_ids: list[str] = Field(default_factory=list)
     source_memory_dir: str
     target_memory_dir: str
+    proposal_fingerprint: str
+    validation_status: str = "pending"
+    dry_run: bool = False
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class PromotionManifest(BaseModel):
+    """Frozen inputs for one research-to-production promotion attempt."""
+
+    promotion_id: str
+    proposal_id: str
+    session_tag: str
+    source_patch_artifact: str
+    baseline_registry_ref: str | None = None
+    checkpoint_refs: list[str] = Field(default_factory=list)
+    mutation_refs: list[str] = Field(default_factory=list)
+    expected_targets: list[str] = Field(default_factory=list)
+    research_memory_snapshot_ref: str | None = None
+    revalidation_policy: dict[str, float | bool | str] = Field(default_factory=dict)
+
+class PromotionValidationResult(BaseModel):
+    """Result of replaying the proposal acceptance contract during promotion."""
+
+    promotion_id: str
+    proposal_id: str
+    replayed_cycle: SupervisorCycleSummary
+    control_gate_passed: bool
+    eligible_trace_ids: list[str] = Field(default_factory=list)
+    validation_status: str
+    failure_reason: str | None = None
+
+class PromotionCheckpoint(BaseModel):
+    """Step-aware checkpoint for resumable promotion runs."""
+
+    checkpoint_id: str
+    promotion_id: str
+    proposal_id: str
+    step: str
+    manifest_ref: str | None = None
+    validation_ref: str | None = None
+    result_ref: str | None = None
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

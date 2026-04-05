@@ -83,6 +83,34 @@ class ResearchWorkspace:
             shutil.rmtree(self.runtime_dir)
         self.ensure_layout()
 
+    def proposal_path(self, proposal_id: str) -> Path:
+        """Return the artifact path for one proposal."""
+        return self.proposals_dir / f"{proposal_id}.json"
+
+    def proposal_memory_snapshot_path(self, proposal_id: str) -> Path:
+        """Return the proposal-scoped research memory snapshot path."""
+        return self.proposals_dir / f"memory-snapshot-{proposal_id}.json"
+
+    def promotion_dir_for(self, promotion_id: str) -> Path:
+        """Return the artifact directory for one promotion run."""
+        return self.promotions_dir / promotion_id
+
+    def promotion_manifest_path(self, promotion_id: str) -> Path:
+        """Return the manifest path for one promotion run."""
+        return self.promotion_dir_for(promotion_id) / "promotion_manifest.json"
+
+    def promotion_validation_path(self, promotion_id: str) -> Path:
+        """Return the validation path for one promotion run."""
+        return self.promotion_dir_for(promotion_id) / "promotion_validation.json"
+
+    def promotion_result_path(self, promotion_id: str) -> Path:
+        """Return the final result path for one promotion run."""
+        return self.promotion_dir_for(promotion_id) / "promotion_result.json"
+
+    def promotion_checkpoint_path(self, promotion_id: str) -> Path:
+        """Return the resumable checkpoint path for one promotion run."""
+        return self.promotion_dir_for(promotion_id) / "promotion_checkpoint.json"
+
     def _migrate_legacy_file(self, source: Path, target: Path) -> None:
         if source.exists() and not target.exists():
             target.parent.mkdir(parents=True, exist_ok=True)

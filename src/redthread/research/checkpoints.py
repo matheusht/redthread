@@ -6,7 +6,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-from redthread.research.models import BatchCheckpoint
+from redthread.research.models import BatchCheckpoint, PromotionCheckpoint
 
 
 class CheckpointStore:
@@ -31,3 +31,17 @@ class CheckpointStore:
         path = self.root / f"{checkpoint_id}.json"
         if path.exists():
             path.unlink()
+
+
+def load_promotion_checkpoint(path: Path) -> PromotionCheckpoint | None:
+    """Load a promotion checkpoint from an explicit artifact path."""
+    if not path.exists():
+        return None
+    return PromotionCheckpoint.model_validate(json.loads(path.read_text(encoding="utf-8")))
+
+
+def save_promotion_checkpoint(path: Path, checkpoint: PromotionCheckpoint) -> None:
+    """Persist a promotion checkpoint beside the promotion artifacts."""
+    checkpoint.updated_at = datetime.now(timezone.utc)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(checkpoint.model_dump_json(indent=2), encoding="utf-8")

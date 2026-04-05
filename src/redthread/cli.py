@@ -793,7 +793,7 @@ def research_phase3_cycle(baseline_first: bool, env_file: str, verbose: bool) ->
     help="Path to .env file",
 )
 def research_phase3_accept(message: str | None, env_file: str) -> None:
-    """Commit current changes for the latest accepted Phase 3 proposal."""
+    """Accept the latest Phase 3 proposal within the research plane."""
     from redthread.research.phase3 import PhaseThreeHarness
 
     settings = RedThreadSettings(_env_file=env_file)
@@ -801,7 +801,7 @@ def research_phase3_accept(message: str | None, env_file: str) -> None:
     commit = harness.accept_latest(message)
     console.print(
         Panel(
-            f"[bold]Phase 3 proposal accepted[/bold]\n\n"
+            f"[bold]Phase 3 proposal accepted in research[/bold]\n\n"
             f"  Commit: {commit}",
             border_style="magenta",
         )
@@ -914,19 +914,28 @@ def research_clean_runtime(env_file: str) -> None:
     default=".env",
     help="Path to .env file",
 )
-def research_promote(env_file: str) -> None:
+@click.option(
+    "--dry-run",
+    is_flag=True,
+    default=False,
+    help="Replay promotion validation without writing production memory.",
+)
+def research_promote(env_file: str, dry_run: bool) -> None:
     """Explicitly promote accepted research memory into production memory."""
     from redthread.research.promotion import ResearchPromotionManager
 
     settings = RedThreadSettings(_env_file=env_file)
     manager = ResearchPromotionManager(settings, Path.cwd())
-    promotion = manager.promote_latest()
+    promotion = manager.promote_latest(dry_run=dry_run)
     console.print(
         Panel(
             f"[bold]Research promotion complete[/bold]\n\n"
             f"  Promotion: {promotion.promotion_id}\n"
             f"  Proposal:  {promotion.proposal_id}\n"
+            f"  Validation:{promotion.validation_status}\n"
             f"  Entries:   {promotion.promoted_deployments}\n"
+            f"  Manifest:  {promotion.manifest_ref}\n"
+            f"  Validation:{promotion.validation_ref}\n"
             f"  Target:    {promotion.target_memory_dir}",
             border_style="green",
         )

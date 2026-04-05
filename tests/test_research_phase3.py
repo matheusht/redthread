@@ -8,7 +8,7 @@ from redthread.research.history import ObjectiveHistoryAnalyzer
 from redthread.research.phase3 import PhaseThreeHarness
 
 
-def test_objective_history_analyzer_ranks_from_tsv(tmp_path) -> None:
+def test_objective_history_analyzer_ranks_from_tsv(tmp_path: Path) -> None:
     results = tmp_path / "results.tsv"
     results.write_text(
         "\n".join(
@@ -26,7 +26,7 @@ def test_objective_history_analyzer_ranks_from_tsv(tmp_path) -> None:
     assert ranked[0].slug in {"authorization_bypass", "prompt_injection"}
 
 
-def test_phase_three_dynamic_lanes_prefers_ranked_slugs(tmp_path) -> None:
+def test_phase_three_dynamic_lanes_prefers_ranked_slugs(tmp_path: Path) -> None:
     from redthread.config.settings import RedThreadSettings
 
     harness = PhaseThreeHarness(RedThreadSettings(), tmp_path)
@@ -36,7 +36,7 @@ def test_phase_three_dynamic_lanes_prefers_ranked_slugs(tmp_path) -> None:
     assert lanes[2].lane == "control"
 
 
-def test_git_workspace_manager_detects_dirty_tree(tmp_path) -> None:
+def test_git_workspace_manager_detects_dirty_tree(tmp_path: Path) -> None:
     _git(tmp_path, "init")
     _git(tmp_path, "config", "user.email", "test@example.com")
     _git(tmp_path, "config", "user.name", "Test User")

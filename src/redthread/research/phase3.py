@@ -8,6 +8,7 @@ from typing import Any
 from uuid import uuid4
 
 from redthread.config.settings import RedThreadSettings
+from redthread.memory.index import MemoryIndex
 from redthread.research.git_ops import GitWorkspaceManager
 from redthread.research.history import ObjectiveHistoryAnalyzer
 from redthread.research.models import PhaseThreeProposal, PhaseThreeSession, ResearchLaneConfig
@@ -48,24 +49,42 @@ class PhaseThreeHarness:
         ranked_slugs = [item.slug for item in ranked]
         self.config.lane_configs = self._dynamic_lanes(ranked_slugs)
         self._write_json(self.config_path, self.config.model_dump(mode="json"))
+        before_trace_ids = set(self._research_index().known_trace_ids())
 
         supervisor = PhaseTwoResearchHarness(self.settings, self.root)
         cycle = await supervisor.run_cycle(baseline_first=baseline_first)
+        proposal_id = f"proposal-{uuid4().hex[:8]}"
+        eligible_trace_ids = self._proposal_trace_ids(before_trace_ids)
+        snapshot_path = self.workspace.proposal_memory_snapshot_path(proposal_id)
+        self._write_json(
+            snapshot_path,
+            {
+                "proposal_id": proposal_id,
+                "research_memory_dir": str(self.workspace.research_memory_dir),
+                "eligible_trace_ids": eligible_trace_ids,
+            },
+        )
         proposal = PhaseThreeProposal(
-            proposal_id=f"proposal-{uuid4().hex[:8]}",
+            proposal_id=proposal_id,
             session_tag=session.tag,
+            session_branch=session.branch,
+            session_base_commit=session.base_commit,
             accepted=cycle.accepted,
             recommended_action="accept" if cycle.accepted else "reject",
             rationale=cycle.rationale,
             cycle=cycle,
+            runtime_config_path=str(self.config_path),
+            baseline_registry_ref=self._artifact_ref(self.workspace.baseline_registry_path),
+            checkpoint_refs=self._checkpoint_refs(),
+            mutation_refs=self._mutation_refs(),
+            research_memory_dir=str(self.workspace.research_memory_dir),
+            research_memory_snapshot_ref=str(snapshot_path),
+            eligible_trace_ids=eligible_trace_ids,
             started_at=cycle.started_at,
             completed_at=cycle.completed_at,
         )
         self.proposals_dir.mkdir(parents=True, exist_ok=True)
-        self._write_json(
-            self.proposals_dir / f"{proposal.proposal_id}.json",
-            proposal.model_dump(mode="json"),
-        )
+        self._write_json(self.workspace.proposal_path(proposal.proposal_id), proposal.model_dump(mode="json"))
         return proposal
 
     def accept_latest(self, message: str | None = None) -> str:
@@ -121,6 +140,24 @@ class PhaseThreeHarness:
         if not self.session_path.exists():
             raise RuntimeError("No active Phase 3 session. Run the start command first.")
         return PhaseThreeSession.model_validate(json.loads(self.session_path.read_text(encoding="utf-8")))
+
+    def _research_index(self) -> MemoryIndex:
+        return MemoryIndex(self.workspace.research_settings(self.settings))
+
+    def _proposal_trace_ids(self, before_trace_ids: set[str]) -> list[str]:
+        after_trace_ids = set(self._research_index().known_trace_ids())
+        return sorted(after_trace_ids - before_trace_ids)
+
+    def _checkpoint_refs(self) -> list[str]:
+        return [str(path) for path in sorted(self.workspace.checkpoints_dir.glob("phase2-*.json"))]
+
+    def _mutation_refs(self) -> list[str]:
+        refs = [self._artifact_ref(self.workspace.prompt_profiles_path)]
+        refs.extend(str(path) for path in sorted(self.workspace.mutations_dir.glob("*.json")))
+        return [ref for ref in refs if ref is not None]
+
+    def _artifact_ref(self, path: Path) -> str | None:
+        return str(path) if path.exists() else None
 
     def _write_json(self, path: Path, payload: dict[str, Any]) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
