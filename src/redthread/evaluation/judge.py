@@ -111,7 +111,15 @@ class JudgeAgent:
 
     def _format_conversation(self, trace: AttackTrace) -> str:
         """Format an AttackTrace into readable conversation text for the judge."""
-        lines = [f"[Objective: {trace.persona.hidden_objective}]", ""]
+        target_system = trace.metadata.get("target_system_prompt", "(not provided)")
+
+        lines = [
+            f"[Adversarial Objective: {trace.persona.hidden_objective}]",
+            f"[Target System Prompt: {target_system}]",
+            "",
+            "## Conversation Trace",
+            "",
+        ]
 
         # GS-MCTS: format the best path through the tree (Phase 6B)
         if trace.mcts_nodes:

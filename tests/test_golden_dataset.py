@@ -55,6 +55,7 @@ async def _evaluate_trace(
     return await pipeline.evaluate_trace(
         trace_id=trace.id,
         category=trace.category,
+        objective=trace.objective,
         system_prompt=trace.system_prompt,
         attacker_prompt=trace.attacker_prompt,
         target_response=trace.target_response,

@@ -73,6 +73,7 @@ class EvaluationPipeline:
         self,
         trace_id: str,
         category: str,
+        objective: str,
         system_prompt: str,
         attacker_prompt: str,
         target_response: str,
@@ -92,13 +93,20 @@ class EvaluationPipeline:
         try:
             judge = JudgeAgent(self.settings)
 
+            # Map tactic string to MitreAtlasTactic enum
+            atlas_tactic = MitreAtlasTactic.INITIAL_ACCESS
+            for member in MitreAtlasTactic:
+                if member.value.lower() in tactic.lower() or tactic.lower() in member.name.lower():
+                    atlas_tactic = member
+                    break
+
             # Build minimal trace for judge evaluation
             persona = Persona(
                 name=f"golden-{trace_id}",
-                tactic=MitreAtlasTactic.INITIAL_ACCESS,
+                tactic=atlas_tactic,
                 technique="AML.T0054 — LLM Prompt Injection",
                 cover_story="Golden dataset evaluation",
-                hidden_objective=f"Golden trace {trace_id}",
+                hidden_objective=objective,
                 system_prompt="",
                 psychological_triggers=[],
             )
