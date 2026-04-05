@@ -884,6 +884,109 @@ def research_phase4_cycle(baseline_first: bool, env_file: str, verbose: bool) ->
     asyncio.run(_run())
 
 
+@research.group(name="mutate")
+def research_mutate() -> None:
+    """Phase 2 bounded source mutation automation."""
+    pass
+
+
+@research_mutate.command(name="cycle")
+@click.option(
+    "--baseline-first",
+    is_flag=True,
+    default=False,
+    help="Run the frozen baseline pack before the evaluation cycle.",
+)
+@click.option(
+    "--env-file",
+    type=click.Path(exists=False),
+    default=".env",
+    help="Path to .env file",
+)
+@click.option(
+    "--verbose",
+    "-v",
+    is_flag=True,
+    default=False,
+    help="Enable debug logging",
+)
+def research_mutate_cycle(baseline_first: bool, env_file: str, verbose: bool) -> None:
+    """Apply one bounded source mutation and evaluate it through Phase 3."""
+    from redthread.research.source_mutation_harness import SourceMutationHarness
+
+    _setup_logging(verbose)
+    settings = RedThreadSettings(_env_file=env_file)
+    harness = SourceMutationHarness(settings, Path.cwd())
+
+    async def _run() -> None:
+        candidate, proposal = await harness.run_cycle(baseline_first=baseline_first)
+        console.print(
+            Panel(
+                f"[bold]Source mutation cycle complete[/bold]\n\n"
+                f"  Candidate:   {candidate.candidate_id}\n"
+                f"  Family:      {candidate.mutation_family}\n"
+                f"  Status:      {candidate.apply_status}\n"
+                f"  Recommended: {proposal.recommended_action}\n"
+                f"  Winning:     {proposal.cycle.winning_lane}\n"
+                f"  Rationale:   {proposal.rationale}",
+                border_style="cyan",
+            )
+        )
+
+    asyncio.run(_run())
+
+
+@research_mutate.command(name="inspect")
+@click.option(
+    "--env-file",
+    type=click.Path(exists=False),
+    default=".env",
+    help="Path to .env file",
+)
+def research_mutate_inspect(env_file: str) -> None:
+    """Inspect the latest bounded source mutation candidate."""
+    from redthread.research.source_mutation_harness import SourceMutationHarness
+
+    settings = RedThreadSettings(_env_file=env_file)
+    candidate = SourceMutationHarness(settings, Path.cwd()).inspect_latest()
+    console.print(
+        Panel(
+            f"[bold]Latest source mutation[/bold]\n\n"
+            f"  Candidate: {candidate.candidate_id}\n"
+            f"  Family:    {candidate.mutation_family}\n"
+            f"  Status:    {candidate.apply_status}\n"
+            f"  Manifest:  {candidate.patch_manifest_path}\n"
+            f"  Forward:   {candidate.forward_patch_path}\n"
+            f"  Reverse:   {candidate.reverse_patch_path}",
+            border_style="yellow",
+        )
+    )
+
+
+@research_mutate.command(name="revert")
+@click.option(
+    "--env-file",
+    type=click.Path(exists=False),
+    default=".env",
+    help="Path to .env file",
+)
+def research_mutate_revert(env_file: str) -> None:
+    """Revert the latest bounded source mutation from stored artifacts."""
+    from redthread.research.source_mutation_harness import SourceMutationHarness
+
+    settings = RedThreadSettings(_env_file=env_file)
+    candidate = SourceMutationHarness(settings, Path.cwd()).revert_latest()
+    console.print(
+        Panel(
+            f"[bold]Source mutation reverted[/bold]\n\n"
+            f"  Candidate: {candidate.candidate_id}\n"
+            f"  Status:    {candidate.apply_status}\n"
+            f"  Reverse:   {candidate.reverse_patch_path}",
+            border_style="magenta",
+        )
+    )
+
+
 @research.command(name="clean-runtime")
 @click.option(
     "--env-file",

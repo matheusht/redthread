@@ -153,7 +153,11 @@ class PhaseThreeHarness:
 
     def _mutation_refs(self) -> list[str]:
         refs = [self._artifact_ref(self.workspace.prompt_profiles_path)]
-        refs.extend(str(path) for path in sorted(self.workspace.mutations_dir.glob("*.json")))
+        refs.extend(
+            str(path)
+            for path in sorted(self.workspace.mutations_dir.rglob("*"))
+            if path.is_file()
+        )
         return [ref for ref in refs if ref is not None]
 
     def _artifact_ref(self, path: Path) -> str | None:

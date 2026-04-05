@@ -91,6 +91,30 @@ class ResearchWorkspace:
         """Return the proposal-scoped research memory snapshot path."""
         return self.proposals_dir / f"memory-snapshot-{proposal_id}.json"
 
+    def mutation_candidate_dir(self, candidate_id: str) -> Path:
+        """Return the artifact directory for one mutation candidate."""
+        return self.mutations_dir / candidate_id
+
+    def mutation_candidate_path(self, candidate_id: str) -> Path:
+        """Return the candidate metadata path for one source mutation."""
+        return self.mutation_candidate_dir(candidate_id) / "candidate.json"
+
+    def mutation_manifest_path(self, candidate_id: str) -> Path:
+        """Return the manifest path for one source mutation."""
+        return self.mutation_candidate_dir(candidate_id) / "patch_manifest.json"
+
+    def mutation_reasoning_path(self, candidate_id: str) -> Path:
+        """Return the reasoning path for one source mutation."""
+        return self.mutation_candidate_dir(candidate_id) / "reasoning.md"
+
+    def mutation_forward_patch_path(self, candidate_id: str) -> Path:
+        """Return the forward patch artifact path for one source mutation."""
+        return self.mutation_candidate_dir(candidate_id) / "forward_patch.json"
+
+    def mutation_reverse_patch_path(self, candidate_id: str) -> Path:
+        """Return the reverse patch artifact path for one source mutation."""
+        return self.mutation_candidate_dir(candidate_id) / "reverse_patch.json"
+
     def promotion_dir_for(self, promotion_id: str) -> Path:
         """Return the artifact directory for one promotion run."""
         return self.promotions_dir / promotion_id
