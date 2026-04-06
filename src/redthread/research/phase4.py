@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from redthread.config.settings import RedThreadSettings
+from redthread.config.settings import AlgorithmType, RedThreadSettings
 from redthread.research.history import ObjectiveHistoryAnalyzer
 from redthread.research.mutations import MutationCandidate, apply_mutation, next_mutation
 from redthread.research.phase3 import PhaseThreeHarness
@@ -22,10 +22,17 @@ class PhaseFourHarness:
         self.autoresearch_dir = self.workspace.base_dir
         self.phase3 = PhaseThreeHarness(settings, root)
 
-    async def run_cycle(self, baseline_first: bool) -> tuple[MutationCandidate, object]:
+    async def run_cycle(
+        self,
+        baseline_first: bool,
+        algorithm_override: AlgorithmType | None = None,
+    ) -> tuple[MutationCandidate, object]:
         """Apply the next mutation candidate and evaluate it through Phase 3."""
         ranked = ObjectiveHistoryAnalyzer(self.workspace.results_path).rank()
         candidate = next_mutation(self.root, [item.slug for item in ranked])
         apply_mutation(self.root, candidate)
-        proposal = await self.phase3.run_cycle(baseline_first=baseline_first)
+        proposal = await self.phase3.run_cycle(
+            baseline_first=baseline_first,
+            algorithm_override=algorithm_override,
+        )
         return candidate, proposal

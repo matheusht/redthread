@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from redthread.config.settings import RedThreadSettings
+from redthread.config.settings import AlgorithmType, RedThreadSettings
 from redthread.research.baseline import run_batch
 from redthread.research.checkpoints import CheckpointStore
 from redthread.research.ledger import ResearchLedger
@@ -32,7 +32,10 @@ class PhaseOneResearchHarness:
         self.ledger = ResearchLedger(self.results_path)
         self.checkpoints = CheckpointStore(self.workspace.checkpoints_dir)
 
-    async def run_baseline(self) -> ResearchBatchSummary:
+    async def run_baseline(
+        self,
+        algorithm_override: AlgorithmType | None = None,
+    ) -> ResearchBatchSummary:
         """Run the frozen benchmark pack and append it to the ledger."""
         summary = await run_batch(
             self.settings,
@@ -40,6 +43,7 @@ class PhaseOneResearchHarness:
             mode="baseline",
             checkpoint_store=self.checkpoints,
             checkpoint_id="phase1-baseline",
+            algorithm_override=algorithm_override,
         )
         self.ledger.append(summary, status="keep", description="phase1 frozen benchmark pack")
         return summary
@@ -48,11 +52,12 @@ class PhaseOneResearchHarness:
         self,
         cycles: int,
         baseline_first: bool,
+        algorithm_override: AlgorithmType | None = None,
     ) -> list[ResearchBatchSummary]:
         """Run a bounded number of experiment cycles and append them to the ledger."""
         summaries: list[ResearchBatchSummary] = []
         if baseline_first:
-            summaries.append(await self.run_baseline())
+            summaries.append(await self.run_baseline(algorithm_override=algorithm_override))
 
         total_cycles = cycles if cycles > 0 else 1
         for cycle in range(1, total_cycles + 1):
@@ -62,6 +67,7 @@ class PhaseOneResearchHarness:
                 mode="experiment",
                 checkpoint_store=self.checkpoints,
                 checkpoint_id=f"phase1-experiment-{cycle}",
+                algorithm_override=algorithm_override,
             )
             self.ledger.append(
                 summary,

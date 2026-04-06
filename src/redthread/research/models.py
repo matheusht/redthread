@@ -20,6 +20,10 @@ class ResearchObjective(BaseModel):
     width: int | None = None
     branching: int | None = None
     turns: int | None = None
+    simulations: int | None = None
+    max_depth: int | None = None
+    strategy_count: int | None = None
+    budget_tokens: int | None = None
 
 class ResearchConfig(BaseModel):
     """Autoresearch configuration."""
@@ -113,6 +117,7 @@ class PhaseThreeProposal(BaseModel):
     recommended_action: str
     rationale: str
     cycle: SupervisorCycleSummary
+    algorithm_override: str | None = None
     runtime_config_path: str
     baseline_registry_ref: str | None = None
     checkpoint_refs: list[str] = Field(default_factory=list)

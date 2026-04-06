@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
-from redthread.config.settings import RedThreadSettings
+from redthread.config.settings import AlgorithmType, RedThreadSettings
 from redthread.memory.index import MemoryIndex
 from redthread.research.git_ops import GitWorkspaceManager
 from redthread.research.history import ObjectiveHistoryAnalyzer
@@ -42,7 +42,11 @@ class PhaseThreeHarness:
         self._write_json(self.session_path, session.model_dump(mode="json"))
         return session
 
-    async def run_cycle(self, baseline_first: bool) -> PhaseThreeProposal:
+    async def run_cycle(
+        self,
+        baseline_first: bool,
+        algorithm_override: AlgorithmType | None = None,
+    ) -> PhaseThreeProposal:
         """Run one Phase 3 cycle with dynamic objective selection."""
         session = self._load_session()
         ranked = ObjectiveHistoryAnalyzer(self.workspace.results_path).rank()
@@ -52,7 +56,10 @@ class PhaseThreeHarness:
         before_trace_ids = set(self._research_index().known_trace_ids())
 
         supervisor = PhaseTwoResearchHarness(self.settings, self.root)
-        cycle = await supervisor.run_cycle(baseline_first=baseline_first)
+        cycle = await supervisor.run_cycle(
+            baseline_first=baseline_first,
+            algorithm_override=algorithm_override,
+        )
         proposal_id = f"proposal-{uuid4().hex[:8]}"
         eligible_trace_ids = self._proposal_trace_ids(before_trace_ids)
         snapshot_path = self.workspace.proposal_memory_snapshot_path(proposal_id)
@@ -73,6 +80,7 @@ class PhaseThreeHarness:
             recommended_action="accept" if cycle.accepted else "reject",
             rationale=cycle.rationale,
             cycle=cycle,
+            algorithm_override=algorithm_override.value if algorithm_override is not None else None,
             runtime_config_path=str(self.config_path),
             baseline_registry_ref=self._artifact_ref(self.workspace.baseline_registry_path),
             checkpoint_refs=self._checkpoint_refs(),

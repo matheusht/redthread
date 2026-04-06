@@ -15,10 +15,12 @@ from redthread.research.models import BatchCheckpoint, ResearchBatchSummary, Res
 async def run_objective(
     settings: RedThreadSettings,
     objective: ResearchObjective,
+    algorithm_override: AlgorithmType | None = None,
 ) -> tuple[str, float, float, int, int]:
     """Run one research objective and return aggregate campaign metrics."""
     run_settings = settings.model_copy(deep=True)
-    run_settings.algorithm = AlgorithmType(objective.algorithm)
+    effective_algorithm = algorithm_override or AlgorithmType(objective.algorithm)
+    run_settings.algorithm = effective_algorithm
     if objective.depth is not None:
         run_settings.tree_depth = objective.depth
     if objective.width is not None:
@@ -27,6 +29,15 @@ async def run_objective(
         run_settings.branching_factor = objective.branching
     if objective.turns is not None:
         run_settings.crescendo_max_turns = objective.turns
+    if effective_algorithm == AlgorithmType.MCTS:
+        if objective.max_depth is not None:
+            run_settings.mcts_max_depth = objective.max_depth
+        if objective.simulations is not None:
+            run_settings.mcts_simulations = objective.simulations
+        if objective.strategy_count is not None:
+            run_settings.mcts_strategy_count = objective.strategy_count
+        if objective.budget_tokens is not None:
+            run_settings.mcts_max_budget_tokens = objective.budget_tokens
 
     engine = RedThreadEngine(run_settings)
     result = await engine.run(
@@ -53,6 +64,7 @@ async def run_batch(
     lane: str | None = None,
     checkpoint_store: CheckpointStore | None = None,
     checkpoint_id: str | None = None,
+    algorithm_override: AlgorithmType | None = None,
 ) -> ResearchBatchSummary:
     """Run a bounded batch and compute a composite research score."""
     checkpoint = _load_checkpoint(checkpoint_store, checkpoint_id, mode, lane, objectives)
@@ -68,7 +80,11 @@ async def run_batch(
     for objective in objectives:
         if objective.slug in checkpoint.completed_objectives:
             continue
-        campaign_id, asr, avg_score, confirmed, near_misses = await run_objective(settings, objective)
+        campaign_id, asr, avg_score, confirmed, near_misses = await run_objective(
+            settings,
+            objective,
+            algorithm_override=algorithm_override,
+        )
         campaign_ids.append(campaign_id)
         objective_slugs.append(objective.slug)
         asr_values.append(asr)

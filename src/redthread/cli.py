@@ -10,7 +10,9 @@ from __future__ import annotations
 import asyncio
 import logging
 import sys
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 import click
 from rich.console import Console
@@ -524,6 +526,15 @@ def research() -> None:
     pass
 
 
+def _research_algorithm_override_option(func: Callable[..., Any]) -> Callable[..., Any]:
+    return click.option(
+        "--algorithm",
+        type=click.Choice(["pair", "tap", "crescendo", "mcts"], case_sensitive=False),
+        default=None,
+        help="Override all selected research objectives for this invocation only.",
+    )(func)
+
+
 @research.command(name="init")
 @click.option(
     "--env-file",
@@ -616,20 +627,33 @@ def research_baseline(env_file: str, verbose: bool) -> None:
     default=False,
     help="Enable debug logging",
 )
-def research_run(cycles: int, baseline_first: bool, env_file: str, verbose: bool) -> None:
+@_research_algorithm_override_option
+def research_run(
+    cycles: int,
+    baseline_first: bool,
+    env_file: str,
+    verbose: bool,
+    algorithm: str | None,
+) -> None:
     """Run bounded Phase 1 experiment batches and write them to results.tsv."""
     from redthread.research.runner import PhaseOneResearchHarness
 
     _setup_logging(verbose)
     settings = RedThreadSettings(_env_file=env_file)
     harness = PhaseOneResearchHarness(settings, Path.cwd())
+    algorithm_override = settings.algorithm.__class__(algorithm) if algorithm is not None else None
 
     async def _run() -> None:
-        summaries = await harness.run_experiments(cycles=cycles, baseline_first=baseline_first)
+        summaries = await harness.run_experiments(
+            cycles=cycles,
+            baseline_first=baseline_first,
+            algorithm_override=algorithm_override,
+        )
         final_summary = summaries[-1]
         console.print(
             Panel(
                 f"[bold]Research batch complete[/bold]\n\n"
+                f"  Algorithm override:   {algorithm_override.value if algorithm_override else 'mixed/defaults'}\n"
                 f"  Batches logged:       {len(summaries)}\n"
                 f"  Final mode:           {final_summary.mode}\n"
                 f"  Campaigns:            {final_summary.total_campaigns}\n"
@@ -673,24 +697,36 @@ def research_run(cycles: int, baseline_first: bool, env_file: str, verbose: bool
     default=False,
     help="Enable debug logging",
 )
-def research_supervise(cycles: int, baseline_first: bool, env_file: str, verbose: bool) -> None:
+@_research_algorithm_override_option
+def research_supervise(
+    cycles: int,
+    baseline_first: bool,
+    env_file: str,
+    verbose: bool,
+    algorithm: str | None,
+) -> None:
     """Run Phase 2 supervisor cycles over offense, regression, and control lanes."""
     from redthread.research.supervisor import PhaseTwoResearchHarness
 
     _setup_logging(verbose)
     settings = RedThreadSettings(_env_file=env_file)
     harness = PhaseTwoResearchHarness(settings, Path.cwd())
+    algorithm_override = settings.algorithm.__class__(algorithm) if algorithm is not None else None
 
     async def _run() -> None:
         last_cycle = None
         total_cycles = cycles if cycles > 0 else 1
         for _ in range(total_cycles):
-            last_cycle = await harness.run_cycle(baseline_first=baseline_first)
+            last_cycle = await harness.run_cycle(
+                baseline_first=baseline_first,
+                algorithm_override=algorithm_override,
+            )
         if last_cycle is None:
             return
         console.print(
             Panel(
                 f"[bold]Phase 2 supervised cycle complete[/bold]\n\n"
+                f"  Algorithm override: {algorithm_override.value if algorithm_override else 'mixed/defaults'}\n"
                 f"  Accepted:      {last_cycle.accepted}\n"
                 f"  Winning lane:  {last_cycle.winning_lane}\n"
                 f"  Rationale:     {last_cycle.rationale}\n"
@@ -755,20 +791,31 @@ def research_phase3_start(tag: str, env_file: str) -> None:
     default=False,
     help="Enable debug logging",
 )
-def research_phase3_cycle(baseline_first: bool, env_file: str, verbose: bool) -> None:
+@_research_algorithm_override_option
+def research_phase3_cycle(
+    baseline_first: bool,
+    env_file: str,
+    verbose: bool,
+    algorithm: str | None,
+) -> None:
     """Run one history-aware Phase 3 cycle and emit an accept/reject proposal."""
     from redthread.research.phase3 import PhaseThreeHarness
 
     _setup_logging(verbose)
     settings = RedThreadSettings(_env_file=env_file)
     harness = PhaseThreeHarness(settings, Path.cwd())
+    algorithm_override = settings.algorithm.__class__(algorithm) if algorithm is not None else None
 
     async def _run() -> None:
-        proposal = await harness.run_cycle(baseline_first=baseline_first)
+        proposal = await harness.run_cycle(
+            baseline_first=baseline_first,
+            algorithm_override=algorithm_override,
+        )
         console.print(
             Panel(
                 f"[bold]Phase 3 proposal ready[/bold]\n\n"
                 f"  Proposal:    {proposal.proposal_id}\n"
+                f"  Algorithm:   {proposal.algorithm_override or 'mixed/defaults'}\n"
                 f"  Recommended: {proposal.recommended_action}\n"
                 f"  Winning:     {proposal.cycle.winning_lane}\n"
                 f"  Rationale:   {proposal.rationale}\n"
@@ -857,22 +904,33 @@ def research_phase4() -> None:
     default=False,
     help="Enable debug logging",
 )
-def research_phase4_cycle(baseline_first: bool, env_file: str, verbose: bool) -> None:
+@_research_algorithm_override_option
+def research_phase4_cycle(
+    baseline_first: bool,
+    env_file: str,
+    verbose: bool,
+    algorithm: str | None,
+) -> None:
     """Apply one bounded runtime mutation and evaluate it through Phase 3."""
     from redthread.research.phase4 import PhaseFourHarness
 
     _setup_logging(verbose)
     settings = RedThreadSettings(_env_file=env_file)
     harness = PhaseFourHarness(settings, Path.cwd())
+    algorithm_override = settings.algorithm.__class__(algorithm) if algorithm is not None else None
 
     async def _run() -> None:
-        candidate, proposal = await harness.run_cycle(baseline_first=baseline_first)
+        candidate, proposal = await harness.run_cycle(
+            baseline_first=baseline_first,
+            algorithm_override=algorithm_override,
+        )
         console.print(
             Panel(
                 f"[bold]Phase 4 mutation cycle complete[/bold]\n\n"
                 f"  Mutation:     {candidate.id}\n"
                 f"  Kind:         {candidate.kind}\n"
                 f"  Description:  {candidate.description}\n"
+                f"  Algorithm:    {proposal.algorithm_override or 'mixed/defaults'}\n"
                 f"  Recommendation: {proposal.recommended_action}\n"
                 f"  Winning lane: {proposal.cycle.winning_lane}\n"
                 f"  Rationale:    {proposal.rationale}\n"
@@ -910,22 +968,33 @@ def research_mutate() -> None:
     default=False,
     help="Enable debug logging",
 )
-def research_mutate_cycle(baseline_first: bool, env_file: str, verbose: bool) -> None:
+@_research_algorithm_override_option
+def research_mutate_cycle(
+    baseline_first: bool,
+    env_file: str,
+    verbose: bool,
+    algorithm: str | None,
+) -> None:
     """Apply one bounded source mutation and evaluate it through Phase 3."""
     from redthread.research.source_mutation_harness import SourceMutationHarness
 
     _setup_logging(verbose)
     settings = RedThreadSettings(_env_file=env_file)
     harness = SourceMutationHarness(settings, Path.cwd())
+    algorithm_override = settings.algorithm.__class__(algorithm) if algorithm is not None else None
 
     async def _run() -> None:
-        candidate, proposal = await harness.run_cycle(baseline_first=baseline_first)
+        candidate, proposal = await harness.run_cycle(
+            baseline_first=baseline_first,
+            algorithm_override=algorithm_override,
+        )
         console.print(
             Panel(
                 f"[bold]Source mutation cycle complete[/bold]\n\n"
                 f"  Candidate:   {candidate.candidate_id}\n"
                 f"  Family:      {candidate.mutation_family}\n"
                 f"  Status:      {candidate.apply_status}\n"
+                f"  Algorithm:   {proposal.algorithm_override or 'mixed/defaults'}\n"
                 f"  Recommended: {proposal.recommended_action}\n"
                 f"  Winning:     {proposal.cycle.winning_lane}\n"
                 f"  Rationale:   {proposal.rationale}",

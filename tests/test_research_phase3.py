@@ -3,8 +3,12 @@ from __future__ import annotations
 import subprocess
 from pathlib import Path
 
+from pytest import MonkeyPatch
+
+from redthread.config.settings import AlgorithmType, RedThreadSettings
 from redthread.research.git_ops import GitWorkspaceManager
 from redthread.research.history import ObjectiveHistoryAnalyzer
+from redthread.research.models import SupervisorCycleSummary
 from redthread.research.phase3 import PhaseThreeHarness
 
 
@@ -55,6 +59,38 @@ def test_git_workspace_manager_detects_dirty_tree(tmp_path: Path) -> None:
         assert "clean git tree" in str(exc)
     else:
         raise AssertionError("expected dirty tree detection")
+
+
+async def test_phase_three_proposal_records_algorithm_override(
+    tmp_path: Path,
+    monkeypatch: MonkeyPatch,
+) -> None:
+    harness = PhaseThreeHarness(RedThreadSettings(), tmp_path)
+    harness.session_path.write_text(
+        '{"tag":"tag","branch":"autoresearch/tag","base_commit":"abc1234"}',
+        encoding="utf-8",
+    )
+
+    async def stub_run_cycle(
+        self: object,
+        baseline_first: bool,
+        algorithm_override: AlgorithmType | None = None,
+    ) -> SupervisorCycleSummary:
+        assert baseline_first is False
+        assert algorithm_override == AlgorithmType.MCTS
+        return SupervisorCycleSummary(
+            run_id="supervisor-1",
+            accepted=True,
+            winning_lane="offense",
+            rationale="ok",
+            lane_summaries=[],
+        )
+
+    monkeypatch.setattr("redthread.research.supervisor.PhaseTwoResearchHarness.run_cycle", stub_run_cycle)
+
+    proposal = await harness.run_cycle(baseline_first=False, algorithm_override=AlgorithmType.MCTS)
+
+    assert proposal.algorithm_override == "mcts"
 
 
 def _git(root: Path, *args: str) -> str:

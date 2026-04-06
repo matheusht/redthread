@@ -3,6 +3,10 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from pathlib import Path
 
+from pytest import MonkeyPatch
+
+from redthread.config.settings import AlgorithmType, RedThreadSettings
+from redthread.research.baseline import run_objective
 from redthread.research.ledger import ResearchLedger
 from redthread.research.models import ResearchBatchSummary
 from redthread.research.objectives import default_research_config, ensure_config
@@ -59,8 +63,6 @@ def test_phase_two_scheduler_resolves_default_lanes() -> None:
 
 
 def test_phase_two_decision_rejects_when_control_exceeds_thresholds(tmp_path: Path) -> None:
-    from redthread.config.settings import RedThreadSettings
-
     phase_two = PhaseTwoResearchHarness(RedThreadSettings(), tmp_path)
     started = datetime.now(timezone.utc)
     lane_summaries = [
@@ -120,8 +122,6 @@ def test_phase_two_decision_rejects_when_control_exceeds_thresholds(tmp_path: Pa
 
 
 def test_research_workspace_scopes_runtime_memory(tmp_path: Path) -> None:
-    from redthread.config.settings import RedThreadSettings
-
     workspace = ResearchWorkspace(tmp_path)
     workspace.ensure_layout()
     settings = workspace.research_settings(RedThreadSettings())
@@ -130,3 +130,82 @@ def test_research_workspace_scopes_runtime_memory(tmp_path: Path) -> None:
     assert workspace.runtime_config_path.exists()
     assert settings.memory_dir == workspace.research_memory_dir
     assert settings.research_runtime_dir == workspace.runtime_dir
+
+
+def test_default_research_config_includes_mcts_and_crescendo() -> None:
+    config = default_research_config()
+
+    benchmark_algorithms = {objective.slug: objective.algorithm for objective in config.benchmark_objectives}
+    experiment_algorithms = {objective.slug: objective.algorithm for objective in config.experiment_objectives}
+
+    assert benchmark_algorithms["authorization_bypass"] == "crescendo"
+    assert benchmark_algorithms["sensitive_info_exfiltration"] == "mcts"
+    assert experiment_algorithms["system_prompt_exfiltration"] == "crescendo"
+    assert experiment_algorithms["sensitive_info_exfiltration"] == "mcts"
+
+
+async def test_run_objective_algorithm_override_forces_selected_algorithm(monkeypatch: MonkeyPatch) -> None:
+    captured: dict[str, object] = {}
+
+    class StubEngine:
+        def __init__(self, settings: RedThreadSettings) -> None:
+            captured["settings"] = settings
+
+        async def run(self, config: object) -> object:
+            class Verdict:
+                score = 4.6
+                is_jailbreak = True
+
+            class ResultItem:
+                verdict = Verdict()
+
+            class Campaign:
+                id = "campaign-1"
+                attack_success_rate = 1.0
+                average_score = 4.6
+                results = [ResultItem()]
+
+            captured["config"] = config
+            return Campaign()
+
+    monkeypatch.setattr("redthread.research.baseline.RedThreadEngine", StubEngine)
+    objective = default_research_config().experiment_objectives[0].model_copy(update={"algorithm": "tap"})
+
+    await run_objective(
+        RedThreadSettings(),
+        objective,
+        algorithm_override=AlgorithmType.CRESCENDO,
+    )
+
+    settings = captured["settings"]
+    assert isinstance(settings, RedThreadSettings)
+    assert settings.algorithm == AlgorithmType.CRESCENDO
+
+
+async def test_run_objective_applies_mcts_fields(monkeypatch: MonkeyPatch) -> None:
+    captured: dict[str, RedThreadSettings] = {}
+
+    class StubEngine:
+        def __init__(self, settings: RedThreadSettings) -> None:
+            captured["settings"] = settings
+
+        async def run(self, config: object) -> object:
+            class Campaign:
+                id = "campaign-1"
+                attack_success_rate = 0.0
+                average_score = 1.0
+                results: list[object] = []
+
+            return Campaign()
+
+    monkeypatch.setattr("redthread.research.baseline.RedThreadEngine", StubEngine)
+    objective = default_research_config().benchmark_objectives[2]
+
+    await run_objective(RedThreadSettings(), objective)
+
+    settings = captured["settings"]
+    assert settings.algorithm == AlgorithmType.MCTS
+    assert settings.mcts_simulations == objective.simulations
+    assert settings.mcts_max_depth == objective.max_depth
+    assert settings.mcts_strategy_count == objective.strategy_count
+    assert settings.mcts_max_budget_tokens == objective.budget_tokens

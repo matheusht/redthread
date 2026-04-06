@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
 
-from redthread.config.settings import RedThreadSettings
+from redthread.config.settings import AlgorithmType, RedThreadSettings
 from redthread.research.baseline import run_batch
 from redthread.research.calibration import load_calibration
 from redthread.research.checkpoints import CheckpointStore
@@ -38,7 +38,11 @@ class PhaseTwoResearchHarness:
             self.config,
         )
 
-    async def run_cycle(self, baseline_first: bool) -> SupervisorCycleSummary:
+    async def run_cycle(
+        self,
+        baseline_first: bool,
+        algorithm_override: AlgorithmType | None = None,
+    ) -> SupervisorCycleSummary:
         """Run one supervised cycle across all configured lanes."""
         started_at = datetime.now(timezone.utc)
         lane_summaries: list[ResearchBatchSummary] = []
@@ -50,6 +54,7 @@ class PhaseTwoResearchHarness:
                 mode="baseline",
                 checkpoint_store=self.checkpoints,
                 checkpoint_id="phase2-baseline",
+                algorithm_override=algorithm_override,
             )
             self.ledger.append(baseline, status="keep", description="phase2 baseline before supervised cycle")
             self.calibration = load_calibration(
@@ -67,6 +72,7 @@ class PhaseTwoResearchHarness:
                 lane=lane.lane,
                 checkpoint_store=self.checkpoints,
                 checkpoint_id=f"phase2-{lane.lane}",
+                algorithm_override=algorithm_override,
             )
             self.ledger.append(summary, status="keep", description=f"phase2 {lane.lane} lane")
             lane_summaries.append(summary)
