@@ -139,7 +139,7 @@ class PhaseThreeHarness:
         return ordered[:count]
 
     def _latest_proposal(self) -> PhaseThreeProposal:
-        proposals = sorted(self.proposals_dir.glob("proposal-*.json"))
+        proposals = sorted(self.proposals_dir.glob("proposal-*.json"), key=lambda p: p.stat().st_mtime)
         if not proposals:
             raise RuntimeError("No Phase 3 proposals found.")
         return PhaseThreeProposal.model_validate(json.loads(proposals[-1].read_text(encoding="utf-8")))
