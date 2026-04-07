@@ -95,7 +95,13 @@ def test_research_phase3_cycle_prints_algorithm_override(monkeypatch: MonkeyPatc
 
 def test_research_mutate_cycle_accepts_algorithm_override(monkeypatch: MonkeyPatch) -> None:
     candidate = SimpleNamespace(candidate_id="c1", mutation_family="family", apply_status="applied")
-    proposal = SimpleNamespace(recommended_action="accept", rationale="ok", algorithm_override="tap", cycle=SimpleNamespace(winning_lane="offense"))
+    proposal = SimpleNamespace(
+        recommended_action="accept",
+        rationale="ok",
+        algorithm_override="tap",
+        promotion_eligibility_status="pending_phase3_accept",
+        cycle=SimpleNamespace(winning_lane="offense"),
+    )
 
     class StubHarness:
         def __init__(self, *_args: object, **_kwargs: object) -> None:
@@ -109,8 +115,37 @@ def test_research_mutate_cycle_accepts_algorithm_override(monkeypatch: MonkeyPat
             assert getattr(algorithm_override, "value", None) == "tap"
             return candidate, proposal
 
-    monkeypatch.setattr("redthread.research.source_mutation_harness.SourceMutationHarness", StubHarness)
+    monkeypatch.setattr("redthread.research.phase5.PhaseFiveHarness", StubHarness)
     result = CliRunner().invoke(main, ["research", "mutate", "cycle", "--algorithm", "tap"])
+
+    assert result.exit_code == 0
+    assert "tap" in result.output
+
+
+def test_research_phase5_cycle_accepts_algorithm_override(monkeypatch: MonkeyPatch) -> None:
+    candidate = SimpleNamespace(candidate_id="c1", mutation_family="family", apply_status="applied")
+    proposal = SimpleNamespace(
+        recommended_action="accept",
+        rationale="ok",
+        algorithm_override="tap",
+        promotion_eligibility_status="pending_phase3_accept",
+        cycle=SimpleNamespace(winning_lane="offense"),
+    )
+
+    class StubHarness:
+        def __init__(self, *_args: object, **_kwargs: object) -> None:
+            pass
+
+        async def run_cycle(
+            self,
+            baseline_first: bool,
+            algorithm_override: AlgorithmType | None = None,
+        ) -> tuple[SimpleNamespace, SimpleNamespace]:
+            assert getattr(algorithm_override, "value", None) == "tap"
+            return candidate, proposal
+
+    monkeypatch.setattr("redthread.research.phase5.PhaseFiveHarness", StubHarness)
+    result = CliRunner().invoke(main, ["research", "phase5", "cycle", "--algorithm", "tap"])
 
     assert result.exit_code == 0
     assert "tap" in result.output

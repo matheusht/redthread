@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from redthread.config.settings import AlgorithmType, RedThreadSettings
@@ -35,6 +36,21 @@ class SourceMutationHarness:
         proposal = await self.phase3.run_cycle(
             baseline_first=baseline_first,
             algorithm_override=algorithm_override,
+        )
+        proposal.mutation_candidate_id = candidate.candidate_id
+        proposal.mutation_family = candidate.mutation_family
+        proposal.mutation_touched_files = list(candidate.touched_files)
+        proposal.mutation_selected_tests = list(candidate.selected_tests)
+        proposal.mutation_forward_patch_ref = candidate.forward_patch_path
+        proposal.mutation_reverse_patch_ref = candidate.reverse_patch_path
+        proposal.promotion_eligibility_status = (
+            "pending_phase3_accept"
+            if proposal.recommended_action == "accept"
+            else "rejected_by_supervisor"
+        )
+        self.workspace.proposal_path(proposal.proposal_id).write_text(
+            json.dumps(proposal.model_dump(mode="json"), indent=2),
+            encoding="utf-8",
         )
         return candidate, proposal
 

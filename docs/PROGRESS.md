@@ -4,12 +4,12 @@ This document serves as the **historical source of truth** for the RedThread pro
 
 ---
 
-## 🚀 Current Status: Phase 6A Complete (Crescendo — Multi-Turn Escalation)
+## 🚀 Current Status: Phase 7 Complete (Safe Patch Autoresearch)
 
-As of **2026-04-04**, RedThread has successfully implemented **Crescendo**, the third core attack algorithm. The engine now supports three adversarial strategies: PAIR (iterative refinement), TAP (tree search with pruning), and Crescendo (multi-turn escalation).
+As of **2026-04-07**, RedThread has formalized **safe patch autoresearch** as the next project phase. The engine now supports bounded source mutation over offense modules, Phase 3 proposal emission with explicit research-plane acceptance state, and promotion gating that cannot bypass operator approval.
 
 > [!TIP]
-> **Key Achievement**: The system achieved a **100% Pass Rate** across 30 curated traces in the Golden Dataset, maintaining a Faithfulness score of 1.00.
+> **Key Achievement**: RedThread now has a closed autoresearch path for bounded code changes: generate patch → evaluate on a research branch → explicitly accept/reject → promote only after validation.
 
 ---
 

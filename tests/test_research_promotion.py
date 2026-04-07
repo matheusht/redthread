@@ -30,6 +30,24 @@ def test_accept_does_not_write_production_memory(tmp_path: Path) -> None:
     assert MemoryIndex(settings).known_trace_ids() == []
 
 
+def test_promote_requires_explicit_phase3_accept(tmp_path: Path) -> None:
+    workspace = ResearchWorkspace(tmp_path)
+    workspace.ensure_layout()
+    settings = RedThreadSettings().model_copy(update={"memory_dir": tmp_path / "memory"})
+    append_research_record(workspace, "trace-123")
+    payload = proposal_payload(workspace, eligible_trace_ids=["trace-123"])
+    payload["research_plane_status"] = "pending"
+    payload["promotion_eligibility_status"] = "pending_phase3_accept"
+    workspace.proposal_path("proposal-123").write_text(json.dumps(payload), encoding="utf-8")
+
+    try:
+        ResearchPromotionManager(settings, tmp_path).promote_latest()
+    except RuntimeError as exc:
+        assert "explicitly accepted" in str(exc)
+    else:
+        raise AssertionError("expected promotion to require explicit phase3 accept")
+
+
 def test_promote_fails_when_revalidation_fails_and_leaves_production_untouched(tmp_path: Path) -> None:
     workspace = ResearchWorkspace(tmp_path)
     workspace.ensure_layout()

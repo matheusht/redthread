@@ -88,6 +88,8 @@ class PhaseThreeHarness:
             research_memory_dir=str(self.workspace.research_memory_dir),
             research_memory_snapshot_ref=str(snapshot_path),
             eligible_trace_ids=eligible_trace_ids,
+            research_plane_status="pending",
+            promotion_eligibility_status="pending_phase3_accept" if cycle.accepted else "rejected_by_supervisor",
             started_at=cycle.started_at,
             completed_at=cycle.completed_at,
         )
@@ -102,6 +104,9 @@ class PhaseThreeHarness:
             raise RuntimeError("Latest Phase 3 proposal is not accepted.")
         commit_message = message or f"autoresearch: accept {proposal.proposal_id} [{proposal.cycle.winning_lane}]"
         commit = self.git.commit_all(commit_message)
+        proposal.research_plane_status = "accepted"
+        proposal.promotion_eligibility_status = self._promotion_status(proposal)
+        self._write_json(self.workspace.proposal_path(proposal.proposal_id), proposal.model_dump(mode="json"))
         session = self._load_session()
         session.base_commit = commit
         self._write_json(self.session_path, session.model_dump(mode="json"))
@@ -110,6 +115,9 @@ class PhaseThreeHarness:
     def reject_latest(self) -> str:
         """Reset the worktree back to the session base commit."""
         proposal = self.latest_proposal()
+        proposal.research_plane_status = "rejected"
+        proposal.promotion_eligibility_status = "rejected_in_research"
+        self._write_json(self.workspace.proposal_path(proposal.proposal_id), proposal.model_dump(mode="json"))
         session = self._load_session()
         self.git.hard_reset(session.base_commit)
         return proposal.proposal_id
@@ -170,6 +178,13 @@ class PhaseThreeHarness:
 
     def _artifact_ref(self, path: Path) -> str | None:
         return str(path) if path.exists() else None
+
+    def _promotion_status(self, proposal: PhaseThreeProposal) -> str:
+        if proposal.recommended_action != "accept":
+            return "rejected_by_supervisor"
+        if proposal.research_plane_status != "accepted":
+            return "pending_phase3_accept"
+        return "eligible_for_promotion"
 
     def _write_json(self, path: Path, payload: dict[str, Any]) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)

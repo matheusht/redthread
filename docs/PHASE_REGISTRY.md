@@ -18,6 +18,7 @@
 | 5C | Continuous Monitoring | ✅ Complete | 2026-04-04 | Monitor daemon, SQLite storage, drift-triggered campaigns |
 | 5D | CI/CD Integration | ✅ Complete | 2026-04-04 | GitHub Actions, regression gates, dashboard |
 | 6A | Crescendo Algorithm | ✅ Complete | 2026-04-04 | `crescendo.py`, client-side history, escalation loop with backtracking |
+| 7 | Safe Patch Autoresearch | ✅ Complete | 2026-04-07 | `research phase5`, bounded source mutation proposals, explicit research-plane acceptance gate |
 
 ---
 
@@ -248,19 +249,19 @@ nightly → golden-regression (gpt-4o) → GitHub issue on failure
 **Deliverables**:
 - `src/redthread/core/crescendo.py` — Escalation loop with client-side history and backtracking
 - `tests/test_crescendo.py` — 8 tests covering all algorithm branches (mocked)
-- `src/redthread/models.py` — Removed MCTS residue; `AttackNode` now TAP-only
-- `src/redthread/config/settings.py` — Removed MCTS settings block; `AlgorithmType` is `[pair, tap, crescendo]`
-- `src/redthread/orchestration/graphs/attack_graph.py` — Removed MCTS dispatch branch
-- `src/redthread/cli.py` — Removed `mcts` choice and `--simulations` option
-- `src/redthread/evaluation/judge.py` — Removed MCTS formatting branch
+- `src/redthread/models.py` — Crescendo trace support alongside existing TAP and MCTS structures
+- `src/redthread/config/settings.py` — Crescendo runtime settings added without removing broader attack-surface support
+- `src/redthread/orchestration/graphs/attack_graph.py` — Crescendo dispatch path added to the attack worker graph
+- `src/redthread/cli.py` — Crescendo controls added to the campaign CLI
+- `src/redthread/evaluation/judge.py` — Crescendo trace formatting added to JudgeAgent evaluation
 
 **Key Decisions**:
 | Decision | Choice | Rationale |
 |---|---|---|
-| Phase split | 6A only | Crescendo proves multi-turn pipeline before MCTS adds tree complexity |
+| Phase split | 6A only | Crescendo proves the multi-turn pipeline as a first-class attack family |
 | Conversation persistence | Client-side `list[tuple[str,str]]` | Surgical backtracking; PyRIT remains stateless |
-| MCTS deferred | Entirely removed | No MCTS fields, settings, or code until Phase 6B |
-| Cost estimation | Deferred to 6B | MCTS is compute-heavy; Crescendo is bounded by `max_turns × backtrack_limit` |
+| MCTS relationship | Coexists with Crescendo in the live tree | GS-MCTS remains part of the broader offense surface while Crescendo validates the escalation path |
+| Cost estimation | Tracked separately from Crescendo | GS-MCTS is compute-heavy; Crescendo is bounded by `max_turns × backtrack_limit` |
 
 **Architecture**:
 ```
@@ -284,4 +285,26 @@ TERMINAL EVALUATION
 
 **Verification**:
 - 8/8 Crescendo tests pass
-- Full regression suite passes (no regressions from MCTS revert)
+- Full regression suite passes with Crescendo added alongside the broader attack surface
+
+---
+
+### Phase 7: Safe Patch Autoresearch ✅
+**Objective**: Promote RedThread from bounded prompt/runtime mutation into bounded source-patch autoresearch with explicit operator control.
+
+**Status**: Completed 2026-04-07
+
+**Deliverables**:
+- `src/redthread/research/phase5.py` — formal Phase 5 wrapper for bounded source mutation cycles
+- `research phase5 cycle|inspect|revert` — official CLI entrypoints
+- enriched Phase 3 proposals with mutation provenance and promotion readiness metadata
+- explicit research-plane acceptance gate before promotion
+- `docs/AUTORESEARCH_PHASE5.md` — source-patch autoresearch contract
+
+**Key Decisions**:
+| Decision | Choice | Rationale |
+|---|---|---|
+| Mutation style | Template-driven only | Keeps code mutation deterministic and reversible |
+| Safety boundary | Phase 3 accept/reject remains mandatory | Promotion must not bypass operator approval |
+| Protected surfaces | evaluation, defense, telemetry, golden dataset, promotion logic | Prevents autoresearch from mutating its own safety gates |
+| CLI strategy | `phase5` is official, `mutate` remains compatible | Preserves existing workflows while clarifying roadmap direction |

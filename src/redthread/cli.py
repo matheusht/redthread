@@ -944,11 +944,65 @@ def research_phase4_cycle(
 
 @research.group(name="mutate")
 def research_mutate() -> None:
-    """Phase 2 bounded source mutation automation."""
+    """Compatibility alias for Phase 5 bounded source mutation automation."""
     pass
 
 
-@research_mutate.command(name="cycle")
+@research.group(name="phase5")
+def research_phase5() -> None:
+    """Phase 5 bounded source mutation automation."""
+    pass
+
+
+def _render_source_mutation_cycle(
+    candidate: object,
+    proposal: object,
+    title: str,
+) -> None:
+    console.print(
+        Panel(
+            f"[bold]{title}[/bold]\n\n"
+            f"  Candidate:   {candidate.candidate_id}\n"
+            f"  Family:      {candidate.mutation_family}\n"
+            f"  Status:      {candidate.apply_status}\n"
+            f"  Algorithm:   {proposal.algorithm_override or 'mixed/defaults'}\n"
+            f"  Recommended: {proposal.recommended_action}\n"
+            f"  Winning:     {proposal.cycle.winning_lane}\n"
+            f"  Promotion:   {proposal.promotion_eligibility_status}\n"
+            f"  Rationale:   {proposal.rationale}",
+            border_style="cyan",
+        )
+    )
+
+
+def _render_source_mutation_inspect(candidate: object, title: str) -> None:
+    console.print(
+        Panel(
+            f"[bold]{title}[/bold]\n\n"
+            f"  Candidate: {candidate.candidate_id}\n"
+            f"  Family:    {candidate.mutation_family}\n"
+            f"  Status:    {candidate.apply_status}\n"
+            f"  Manifest:  {candidate.patch_manifest_path}\n"
+            f"  Forward:   {candidate.forward_patch_path}\n"
+            f"  Reverse:   {candidate.reverse_patch_path}",
+            border_style="yellow",
+        )
+    )
+
+
+def _render_source_mutation_revert(candidate: object, title: str) -> None:
+    console.print(
+        Panel(
+            f"[bold]{title}[/bold]\n\n"
+            f"  Candidate: {candidate.candidate_id}\n"
+            f"  Status:    {candidate.apply_status}\n"
+            f"  Reverse:   {candidate.reverse_patch_path}",
+            border_style="magenta",
+        )
+    )
+
+
+@research_phase5.command(name="cycle")
 @click.option(
     "--baseline-first",
     is_flag=True,
@@ -976,11 +1030,11 @@ def research_mutate_cycle(
     algorithm: str | None,
 ) -> None:
     """Apply one bounded source mutation and evaluate it through Phase 3."""
-    from redthread.research.source_mutation_harness import SourceMutationHarness
+    from redthread.research.phase5 import PhaseFiveHarness
 
     _setup_logging(verbose)
     settings = RedThreadSettings(_env_file=env_file)
-    harness = SourceMutationHarness(settings, Path.cwd())
+    harness = PhaseFiveHarness(settings, Path.cwd())
     algorithm_override = settings.algorithm.__class__(algorithm) if algorithm is not None else None
 
     async def _run() -> None:
@@ -988,21 +1042,56 @@ def research_mutate_cycle(
             baseline_first=baseline_first,
             algorithm_override=algorithm_override,
         )
-        console.print(
-            Panel(
-                f"[bold]Source mutation cycle complete[/bold]\n\n"
-                f"  Candidate:   {candidate.candidate_id}\n"
-                f"  Family:      {candidate.mutation_family}\n"
-                f"  Status:      {candidate.apply_status}\n"
-                f"  Algorithm:   {proposal.algorithm_override or 'mixed/defaults'}\n"
-                f"  Recommended: {proposal.recommended_action}\n"
-                f"  Winning:     {proposal.cycle.winning_lane}\n"
-                f"  Rationale:   {proposal.rationale}",
-                border_style="cyan",
-            )
-        )
+        _render_source_mutation_cycle(candidate, proposal, "Phase 5 source mutation cycle complete")
 
     asyncio.run(_run())
+
+
+@research_mutate.command(name="cycle")
+@click.option(
+    "--baseline-first",
+    is_flag=True,
+    default=False,
+    help="Run the frozen baseline pack before the evaluation cycle.",
+)
+@click.option(
+    "--env-file",
+    type=click.Path(exists=False),
+    default=".env",
+    help="Path to .env file",
+)
+@click.option(
+    "--verbose",
+    "-v",
+    is_flag=True,
+    default=False,
+    help="Enable debug logging",
+)
+@_research_algorithm_override_option
+def research_mutate_cycle_alias(
+    baseline_first: bool,
+    env_file: str,
+    verbose: bool,
+    algorithm: str | None,
+) -> None:
+    """Compatibility alias for `research phase5 cycle`."""
+    research_mutate_cycle.callback(baseline_first, env_file, verbose, algorithm)
+
+
+@research_phase5.command(name="inspect")
+@click.option(
+    "--env-file",
+    type=click.Path(exists=False),
+    default=".env",
+    help="Path to .env file",
+)
+def research_mutate_inspect(env_file: str) -> None:
+    """Inspect the latest bounded source mutation candidate."""
+    from redthread.research.phase5 import PhaseFiveHarness
+
+    settings = RedThreadSettings(_env_file=env_file)
+    candidate = PhaseFiveHarness(settings, Path.cwd()).inspect_latest()
+    _render_source_mutation_inspect(candidate, "Latest Phase 5 source mutation")
 
 
 @research_mutate.command(name="inspect")
@@ -1012,24 +1101,25 @@ def research_mutate_cycle(
     default=".env",
     help="Path to .env file",
 )
-def research_mutate_inspect(env_file: str) -> None:
-    """Inspect the latest bounded source mutation candidate."""
-    from redthread.research.source_mutation_harness import SourceMutationHarness
+def research_mutate_inspect_alias(env_file: str) -> None:
+    """Compatibility alias for `research phase5 inspect`."""
+    research_mutate_inspect.callback(env_file)
+
+
+@research_phase5.command(name="revert")
+@click.option(
+    "--env-file",
+    type=click.Path(exists=False),
+    default=".env",
+    help="Path to .env file",
+)
+def research_mutate_revert(env_file: str) -> None:
+    """Revert the latest bounded source mutation from stored artifacts."""
+    from redthread.research.phase5 import PhaseFiveHarness
 
     settings = RedThreadSettings(_env_file=env_file)
-    candidate = SourceMutationHarness(settings, Path.cwd()).inspect_latest()
-    console.print(
-        Panel(
-            f"[bold]Latest source mutation[/bold]\n\n"
-            f"  Candidate: {candidate.candidate_id}\n"
-            f"  Family:    {candidate.mutation_family}\n"
-            f"  Status:    {candidate.apply_status}\n"
-            f"  Manifest:  {candidate.patch_manifest_path}\n"
-            f"  Forward:   {candidate.forward_patch_path}\n"
-            f"  Reverse:   {candidate.reverse_patch_path}",
-            border_style="yellow",
-        )
-    )
+    candidate = PhaseFiveHarness(settings, Path.cwd()).revert_latest()
+    _render_source_mutation_revert(candidate, "Phase 5 source mutation reverted")
 
 
 @research_mutate.command(name="revert")
@@ -1039,21 +1129,9 @@ def research_mutate_inspect(env_file: str) -> None:
     default=".env",
     help="Path to .env file",
 )
-def research_mutate_revert(env_file: str) -> None:
-    """Revert the latest bounded source mutation from stored artifacts."""
-    from redthread.research.source_mutation_harness import SourceMutationHarness
-
-    settings = RedThreadSettings(_env_file=env_file)
-    candidate = SourceMutationHarness(settings, Path.cwd()).revert_latest()
-    console.print(
-        Panel(
-            f"[bold]Source mutation reverted[/bold]\n\n"
-            f"  Candidate: {candidate.candidate_id}\n"
-            f"  Status:    {candidate.apply_status}\n"
-            f"  Reverse:   {candidate.reverse_patch_path}",
-            border_style="magenta",
-        )
-    )
+def research_mutate_revert_alias(env_file: str) -> None:
+    """Compatibility alias for `research phase5 revert`."""
+    research_mutate_revert.callback(env_file)
 
 
 @research.group(name="daemon")

@@ -16,6 +16,25 @@ def scaffold_prompt_profiles_target(root: Path) -> Path:
     return path
 
 
+def scaffold_source_mutation_targets(root: Path) -> None:
+    scaffold_prompt_profiles_target(root)
+    targets = {
+        root / "src" / "redthread" / "core" / "pair.py":
+            'PROMPT = "5. Escalate gradually. Establish rapport before making the core malicious request."\n',
+        root / "src" / "redthread" / "core" / "tap.py":
+            'STRATEGY = "build rapport and appeal to shared values",\n',
+        root / "src" / "redthread" / "core" / "crescendo.py":
+            'RETRY = "Generate a different approach for turn {turn_number}. Try a new angle."\n',
+        root / "src" / "redthread" / "core" / "mcts.py":
+            'RULE = "2. Apply the specified strategy naturally within your cover story."\n',
+        root / "src" / "redthread" / "personas" / "generator.py":
+            'LINE = "5. **allowed_strategies** — a list of 3-5 short, concrete conversational tactics"\n',
+    }
+    for path, content in targets.items():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content, encoding="utf-8")
+
+
 def scaffold_blocked_target(root: Path) -> Path:
     path = root / "src" / "redthread" / "memory" / "index.py"
     path.parent.mkdir(parents=True, exist_ok=True)

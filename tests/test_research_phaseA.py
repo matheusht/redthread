@@ -139,6 +139,8 @@ def test_research_promotion_replays_structured_deployments(tmp_path: Path) -> No
                 "research_memory_dir": str(workspace.research_memory_dir),
                 "research_memory_snapshot_ref": None,
                 "eligible_trace_ids": ["trace-123"],
+                "research_plane_status": "accepted",
+                "promotion_eligibility_status": "eligible_for_promotion",
                 "started_at": "2026-01-01T00:00:00Z",
                 "completed_at": "2026-01-01T00:00:00Z"
             }

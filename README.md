@@ -125,4 +125,4 @@ RedThread guardrails are **scoped**. A fix generated for an HR bot (based on a h
 
 ---
 
-> **Note**: This project is currently in **Phase 6A (Crescendo — Multi-Turn Escalation)**. See `docs/PHASE_REGISTRY.md` for the full architectural roadmap.
+> **Note**: This project is currently in **Phase 7 (Safe Patch Autoresearch)**. RedThread now treats bounded source mutation and explicit promotion gates as the next architectural frontier beyond the core attack algorithms. See `docs/PHASE_REGISTRY.md` for the full architectural roadmap.

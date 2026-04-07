@@ -125,6 +125,14 @@ class PhaseThreeProposal(BaseModel):
     research_memory_dir: str
     research_memory_snapshot_ref: str | None = None
     eligible_trace_ids: list[str] = Field(default_factory=list)
+    research_plane_status: str = "pending"
+    promotion_eligibility_status: str = "not_ready"
+    mutation_candidate_id: str | None = None
+    mutation_family: str | None = None
+    mutation_touched_files: list[str] = Field(default_factory=list)
+    mutation_selected_tests: list[str] = Field(default_factory=list)
+    mutation_forward_patch_ref: str | None = None
+    mutation_reverse_patch_ref: str | None = None
     started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     completed_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 

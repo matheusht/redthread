@@ -65,7 +65,8 @@ Current mutation families:
 
 ## Next Step
 
-The next phase after this would be real patch generation:
-- propose code changes to attack/prompt/persona modules
+The next phase after this is **Phase 5: safe patch autoresearch**:
+- propose bounded code changes to attack/prompt/persona modules
 - apply them on the dedicated research branch
 - evaluate them through the existing Phase 3 accept/reject workflow
+- require explicit research-plane acceptance before promotion

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import subprocess
 from pathlib import Path
 
@@ -104,3 +105,53 @@ def _git(root: Path, *args: str) -> str:
     if completed.returncode != 0:
         raise RuntimeError(completed.stderr.strip() or completed.stdout.strip())
     return completed.stdout.strip()
+
+
+def test_phase_three_accept_marks_proposal_as_explicitly_accepted(tmp_path: Path) -> None:
+    _git(tmp_path, "init")
+    _git(tmp_path, "config", "user.email", "test@example.com")
+    _git(tmp_path, "config", "user.name", "Test User")
+    (tmp_path / "README.md").write_text("hello\n", encoding="utf-8")
+    _git(tmp_path, "add", "README.md")
+    _git(tmp_path, "commit", "-m", "init")
+
+    harness = PhaseThreeHarness(RedThreadSettings(), tmp_path)
+    harness.session_path.write_text(
+        json.dumps({"tag": "tag", "branch": "autoresearch/tag", "base_commit": harness.git.head_commit()}),
+        encoding="utf-8",
+    )
+    payload = {
+        "proposal_id": "proposal-123",
+        "session_tag": "tag",
+        "session_branch": "autoresearch/tag",
+        "session_base_commit": harness.git.head_commit(),
+        "accepted": True,
+        "recommended_action": "accept",
+        "rationale": "ok",
+        "cycle": {
+            "run_id": "supervisor-1",
+            "accepted": True,
+            "winning_lane": "offense",
+            "rationale": "ok",
+            "lane_summaries": [],
+            "started_at": "2026-01-01T00:00:00Z",
+            "completed_at": "2026-01-01T00:00:00Z",
+        },
+        "runtime_config_path": str(harness.config_path),
+        "checkpoint_refs": [],
+        "mutation_refs": [],
+        "research_memory_dir": str(harness.workspace.research_memory_dir),
+        "eligible_trace_ids": [],
+        "research_plane_status": "pending",
+        "promotion_eligibility_status": "pending_phase3_accept",
+        "started_at": "2026-01-01T00:00:00Z",
+        "completed_at": "2026-01-01T00:00:00Z",
+    }
+    harness.workspace.proposal_path("proposal-123").write_text(json.dumps(payload), encoding="utf-8")
+    (tmp_path / "notes.txt").write_text("change\n", encoding="utf-8")
+
+    harness.accept_latest()
+
+    updated = json.loads(harness.workspace.proposal_path("proposal-123").read_text(encoding="utf-8"))
+    assert updated["research_plane_status"] == "accepted"
+    assert updated["promotion_eligibility_status"] == "eligible_for_promotion"

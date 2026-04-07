@@ -11,11 +11,12 @@
 
 RedThread is a **standalone, CLI-first autonomous red-teaming engine** for Large Language Model (LLM) deployments. Inspired architecturally by Claude Code's multi-agent orchestration, tool system, and task lifecycle, RedThread treats AI security testing as a first-class engineering discipline — not a one-off audit.
 
-It does three things no other tool on the market does simultaneously:
+It does three things no other tool on the market does simultaneously, and it is now evolving toward a fourth capability: **safe self-improvement**.
 
 1. **Automated, algorithmic adversarial attack generation** — using PAIR, TAP, Crescendo, and GS-MCTS to generate and execute attacks that are mathematically optimized, not manually written.
 2. **Precision evaluation** — replacing subjective human scoring with probability-weighted, float-precision JudgeAgent scoring powered by Prometheus 2 and G-Eval.
 3. **Self-healing defense synthesis** — automatically converting successful exploit traces into deployed semantic guardrails, re-validating them in a sandbox, and pushing them to production. The attack pipeline *fixes what it breaks*.
+4. **Safe autoresearch** — bounded source-code mutation over offensive surfaces, evaluated on dedicated research branches with explicit accept/reject and promotion gates.
 
 RedThread uses **PyRIT** (Python Risk Identification Toolkit) as its foundational plumbing layer for target interaction, orchestration loops, and payload conversion — while keeping all proprietary intelligence (search algorithms, defense synthesis, evaluation logic) in its own codebase.
 

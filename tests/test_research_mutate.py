@@ -5,10 +5,17 @@ from pathlib import Path
 
 from pytest import MonkeyPatch
 
+from redthread.config.settings import RedThreadSettings
 from redthread.research.phase3 import PhaseThreeHarness
+from redthread.research.source_mutation_harness import SourceMutationHarness
+from redthread.research.models import PhaseThreeProposal, SupervisorCycleSummary
 from redthread.research.source_mutation_registry import SourceMutationTemplate
 from redthread.research.source_mutation_worker import SourceMutationWorker
-from tests.research_mutation_helpers import scaffold_blocked_target, scaffold_prompt_profiles_target
+from tests.research_mutation_helpers import (
+    scaffold_blocked_target,
+    scaffold_prompt_profiles_target,
+    scaffold_source_mutation_targets,
+)
 
 
 def test_patch_touching_blocked_file_is_rejected(tmp_path: Path, monkeypatch: MonkeyPatch) -> None:
@@ -37,15 +44,16 @@ def test_patch_touching_blocked_file_is_rejected(tmp_path: Path, monkeypatch: Mo
 
 
 def test_mutation_worker_only_selects_approved_files(tmp_path: Path) -> None:
-    scaffold_prompt_profiles_target(tmp_path)
+    scaffold_source_mutation_targets(tmp_path)
 
     candidate = SourceMutationWorker(tmp_path).generate_and_apply(["authorization_bypass"])
 
-    assert candidate.target_files == ["src/redthread/research/prompt_profiles.py"]
+    assert candidate.target_files == ["src/redthread/core/pair.py"]
 
 
 def test_forward_and_reverse_patch_artifacts_are_written_before_apply(tmp_path: Path) -> None:
-    path = scaffold_prompt_profiles_target(tmp_path)
+    scaffold_source_mutation_targets(tmp_path)
+    path = tmp_path / "src" / "redthread" / "core" / "pair.py"
     worker = SourceMutationWorker(tmp_path)
 
     candidate = worker.generate_and_apply(["authorization_bypass"])
@@ -56,7 +64,8 @@ def test_forward_and_reverse_patch_artifacts_are_written_before_apply(tmp_path: 
 
 
 def test_reverse_patch_restores_prior_file_state_exactly(tmp_path: Path) -> None:
-    path = scaffold_prompt_profiles_target(tmp_path)
+    scaffold_source_mutation_targets(tmp_path)
+    path = tmp_path / "src" / "redthread" / "core" / "tap.py"
     original = path.read_text(encoding="utf-8")
     worker = SourceMutationWorker(tmp_path)
     candidate = worker.generate_and_apply(["prompt_injection"])
@@ -92,7 +101,7 @@ def test_malformed_or_empty_patch_candidates_are_rejected(tmp_path: Path, monkey
 
 
 def test_source_mutation_cycle_emits_phase3_patch_refs(tmp_path: Path) -> None:
-    scaffold_prompt_profiles_target(tmp_path)
+    scaffold_source_mutation_targets(tmp_path)
     worker = SourceMutationWorker(tmp_path)
     candidate = worker.generate_and_apply(["authorization_bypass"])
     phase3 = PhaseThreeHarness.__new__(PhaseThreeHarness)
@@ -106,7 +115,7 @@ def test_source_mutation_cycle_emits_phase3_patch_refs(tmp_path: Path) -> None:
 
 
 def test_accepted_source_mutation_still_does_not_affect_production_before_promote(tmp_path: Path) -> None:
-    scaffold_prompt_profiles_target(tmp_path)
+    scaffold_source_mutation_targets(tmp_path)
 
     SourceMutationWorker(tmp_path).generate_and_apply(["authorization_bypass"])
 
@@ -114,7 +123,8 @@ def test_accepted_source_mutation_still_does_not_affect_production_before_promot
 
 
 def test_rejected_mutation_can_be_reverted_cleanly_from_stored_artifacts(tmp_path: Path) -> None:
-    path = scaffold_prompt_profiles_target(tmp_path)
+    scaffold_source_mutation_targets(tmp_path)
+    path = tmp_path / "src" / "redthread" / "core" / "pair.py"
     worker = SourceMutationWorker(tmp_path)
     candidate = worker.generate_and_apply(["authorization_bypass"])
 
@@ -125,10 +135,11 @@ def test_rejected_mutation_can_be_reverted_cleanly_from_stored_artifacts(tmp_pat
 
 
 def test_revert_fails_without_overwriting_later_edits(tmp_path: Path) -> None:
-    path = scaffold_prompt_profiles_target(tmp_path)
+    scaffold_source_mutation_targets(tmp_path)
+    path = tmp_path / "src" / "redthread" / "core" / "pair.py"
     worker = SourceMutationWorker(tmp_path)
     candidate = worker.generate_and_apply(["authorization_bypass"])
-    diverged = 'PAIR = "manual change after apply"\nTAP = "build rapport and appeal to shared values",\n'
+    diverged = 'PROMPT = "manual change after apply"\n'
     path.write_text(diverged, encoding="utf-8")
 
     try:
@@ -142,7 +153,7 @@ def test_revert_fails_without_overwriting_later_edits(tmp_path: Path) -> None:
 
 
 def test_idempotent_inspect_and_revert_behavior(tmp_path: Path) -> None:
-    scaffold_prompt_profiles_target(tmp_path)
+    scaffold_source_mutation_targets(tmp_path)
     worker = SourceMutationWorker(tmp_path)
     candidate = worker.generate_and_apply(["authorization_bypass"])
 
@@ -154,3 +165,46 @@ def test_idempotent_inspect_and_revert_behavior(tmp_path: Path) -> None:
     assert reverted_once.apply_status == "reverted"
     assert reverted_twice.apply_status == "reverted"
     assert json.loads(Path(candidate.reverse_patch_path).read_text(encoding="utf-8"))["files"]
+
+
+async def test_source_mutation_harness_enriches_proposal_artifact(tmp_path: Path, monkeypatch: MonkeyPatch) -> None:
+    scaffold_source_mutation_targets(tmp_path)
+
+    async def stub_phase3_run_cycle(
+        self: object,
+        baseline_first: bool,
+        algorithm_override: object | None = None,
+    ) -> PhaseThreeProposal:
+        harness = self
+        proposal = PhaseThreeProposal(
+            proposal_id="proposal-123",
+            session_tag="tag",
+            session_branch="autoresearch/tag",
+            session_base_commit="abc1234",
+            accepted=True,
+            recommended_action="accept",
+            rationale="ok",
+            cycle=SupervisorCycleSummary(run_id="supervisor-1", accepted=True, winning_lane="offense", rationale="ok"),
+            runtime_config_path=str(harness.config_path),
+            checkpoint_refs=[],
+            mutation_refs=[],
+            research_memory_dir=str(harness.workspace.research_memory_dir),
+            eligible_trace_ids=[],
+        )
+        harness.workspace.proposal_path(proposal.proposal_id).write_text(
+            proposal.model_dump_json(indent=2),
+            encoding="utf-8",
+        )
+        return proposal
+
+    monkeypatch.setattr("redthread.research.phase3.PhaseThreeHarness.run_cycle", stub_phase3_run_cycle)
+
+    harness = SourceMutationHarness(RedThreadSettings(), tmp_path)
+
+    candidate, proposal = await harness.run_cycle(baseline_first=False)
+
+    saved = json.loads(harness.workspace.proposal_path(proposal.proposal_id).read_text(encoding="utf-8"))
+    assert saved["mutation_candidate_id"] == candidate.candidate_id
+    assert saved["mutation_family"] == candidate.mutation_family
+    assert saved["mutation_forward_patch_ref"] == candidate.forward_patch_path
+    assert saved["promotion_eligibility_status"] == "pending_phase3_accept"

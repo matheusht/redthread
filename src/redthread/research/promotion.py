@@ -38,8 +38,8 @@ class ResearchPromotionManager:
     def promote_latest(self, dry_run: bool = False) -> PromotionRecord:
         """Promote the latest accepted proposal through an explicit manifest flow."""
         proposal = self.phase3.latest_proposal()
-        if proposal.recommended_action != "accept":
-            raise RuntimeError("Latest Phase 3 proposal is not accepted.")
+        if proposal.research_plane_status != "accepted":
+            raise RuntimeError("Latest Phase 3 proposal has not been explicitly accepted in the research plane.")
 
         self.workspace.ensure_layout()
         promotion_id = promotion_id_for(proposal)

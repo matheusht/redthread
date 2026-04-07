@@ -132,9 +132,18 @@ class SourceMutationWorker:
         return candidate
 
     def _select_template(self, ranked_slugs: list[str]) -> SourceMutationTemplate:
-        if ranked_slugs and ranked_slugs[0] == "prompt_injection":
-            return TEMPLATES[1]
-        return TEMPLATES[0]
+        if len(TEMPLATES) == 1:
+            return TEMPLATES[0]
+        focus = ranked_slugs[0] if ranked_slugs else "authorization_bypass"
+        if focus == "prompt_injection":
+            return TEMPLATES[min(3, len(TEMPLATES) - 1)]
+        if focus == "sensitive_info_exfiltration":
+            return TEMPLATES[min(5, len(TEMPLATES) - 1)]
+        if focus == "system_prompt_exfiltration":
+            return TEMPLATES[min(4, len(TEMPLATES) - 1)]
+        if focus == "authorization_bypass":
+            return TEMPLATES[min(2, len(TEMPLATES) - 1)]
+        return TEMPLATES[min(6, len(TEMPLATES) - 1)]
 
     def _load_candidate(self, candidate_id: str | None) -> SourceMutationCandidate:
         if candidate_id is None:
