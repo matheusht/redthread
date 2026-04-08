@@ -5,6 +5,14 @@ from pathlib import Path
 from redthread.research.source_mutation_models import SourceMutationCandidate
 
 
+def scaffold_defense_assets_target(root: Path) -> Path:
+    source = Path(__file__).resolve().parents[1] / "src" / "redthread" / "core" / "defense_assets.py"
+    path = root / "src" / "redthread" / "core" / "defense_assets.py"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
+    return path
+
+
 def scaffold_prompt_profiles_target(root: Path) -> Path:
     path = root / "src" / "redthread" / "research" / "prompt_profiles.py"
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -42,10 +50,14 @@ def scaffold_blocked_target(root: Path) -> Path:
     return path
 
 
-def make_candidate(candidate_id: str = "source-mutation-test") -> SourceMutationCandidate:
+def make_candidate(
+    candidate_id: str = "source-mutation-test",
+    mutation_phase: str = "phase5",
+) -> SourceMutationCandidate:
     base = f"/tmp/{candidate_id}"
     return SourceMutationCandidate(
         candidate_id=candidate_id,
+        mutation_phase=mutation_phase,
         mutation_family="pair_authority_hint",
         rationale="test rationale",
         metric_goal="test metric",

@@ -19,8 +19,9 @@ from __future__ import annotations
 import json
 import logging
 import os
+from collections.abc import Sequence
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 from uuid import uuid4
 
 from redthread.config.settings import RedThreadSettings, TargetBackend
@@ -28,15 +29,23 @@ from redthread.config.settings import RedThreadSettings, TargetBackend
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from pyrit.prompt_target import PromptChatTarget
+    from pyrit.models.message import Message as PyritMessage
+    from pyrit.models.message_piece import MessagePiece as PyritMessagePiece
+    from pyrit.prompt_target.common.prompt_chat_target import PromptChatTarget
+    from pyrit.prompt_target.openai.openai_chat_target import (
+        OpenAIChatTarget as PyritOpenAIChatTarget,
+    )
 else:
     PromptChatTarget = Any
+    PyritMessage = Any
+    PyritMessagePiece = Any
+    PyritOpenAIChatTarget = Any
 
 # ── PyRIT Central Memory (must be initialized before any target construction) ─
 _pyrit_memory_initialized = False
 
 
-def _import_pyrit_runtime() -> tuple[Any, Any, Any]:
+def _import_pyrit_runtime() -> tuple[type[PyritMessage], type[PyritMessagePiece], type[PyritOpenAIChatTarget]]:
     """Load PyRIT classes only when a live target is actually needed."""
     from pyrit.models import Message
     from pyrit.models.message_piece import MessagePiece
@@ -92,7 +101,7 @@ def _build_pyrit_target(
     if api_key:
         os.environ["OPENAI_CHAT_KEY"] = api_key
 
-    _, _, OpenAIChatTarget = _import_pyrit_runtime()
+    _, _, openai_chat_target_cls = _import_pyrit_runtime()
 
     if backend == TargetBackend.OLLAMA:
         # Normalize base_url (remove trailing slash to avoid //v1)
@@ -106,27 +115,36 @@ def _build_pyrit_target(
             extra_headers["x-pinggy-no-screen"] = "true"
 
         # Ollama exposes an OpenAI-compatible /v1 endpoint
-        return OpenAIChatTarget(
-            model_name=model,
-            endpoint=f"{normalized_url}/v1",
-            api_key="ollama",  # Ollama ignores the key but OpenAITarget requires non-empty
-            max_tokens=max_tokens,
-            headers=json.dumps(extra_headers) if extra_headers else None,
+        return cast(
+            PromptChatTarget,
+            openai_chat_target_cls(
+                model_name=model,
+                endpoint=f"{normalized_url}/v1",
+                api_key="ollama",  # Ollama ignores the key but OpenAITarget requires non-empty
+                max_tokens=max_tokens,
+                headers=json.dumps(extra_headers) if extra_headers else None,
+            ),
         )
     elif backend == TargetBackend.OPENAI:
-        return OpenAIChatTarget(
-            model_name=model,
-            endpoint="https://api.openai.com/v1",
-            api_key=api_key,
-            max_tokens=max_tokens,
+        return cast(
+            PromptChatTarget,
+            openai_chat_target_cls(
+                model_name=model,
+                endpoint="https://api.openai.com/v1",
+                api_key=api_key,
+                max_tokens=max_tokens,
+            ),
         )
     elif backend == TargetBackend.LLAMA_CPP:
         # llama-server exposes an OpenAI-compatible /v1 endpoint
-        return OpenAIChatTarget(
-            model_name=model,
-            endpoint=f"{base_url.rstrip('/')}/v1",
-            api_key="llama-cpp",  # Placeholder
-            max_tokens=max_tokens,
+        return cast(
+            PromptChatTarget,
+            openai_chat_target_cls(
+                model_name=model,
+                endpoint=f"{base_url.rstrip('/')}/v1",
+                api_key="llama-cpp",  # Placeholder
+                max_tokens=max_tokens,
+            ),
         )
     else:
         raise ValueError(f"Unsupported backend: {backend}")
@@ -167,24 +185,16 @@ class RedThreadTarget:
         if not conversation_id:
             conversation_id = str(uuid4())
 
-        Message, MessagePiece, _ = _import_pyrit_runtime()
-        piece = MessagePiece(
+        message_cls, message_piece_cls, _ = _import_pyrit_runtime()
+        piece = message_piece_cls(
             role="user",
             original_value=prompt,
             conversation_id=conversation_id,
         )
-        message = Message(message_pieces=[piece])
+        message = message_cls(message_pieces=[piece])
 
-        response_messages: list[Message] = await self._target.send_prompt_async(
-            message=message
-        )
-
-        # Extract text from first response message piece
-        if response_messages and response_messages[0].message_pieces:
-            first_piece = response_messages[0].message_pieces[0]
-            return first_piece.converted_value or first_piece.original_value
-
-        return ""
+        response_messages = await self._target.send_prompt_async(message=message)
+        return _extract_response_text(response_messages)
 
     async def send_with_usage(
         self, prompt: str, conversation_id: str = ""
@@ -268,3 +278,14 @@ def build_defense_architect(settings: RedThreadSettings) -> RedThreadTarget:
         model=settings.defense_architect_model,
         settings=settings,
     )
+
+
+def _extract_response_text(response_messages: Sequence[PyritMessage]) -> str:
+    """Return the first text value from a PyRIT response payload."""
+    if not response_messages:
+        return ""
+    first_message = response_messages[0]
+    if not first_message.message_pieces:
+        return ""
+    first_piece = first_message.message_pieces[0]
+    return first_piece.converted_value or first_piece.original_value

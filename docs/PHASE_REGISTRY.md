@@ -18,7 +18,25 @@
 | 5C | Continuous Monitoring | ✅ Complete | 2026-04-04 | Monitor daemon, SQLite storage, drift-triggered campaigns |
 | 5D | CI/CD Integration | ✅ Complete | 2026-04-04 | GitHub Actions, regression gates, dashboard |
 | 6A | Crescendo Algorithm | ✅ Complete | 2026-04-04 | `crescendo.py`, client-side history, escalation loop with backtracking |
-| 7 | Safe Patch Autoresearch | ✅ Complete | 2026-04-07 | `research phase5`, bounded source mutation proposals, explicit research-plane acceptance gate |
+| 7A | Safe Patch Autoresearch (Offense) | ✅ Complete | 2026-04-07 | `research phase5`, bounded offense source mutation proposals, explicit research-plane acceptance gate |
+| 7B | Bounded Defense Prompt Autoresearch | ✅ Complete | 2026-04-08 | `research phase6`, sealed defense prompt mutation gate, reused Phase 3 promotion flow |
+
+## Current Direction
+
+RedThread is now in the **Phase 7 autoresearch era**:
+- `phase5` is the bounded offense lane
+- `phase6` is the bounded defense-prompt lane
+- both lanes still require the existing Phase 3 accept/reject boundary and explicit promotion discipline
+
+This means the project direction after GS-MCTS is no longer “add more jailbreak algorithms first.” The current direction is **safe self-improvement with bounded mutation surfaces**.
+
+## Next Bounded Steps
+
+The next finite milestones after 7A and 7B are:
+1. deepen Phase 6 from prompt-contract checks into richer sealed replay fixtures
+2. add defense-specific promotion and revalidation reporting before production promotion
+3. keep offense mutation surfaces stable while hardening end-to-end defense utility guarantees
+4. only after that, consider widening the mutable defense surface beyond prompt/template assets
 
 ---
 
@@ -289,7 +307,7 @@ TERMINAL EVALUATION
 
 ---
 
-### Phase 7: Safe Patch Autoresearch ✅
+### Phase 7A: Safe Patch Autoresearch (Offense) ✅
 **Objective**: Promote RedThread from bounded prompt/runtime mutation into bounded source-patch autoresearch with explicit operator control.
 
 **Status**: Completed 2026-04-07
@@ -308,3 +326,25 @@ TERMINAL EVALUATION
 | Safety boundary | Phase 3 accept/reject remains mandatory | Promotion must not bypass operator approval |
 | Protected surfaces | evaluation, defense, telemetry, golden dataset, promotion logic | Prevents autoresearch from mutating its own safety gates |
 | CLI strategy | `phase5` is official, `mutate` remains compatible | Preserves existing workflows while clarifying roadmap direction |
+
+### Phase 7B: Bounded Defense Prompt Autoresearch ✅
+**Objective**: Add a conservative defense-side autoresearch lane without opening runtime defense logic or production safety gates to mutation.
+
+**Status**: Completed 2026-04-08
+
+**Deliverables**:
+- `src/redthread/research/phase6.py` — formal Phase 6 wrapper for bounded defense prompt mutation cycles
+- `research phase6 cycle|inspect|revert` — official CLI entrypoints
+- `src/redthread/research/defense_source_mutation_registry.py` — defense prompt mutation templates
+- `src/redthread/research/defense_source_mutation_policy.py` — defense-only mutation surface policy
+- `src/redthread/research/defense_source_mutation_validator.py` — sealed pre-apply validation gate
+- additive mutation-phase provenance in Phase 3 proposals and source-mutation manifests
+- `docs/AUTORESEARCH_PHASE6.md` — defense prompt autoresearch contract
+
+**Key Decisions**:
+| Decision | Choice | Rationale |
+|---|---|---|
+| Mutable surface | defense prompt/template assets only | Keeps runtime defense logic and benign pack sealed |
+| Validation gate | deterministic pre-apply checks | Rejected candidates must fail closed before entering Phase 3 |
+| Proposal flow | reuse existing Phase 3 / promotion flow | Avoids creating a second promotion plane |
+| Scope control | prompt-contract only in v1 | Conservative first step before richer replay fixtures |

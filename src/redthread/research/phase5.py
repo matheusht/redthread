@@ -14,7 +14,7 @@ class PhaseFiveHarness:
     """Formal Phase 5 wrapper around the bounded source mutation harness."""
 
     def __init__(self, settings: RedThreadSettings, root: Path) -> None:
-        self._harness = SourceMutationHarness(settings, root)
+        self._harness = SourceMutationHarness(settings, root, mutation_phase="phase5")
         self.workspace = self._harness.workspace
 
     async def run_cycle(

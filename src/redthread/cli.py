@@ -954,6 +954,12 @@ def research_phase5() -> None:
     pass
 
 
+@research.group(name="phase6")
+def research_phase6() -> None:
+    """Phase 6 bounded defense prompt mutation automation."""
+    pass
+
+
 def _render_source_mutation_cycle(
     candidate: object,
     proposal: object,
@@ -1132,6 +1138,83 @@ def research_mutate_revert(env_file: str) -> None:
 def research_mutate_revert_alias(env_file: str) -> None:
     """Compatibility alias for `research phase5 revert`."""
     research_mutate_revert.callback(env_file)
+
+
+@research_phase6.command(name="cycle")
+@click.option(
+    "--baseline-first",
+    is_flag=True,
+    default=False,
+    help="Run the frozen baseline pack before the evaluation cycle.",
+)
+@click.option(
+    "--env-file",
+    type=click.Path(exists=False),
+    default=".env",
+    help="Path to .env file",
+)
+@click.option(
+    "--verbose",
+    "-v",
+    is_flag=True,
+    default=False,
+    help="Enable debug logging",
+)
+@_research_algorithm_override_option
+def research_phase6_cycle(
+    baseline_first: bool,
+    env_file: str,
+    verbose: bool,
+    algorithm: str | None,
+) -> None:
+    """Apply one bounded defense prompt mutation and evaluate it through Phase 3."""
+    from redthread.research.phase6 import PhaseSixHarness
+
+    _setup_logging(verbose)
+    settings = RedThreadSettings(_env_file=env_file)
+    harness = PhaseSixHarness(settings, Path.cwd())
+    algorithm_override = settings.algorithm.__class__(algorithm) if algorithm is not None else None
+
+    async def _run() -> None:
+        candidate, proposal = await harness.run_cycle(
+            baseline_first=baseline_first,
+            algorithm_override=algorithm_override,
+        )
+        _render_source_mutation_cycle(candidate, proposal, "Phase 6 defense mutation cycle complete")
+
+    asyncio.run(_run())
+
+
+@research_phase6.command(name="inspect")
+@click.option(
+    "--env-file",
+    type=click.Path(exists=False),
+    default=".env",
+    help="Path to .env file",
+)
+def research_phase6_inspect(env_file: str) -> None:
+    """Inspect the latest bounded defense prompt mutation candidate."""
+    from redthread.research.phase6 import PhaseSixHarness
+
+    settings = RedThreadSettings(_env_file=env_file)
+    candidate = PhaseSixHarness(settings, Path.cwd()).inspect_latest()
+    _render_source_mutation_inspect(candidate, "Latest Phase 6 defense mutation")
+
+
+@research_phase6.command(name="revert")
+@click.option(
+    "--env-file",
+    type=click.Path(exists=False),
+    default=".env",
+    help="Path to .env file",
+)
+def research_phase6_revert(env_file: str) -> None:
+    """Revert the latest bounded defense prompt mutation from stored artifacts."""
+    from redthread.research.phase6 import PhaseSixHarness
+
+    settings = RedThreadSettings(_env_file=env_file)
+    candidate = PhaseSixHarness(settings, Path.cwd()).revert_latest()
+    _render_source_mutation_revert(candidate, "Phase 6 defense mutation reverted")
 
 
 @research.group(name="daemon")

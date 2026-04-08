@@ -97,3 +97,69 @@ def test_research_phase5_cycle_cli(monkeypatch: MonkeyPatch) -> None:
 
     assert result.exit_code == 0
     assert "Phase 5" in result.output
+
+
+def test_research_phase6_inspect_cli(monkeypatch: MonkeyPatch) -> None:
+    candidate = make_candidate(candidate_id="source-mutation-phase6", mutation_phase="phase6")
+
+    class StubHarness:
+        def __init__(self, *_args: object, **_kwargs: object) -> None:
+            pass
+
+        def inspect_latest(self) -> SourceMutationCandidate:
+            return candidate
+
+    monkeypatch.setattr("redthread.research.phase6.PhaseSixHarness", StubHarness)
+    result = CliRunner().invoke(main, ["research", "phase6", "inspect"])
+
+    assert result.exit_code == 0
+    assert candidate.candidate_id in result.output
+    assert "Phase 6" in result.output
+
+
+def test_research_phase6_revert_cli(monkeypatch: MonkeyPatch) -> None:
+    candidate = make_candidate(candidate_id="source-mutation-phase6", mutation_phase="phase6")
+    candidate.apply_status = "reverted"
+
+    class StubHarness:
+        def __init__(self, *_args: object, **_kwargs: object) -> None:
+            pass
+
+        def revert_latest(self) -> SourceMutationCandidate:
+            return candidate
+
+    monkeypatch.setattr("redthread.research.phase6.PhaseSixHarness", StubHarness)
+    result = CliRunner().invoke(main, ["research", "phase6", "revert"])
+
+    assert result.exit_code == 0
+    assert "reverted" in result.output
+
+
+def test_research_phase6_cycle_cli(monkeypatch: MonkeyPatch) -> None:
+    candidate = make_candidate(candidate_id="source-mutation-phase6", mutation_phase="phase6")
+    proposal = SimpleNamespace(
+        recommended_action="accept",
+        rationale="ok",
+        algorithm_override="tap",
+        promotion_eligibility_status="pending_phase3_accept",
+        cycle=SimpleNamespace(winning_lane="offense"),
+    )
+
+    class StubHarness:
+        def __init__(self, *_args: object, **_kwargs: object) -> None:
+            pass
+
+        async def run_cycle(
+            self,
+            baseline_first: bool,
+            algorithm_override: object | None = None,
+        ) -> tuple[SourceMutationCandidate, SimpleNamespace]:
+            assert baseline_first is True
+            return candidate, proposal
+
+    monkeypatch.setattr("redthread.research.phase6.PhaseSixHarness", StubHarness)
+    result = CliRunner().invoke(main, ["research", "phase6", "cycle", "--baseline-first"])
+
+    assert result.exit_code == 0
+    assert "Phase 6" in result.output
+    assert candidate.candidate_id in result.output

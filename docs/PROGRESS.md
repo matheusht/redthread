@@ -4,12 +4,25 @@ This document serves as the **historical source of truth** for the RedThread pro
 
 ---
 
-## 🚀 Current Status: Phase 7 Complete (Safe Patch Autoresearch)
+## 🚀 Current Status: Phase 7 Complete (Bounded Autoresearch Era)
 
-As of **2026-04-07**, RedThread has formalized **safe patch autoresearch** as the next project phase. The engine now supports bounded source mutation over offense modules, Phase 3 proposal emission with explicit research-plane acceptance state, and promotion gating that cannot bypass operator approval.
+As of **2026-04-08**, RedThread has completed both bounded autoresearch lanes inside Phase 7:
+- **7A / `research phase5`** for offense-side bounded source mutation
+- **7B / `research phase6`** for defense-side bounded prompt/template mutation
+
+Both lanes emit Phase 3 proposals, preserve explicit research-plane acceptance state, and remain unable to bypass production promotion controls.
 
 > [!TIP]
-> **Key Achievement**: RedThread now has a closed autoresearch path for bounded code changes: generate patch → evaluate on a research branch → explicitly accept/reject → promote only after validation.
+> **Key Achievement**: RedThread now has closed autoresearch paths for both offense and defense prompt improvement: generate patch → validate boundedness → evaluate on a research branch → explicitly accept/reject → promote only after validation.
+
+## 🎯 Next Finite Milestones
+
+The next steps are no longer “add another attack algorithm.”
+
+They are:
+1. deepen Phase 6 validation from prompt-contract checks into richer sealed replay fixtures
+2. add defense-specific promotion and revalidation reporting
+3. prove end-to-end benign utility preservation more rigorously before widening any mutable defense surface
 
 ---
 

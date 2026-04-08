@@ -151,6 +151,35 @@ def test_research_phase5_cycle_accepts_algorithm_override(monkeypatch: MonkeyPat
     assert "tap" in result.output
 
 
+def test_research_phase6_cycle_accepts_algorithm_override(monkeypatch: MonkeyPatch) -> None:
+    candidate = SimpleNamespace(candidate_id="c1", mutation_family="family", apply_status="applied")
+    proposal = SimpleNamespace(
+        recommended_action="accept",
+        rationale="ok",
+        algorithm_override="tap",
+        promotion_eligibility_status="pending_phase3_accept",
+        cycle=SimpleNamespace(winning_lane="offense"),
+    )
+
+    class StubHarness:
+        def __init__(self, *_args: object, **_kwargs: object) -> None:
+            pass
+
+        async def run_cycle(
+            self,
+            baseline_first: bool,
+            algorithm_override: AlgorithmType | None = None,
+        ) -> tuple[SimpleNamespace, SimpleNamespace]:
+            assert getattr(algorithm_override, "value", None) == "tap"
+            return candidate, proposal
+
+    monkeypatch.setattr("redthread.research.phase6.PhaseSixHarness", StubHarness)
+    result = CliRunner().invoke(main, ["research", "phase6", "cycle", "--algorithm", "tap"])
+
+    assert result.exit_code == 0
+    assert "tap" in result.output
+
+
 def test_research_phase4_cycle_accepts_algorithm_override(monkeypatch: MonkeyPatch) -> None:
     candidate = SimpleNamespace(id="m1", kind="runtime", description="desc")
     proposal = SimpleNamespace(recommended_action="accept", rationale="ok", algorithm_override="pair", cycle=SimpleNamespace(winning_lane="offense"))

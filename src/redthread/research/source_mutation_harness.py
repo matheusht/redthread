@@ -17,13 +17,21 @@ from redthread.research.workspace import ResearchWorkspace
 class SourceMutationHarness:
     """Generate one source mutation, then evaluate it through Phase 3."""
 
-    def __init__(self, settings: RedThreadSettings, root: Path) -> None:
+    def __init__(
+        self,
+        settings: RedThreadSettings,
+        root: Path,
+        *,
+        worker: SourceMutationWorker | None = None,
+        mutation_phase: str = "phase5",
+    ) -> None:
         self.settings = settings
         self.root = root
         self.workspace = ResearchWorkspace(root)
         self.workspace.ensure_layout()
-        self.worker = SourceMutationWorker(root)
+        self.worker = worker or SourceMutationWorker(root, mutation_phase=mutation_phase)
         self.phase3 = PhaseThreeHarness(settings, root)
+        self.mutation_phase = mutation_phase
 
     async def run_cycle(
         self,
@@ -38,6 +46,7 @@ class SourceMutationHarness:
             algorithm_override=algorithm_override,
         )
         proposal.mutation_candidate_id = candidate.candidate_id
+        proposal.mutation_phase = candidate.mutation_phase
         proposal.mutation_family = candidate.mutation_family
         proposal.mutation_touched_files = list(candidate.touched_files)
         proposal.mutation_selected_tests = list(candidate.selected_tests)

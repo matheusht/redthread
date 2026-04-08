@@ -13,6 +13,8 @@ Unlike traditional red-teaming tools that merely identify vulnerabilities, RedTh
 ### 1. Advanced Offense Algorithms
 - **TAP (Tree of Attacks with Pruning):** An state-of-the-art search algorithm that explores a horizontal tree of adversarial prompts, using a "Judge" LLM to prune unpromising branches and guide depth-first discovery.
 - **PAIR (Prompt Automatic Iterative Refinement):** A zero-shot Chain-of-Thought loop for linear iterative jailbreaking.
+- **Crescendo:** A multi-turn escalation loop that exploits context-window accumulation and conversational coherence pressure.
+- **GS-MCTS:** A planning-oriented search algorithm that explores conversational next moves under a bounded rollout budget.
 
 ### 2. Multi-Agent Orchestration (Phase 4)
 Built on **LangGraph**, RedThread uses a supervisor-worker architecture to manage the campaign lifecycle:
@@ -51,6 +53,11 @@ Autonomous background monitoring that polls model health every 5 minutes and aut
 - **GitHub Actions:** Automated lint + typecheck + unit tests + golden regression on every PR
 - **LangSmith:** Targeted observability on JudgeAgent and DefenseSynthesis nodes
 - **Campaign Dashboard:** Rich CLI table showing historical campaign health metrics
+
+### 8. Bounded Autoresearch (Phase 7)
+- **`research phase5`** optimizes bounded offense source patches under explicit proposal and promotion gates.
+- **`research phase6`** optimizes bounded defense prompt assets under a sealed pre-apply validation gate.
+- **Operator Control:** Neither lane can bypass Phase 3 accept/reject or production promotion validation.
 
 ---
 
@@ -117,6 +124,8 @@ make test-golden  # Golden Dataset regression (requires OPENAI_API_KEY)
 - `src/redthread/observability/`: LangSmith targeted tracing.
 - `docs/ANTI_HALLUCINATION_SOP.md`: General anti-hallucination engineering standard.
 - `docs/PHASE_REGISTRY.md`: Master registry of all development phases.
+- `docs/AUTORESEARCH_PHASE5.md`: Offense-side bounded source mutation contract.
+- `docs/AUTORESEARCH_PHASE6.md`: Defense-side bounded prompt mutation contract.
 
 ---
 
@@ -125,4 +134,4 @@ RedThread guardrails are **scoped**. A fix generated for an HR bot (based on a h
 
 ---
 
-> **Note**: This project is currently in **Phase 7 (Safe Patch Autoresearch)**. RedThread now treats bounded source mutation and explicit promotion gates as the next architectural frontier beyond the core attack algorithms. See `docs/PHASE_REGISTRY.md` for the full architectural roadmap.
+> **Note**: This project is currently in **Phase 7 (Safe Patch Autoresearch)**, with both bounded offense (`research phase5`) and bounded defense-prompt (`research phase6`) lanes in place. The next roadmap steps are deeper defense validation and promotion-grade revalidation, not more attack-surface expansion. See [docs/PHASE_REGISTRY.md](/Users/matheusvsky/Documents/personal/redthread/docs/PHASE_REGISTRY.md) for the current state and next bounded milestones.

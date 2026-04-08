@@ -69,3 +69,9 @@ RedThread can safely:
 3. evaluate it through the Phase 3 supervisor
 4. revert it safely if rejected
 5. promote it only after explicit research-plane acceptance
+
+## Relationship To Phase 6
+
+Phase 5 remains offense-only.
+
+The follow-up bounded lane is **Phase 6**, which targets defense prompt/template assets under a sealed pre-apply validator instead of mutating runtime defense logic. See `docs/AUTORESEARCH_PHASE6.md`.

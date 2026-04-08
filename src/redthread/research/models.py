@@ -128,6 +128,7 @@ class PhaseThreeProposal(BaseModel):
     research_plane_status: str = "pending"
     promotion_eligibility_status: str = "not_ready"
     mutation_candidate_id: str | None = None
+    mutation_phase: str | None = None
     mutation_family: str | None = None
     mutation_touched_files: list[str] = Field(default_factory=list)
     mutation_selected_tests: list[str] = Field(default_factory=list)

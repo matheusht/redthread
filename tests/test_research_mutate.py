@@ -205,6 +205,7 @@ async def test_source_mutation_harness_enriches_proposal_artifact(tmp_path: Path
 
     saved = json.loads(harness.workspace.proposal_path(proposal.proposal_id).read_text(encoding="utf-8"))
     assert saved["mutation_candidate_id"] == candidate.candidate_id
+    assert saved["mutation_phase"] == "phase5"
     assert saved["mutation_family"] == candidate.mutation_family
     assert saved["mutation_forward_patch_ref"] == candidate.forward_patch_path
     assert saved["promotion_eligibility_status"] == "pending_phase3_accept"
