@@ -109,6 +109,7 @@ class PAIRAttack:
             persona=persona,
             algorithm="pair",
             started_at=datetime.now(timezone.utc),
+            metadata={"target_system_prompt": target_system_prompt} if target_system_prompt else {},
         )
 
         logger.info(

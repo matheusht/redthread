@@ -19,6 +19,7 @@ BLOCKED_PREFIXES = (
     "tests/golden_dataset/",
 )
 BLOCKED_FILES = {
+    "src/redthread/core/defense_assets.py",
     "src/redthread/memory/index.py",
     "src/redthread/research/promotion.py",
     "src/redthread/research/promotion_support.py",

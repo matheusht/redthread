@@ -91,7 +91,7 @@ def fan_out_attack_workers(state: SupervisorState) -> list[Send]:
         worker_state: AttackWorkerState = {
             "settings_dict": state["settings_dict"],
             "persona_dict": persona_dict,
-            "target_system_prompt": config.get("system_prompt", ""),
+            "target_system_prompt": config.get("target_system_prompt", ""),
             "rubric_name": config.get("rubric_name", "authorization_bypass"),
             "result_dict": None,
             "error": None,

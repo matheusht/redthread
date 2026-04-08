@@ -96,6 +96,7 @@ class MCTSAttack:
             persona=persona,
             algorithm="mcts",
             started_at=datetime.now(timezone.utc),
+            metadata={"target_system_prompt": target_system_prompt} if target_system_prompt else {},
         )
 
         if self.settings.dry_run:

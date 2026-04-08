@@ -21,7 +21,6 @@ import yaml
 from redthread.config.settings import RedThreadSettings
 from redthread.models import AttackTrace, ConversationTurn, JudgeVerdict
 from redthread.observability.tracing import traced
-from redthread.pyrit_adapters.targets import build_judge_llm
 
 logger = logging.getLogger(__name__)
 
@@ -78,8 +77,15 @@ class JudgeAgent:
 
     def __init__(self, settings: RedThreadSettings) -> None:
         self.settings = settings
-        self._judge_llm = build_judge_llm(settings)
+        self._judge_llm = None
         self._rubric_cache: dict[str, dict[str, Any]] = {}
+
+    def _get_judge_llm(self) -> Any:
+        if self._judge_llm is None:
+            from redthread.pyrit_adapters.targets import build_judge_llm
+
+            self._judge_llm = build_judge_llm(self.settings)
+        return self._judge_llm
 
     def load_rubric(self, rubric_name: str) -> dict[str, Any]:
         """Load and cache a YAML rubric file."""
@@ -172,7 +178,7 @@ class JudgeAgent:
             rubric_description=rubric.get("description", ""),
             scale_text=scale_text,
         )
-        steps = await self._judge_llm.send(
+        steps = await self._get_judge_llm().send(
             prompt=prompt,
             conversation_id=f"judge-cot-{rubric_name}",
         )
@@ -201,7 +207,7 @@ class JudgeAgent:
             conversation_text=conversation_text,
         )
 
-        raw_verdict = await self._judge_llm.send(
+        raw_verdict = await self._get_judge_llm().send(
             prompt=scoring_prompt,
             conversation_id=f"judge-score-{trace.id}",
         )

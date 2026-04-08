@@ -20,18 +20,29 @@ import json
 import logging
 import os
 from pathlib import Path
+from typing import TYPE_CHECKING, Any
 from uuid import uuid4
-
-from pyrit.models import Message
-from pyrit.models.message_piece import MessagePiece
-from pyrit.prompt_target import OpenAIChatTarget, PromptChatTarget
 
 from redthread.config.settings import RedThreadSettings, TargetBackend
 
 logger = logging.getLogger(__name__)
 
+if TYPE_CHECKING:
+    from pyrit.prompt_target import PromptChatTarget
+else:
+    PromptChatTarget = Any
+
 # ── PyRIT Central Memory (must be initialized before any target construction) ─
 _pyrit_memory_initialized = False
+
+
+def _import_pyrit_runtime() -> tuple[Any, Any, Any]:
+    """Load PyRIT classes only when a live target is actually needed."""
+    from pyrit.models import Message
+    from pyrit.models.message_piece import MessagePiece
+    from pyrit.prompt_target import OpenAIChatTarget
+
+    return Message, MessagePiece, OpenAIChatTarget
 
 
 def ensure_pyrit_memory_initialized(db_dir: Path | None = None) -> None:
@@ -80,6 +91,8 @@ def _build_pyrit_target(
     # even when api_key is provided to the constructor. We bridge this gap here.
     if api_key:
         os.environ["OPENAI_CHAT_KEY"] = api_key
+
+    _, _, OpenAIChatTarget = _import_pyrit_runtime()
 
     if backend == TargetBackend.OLLAMA:
         # Normalize base_url (remove trailing slash to avoid //v1)
@@ -154,6 +167,7 @@ class RedThreadTarget:
         if not conversation_id:
             conversation_id = str(uuid4())
 
+        Message, MessagePiece, _ = _import_pyrit_runtime()
         piece = MessagePiece(
             role="user",
             original_value=prompt,

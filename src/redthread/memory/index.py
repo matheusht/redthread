@@ -11,6 +11,7 @@ from pathlib import Path
 
 from redthread.config.settings import RedThreadSettings
 from redthread.core.defense_synthesis import (
+    BenignValidationCheck,
     DeploymentRecord,
     ValidationResult,
     VulnerabilityClassification,
@@ -114,11 +115,21 @@ class MemoryIndex:
 
     def _deserialize(self, line: str) -> DeploymentRecord:
         payload = json.loads(line)
+        validation_payload = payload["validation"]
+        benign_checks = [
+            BenignValidationCheck(**check)
+            for check in validation_payload.get("benign_checks", [])
+        ]
         return DeploymentRecord(
             trace_id=payload["trace_id"],
             guardrail_clause=payload["guardrail_clause"],
             classification=VulnerabilityClassification(**payload["classification"]),
-            validation=ValidationResult(**payload["validation"]),
+            validation=ValidationResult(
+                **{
+                    **validation_payload,
+                    "benign_checks": benign_checks,
+                }
+            ),
             target_model=payload["target_model"],
             target_system_prompt_hash=payload["target_system_prompt_hash"],
             metadata=payload.get("metadata", {}),
@@ -129,11 +140,12 @@ class MemoryIndex:
 
     def _format_entry(self, record: DeploymentRecord) -> str:
         validation = record.validation
-        validated_str = (
-            f"✅ YES (residual score: {validation.judge_score:.2f})"
-            if validation.passed
-            else f"❌ NO — guardrail insufficient (replay score: {validation.judge_score:.2f})"
-        )
+        status = "✅ YES" if validation.passed else "❌ NO"
+        benign_suffix = ""
+        if validation.benign_checks:
+            passed = sum(1 for check in validation.benign_checks if check.passed)
+            benign_suffix = f" | benign pack: {passed}/{len(validation.benign_checks)}"
+        validated_str = f"{status} (residual score: {validation.judge_score:.2f}{benign_suffix})"
         return _ENTRY_TEMPLATE.format(
             timestamp=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
             category=record.classification.category,

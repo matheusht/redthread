@@ -64,7 +64,17 @@ class DefenseTool(RedThreadTool[DefenseInput]):
                     "category": record.classification.category,
                     "severity": record.classification.severity,
                     "validation_passed": record.validation.passed,
+                    "exploit_replay_passed": record.validation.exploit_replay_passed,
+                    "benign_passed": record.validation.benign_passed,
                     "replay_score": record.validation.judge_score,
+                    "benign_checks": [
+                        {
+                            "case_id": check.case_id,
+                            "passed": check.passed,
+                            "failure_reason": check.failure_reason,
+                        }
+                        for check in record.validation.benign_checks
+                    ],
                 },
                 result_id=data.result_id,
             )

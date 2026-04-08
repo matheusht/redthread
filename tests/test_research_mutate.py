@@ -6,9 +6,9 @@ from pathlib import Path
 from pytest import MonkeyPatch
 
 from redthread.config.settings import RedThreadSettings
+from redthread.research.models import PhaseThreeProposal, SupervisorCycleSummary
 from redthread.research.phase3 import PhaseThreeHarness
 from redthread.research.source_mutation_harness import SourceMutationHarness
-from redthread.research.models import PhaseThreeProposal, SupervisorCycleSummary
 from redthread.research.source_mutation_registry import SourceMutationTemplate
 from redthread.research.source_mutation_worker import SourceMutationWorker
 from tests.research_mutation_helpers import (
