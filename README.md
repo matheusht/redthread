@@ -42,7 +42,7 @@ Composite Agent Stability Index (ASI) monitors target model health in real time:
 ### 5. Anti-Hallucination SOP (Phase 5A)
 A comprehensive engineering standard ensuring all LLM outputs are grounded, verifiable, and regression-tested:
 - **Decoupled Defense Architect** — guardrail synthesis uses a dedicated frontier model (GPT-4o), not the uncensored Attacker
-- **Golden Dataset** — 30 curated test traces for CI/CD regression gates
+- **Golden Dataset** — 30 curated traces for sealed regression gates and optional live judge validation
 - **DeepEval Pipeline** — Pytest-native faithfulness checks (≥ 0.92 threshold)
 - **Per-Role Temperature Control** — deterministic evaluation (0.0), near-deterministic defense (0.1), creative attacks (0.8)
 
@@ -50,14 +50,14 @@ A comprehensive engineering standard ensuring all LLM outputs are grounded, veri
 Autonomous background monitoring that polls model health every 5 minutes and auto-triggers campaigns when ASI drops below threshold.
 
 ### 7. CI/CD Integration (Phase 5D)
-- **GitHub Actions:** Automated lint + typecheck + unit tests + golden regression on every PR
+- **GitHub Actions:** Automated lint + typecheck + unit tests + offline golden regression on every PR
 - **LangSmith:** Targeted observability on JudgeAgent and DefenseSynthesis nodes
 - **Campaign Dashboard:** Rich CLI table showing historical campaign health metrics
 
 ### 8. Bounded Autoresearch (Phase 7)
 - **`research phase5`** optimizes bounded offense source patches under explicit proposal and promotion gates.
 - **`research phase6`** optimizes bounded defense prompt assets under a sealed pre-apply validation gate.
-- **Operator Control:** Neither lane can bypass Phase 3 accept/reject or production promotion validation.
+- **Promotion Boundary:** Neither lane can bypass production promotion validation, and both continue to emit Phase 3 proposal artifacts for review.
 
 ---
 
@@ -109,8 +109,14 @@ redthread monitor status
 ### Local CI Gate
 ```bash
 make ci   # lint + typecheck + unit tests
-make test-golden  # Golden Dataset regression (requires OPENAI_API_KEY)
+make test-golden  # Golden Dataset evaluation; live judge validation requires backend access and OPENAI_API_KEY
 ```
+
+### Validation Notes
+
+- Current PR CI runs the golden dataset in a sealed `REDTHREAD_DRY_RUN=true` mode to catch offline regressions consistently.
+- Live backend validation is still valuable, but it is a separate check from the sealed CI gate.
+- Current `redthread run --dry-run` is not a fully sealed offline campaign path; persona generation and backend initialization can still require model or provider setup.
 
 ---
 

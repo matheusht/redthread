@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -170,16 +171,14 @@ async def test_full_evaluation_mocked() -> None:
         "SCORE: 5"
     )
 
-    with patch("redthread.pyrit_adapters.targets._build_pyrit_target"):
+    mock_llm = SimpleNamespace(send=AsyncMock(side_effect=[cot_response, scoring_response]))
+
+    with patch("redthread.pyrit_adapters.targets.build_judge_llm", return_value=mock_llm):
         judge = JudgeAgent(settings)
-        # Mock the LLM calls
-        judge._judge_llm.send = AsyncMock(
-            side_effect=[cot_response, scoring_response]
-        )
 
         trace = make_trace_with_compliance(persona)
         verdict = await judge.evaluate(trace, "authorization_bypass")
 
         assert verdict.score == 5.0
         assert verdict.is_jailbreak is True
-        assert judge._judge_llm.send.call_count == 2  # CoT + scoring
+        assert mock_llm.send.call_count == 2  # CoT + scoring

@@ -1,8 +1,12 @@
-"""Golden Dataset Regression Tests — CI/CD Gates.
+"""Golden Dataset Regression Tests — sealed regression gates.
 
 Anti-Hallucination SOP: These tests use the Golden Dataset to verify that
 the JudgeAgent and Defense Synthesis pipeline maintain their accuracy
 across code changes.
+
+In CI, this suite commonly runs with ``REDTHREAD_DRY_RUN=true`` as a sealed,
+offline regression gate. With dry run disabled and live backends configured,
+the same suite can exercise the live judge path instead.
 
 CI/CD Gate Thresholds:
   - Faithfulness >= 0.92

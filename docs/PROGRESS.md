@@ -10,10 +10,10 @@ As of **2026-04-08**, RedThread has completed both bounded autoresearch lanes in
 - **7A / `research phase5`** for offense-side bounded source mutation
 - **7B / `research phase6`** for defense-side bounded prompt/template mutation
 
-Both lanes emit Phase 3 proposals, preserve explicit research-plane acceptance state, and remain unable to bypass production promotion controls.
+Both lanes emit Phase 3 proposals, preserve research-plane acceptance state in their artifacts, and remain unable to bypass production promotion controls.
 
 > [!TIP]
-> **Key Achievement**: RedThread now has closed autoresearch paths for both offense and defense prompt improvement: generate patch → validate boundedness → evaluate on a research branch → explicitly accept/reject → promote only after validation.
+> **Key Achievement**: RedThread now has closed autoresearch paths for both offense and defense prompt improvement: generate patch → validate boundedness → evaluate on a research branch → review the resulting proposal artifacts → promote only after validation.
 
 ## 🎯 Next Finite Milestones
 
@@ -59,7 +59,7 @@ They are:
     *   *Solution*: **Model Decoupling (Anti-Hallucination SOP)**. Enforced a hard boundary where the Defense Architect *must* be a frontier model (GPT-4o) and *must* operate at `temperature=0.1`.
 *   **⚠️ Problem: Regression Gating & API Costs**.
     *   *Symptom*: Running the 30-trace Golden Dataset with GPT-4o cost ~$0.50 per run, discouraging frequent developer testing.
-    *   *Solution*: Implemented **GPT-4o-Mini Support**. Added a CLI `--model` override to the `test` command. Developers can now verify the **100% pass baseline** for **$0.02** per run, with final validation shifting to GPT-4o only for production merges.
+    *   *Solution*: Implemented **GPT-4o-Mini Support**. Added a CLI `--model` override to the `test` command. Developers can now run lower-cost curated dataset checks quickly, while deeper live-provider validation can still be run separately with GPT-4o when needed.
 
 ---
 
@@ -75,7 +75,7 @@ The following metrics were recorded on **2026-04-03** using the `redthread test 
 | **Safe Recall** | ≥ 0.90 | **1.00** | ✅ PASS |
 
 > [!IMPORTANT]
-> This baseline mathematically proves that the RedThread Judge is capable of identifying 100% of the curated threats and 100% of the safe refusals in the golden dataset.
+> This recorded run achieved perfect scores on the curated golden dataset. It is strong evidence for the current benchmark set, but it should not be treated as a permanent proof of live-model behavior across all environments.
 
 ---
 
@@ -106,10 +106,10 @@ redthread run --objective "data exfiltration" --algorithm tap --personas 3
 
 ### Running Regression Suite
 ```bash
-# Optimized cost (gpt-4o-mini)
+# Lower-cost curated dataset run
 redthread test golden --model gpt-4o-mini
 
-# Production level (gpt-4o)
+# Live-provider validation
 redthread test golden
 ```
 
@@ -120,3 +120,5 @@ redthread test golden
 - **"Attacker Drift"**: 3B/8B local models occasionally lose context. Solve via `--width` pruning.
 - **Dependency Isolation**: Use `.venv/bin/python` to ensure `pydantic` and `pyrit` are found.
 - **Ollama Persistence**: `ollama serve` must be running locally for offensive workers.
+- **Sealed CI vs live validation**: PR CI commonly uses sealed dry-run golden checks; full live-provider validation is a separate confidence pass.
+- **Dry-run semantics**: `redthread run --dry-run` is not yet a fully sealed offline path because some flows still initialize backend-dependent components.
