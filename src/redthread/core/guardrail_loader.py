@@ -11,6 +11,7 @@ import hashlib
 import logging
 
 from redthread.config.settings import RedThreadSettings
+from redthread.core.defense_assets import append_guardrails_to_system_prompt
 from redthread.memory.index import MemoryIndex
 from redthread.models import CampaignConfig
 
@@ -55,12 +56,8 @@ class GuardrailLoader:
         )
         self._log_audit_event(self.settings.target_model, prompt_hash, clauses)
 
-        # Inject at the bottom of the system prompt
-        injected_prompt = config.target_system_prompt + "\n\n## ACTIVE SECURITY GUARDRAILS\n"
-        for i, clause in enumerate(clauses, 1):
-            injected_prompt += f"{i}. {clause}\n"
-
-        return config.model_copy(update={"target_system_prompt": injected_prompt.strip()})
+        injected_prompt = append_guardrails_to_system_prompt(config.target_system_prompt, clauses)
+        return config.model_copy(update={"target_system_prompt": injected_prompt})
 
     def _log_audit_event(self, target_model: str, prompt_hash: str, clauses: list[str]) -> None:
         """Write a structured audit event to logs/guardrail_audit.jsonl."""

@@ -242,7 +242,11 @@ async def test_validate_dry_run_always_passes() -> None:
     assert validation.judge_score == pytest.approx(1.0)
     assert validation.exploit_replay_passed is True
     assert validation.benign_passed is True
+    assert validation.validation_mode == "dry_run"
+    assert validation.replay_suite_id == "default-defense-replay-v1"
     assert validation.benign_checks
+    assert validation.replay_cases
+    assert validation.replay_cases[0].kind == "exploit"
     assert all(check.passed for check in validation.benign_checks)
 
 
@@ -313,7 +317,9 @@ async def test_validate_blocks_deploy_when_benign_pack_regresses() -> None:
     assert validation.exploit_replay_passed is True
     assert validation.benign_passed is False
     assert validation.passed is False
-    assert "benign regression" in validation.failure_reason
+    assert validation.validation_mode == "live"
+    assert any(case.kind == "benign" and not case.passed for case in validation.replay_cases)
+    assert "response refused a benign prompt" in validation.failure_reason
     assert fake_target.closed is True
 
 
@@ -349,6 +355,8 @@ async def test_validate_requires_exploit_block_and_benign_pack_pass() -> None:
     assert validation.exploit_replay_passed is True
     assert validation.benign_passed is True
     assert validation.passed is True
+    assert validation.validation_mode == "live"
+    assert validation.replay_cases[0].kind == "exploit"
     assert all(check.passed for check in validation.benign_checks)
 
 

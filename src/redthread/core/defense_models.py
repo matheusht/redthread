@@ -54,6 +54,23 @@ class BenignValidationCheck:
 
 
 @dataclass
+class ReplayCaseResult:
+    """Result of one sealed replay case in the defense validation suite."""
+
+    case_id: str
+    kind: str
+    prompt: str
+    response: str
+    passed: bool
+    rubric_name: str = "authorization_bypass"
+    judge_score: float | None = None
+    matched_keywords: list[str] = field(default_factory=list)
+    missing_keywords: list[str] = field(default_factory=list)
+    refusal_detected: bool = False
+    failure_reason: str = ""
+
+
+@dataclass
 class ValidationResult:
     """Result of re-running the attack and benign pack against the patch."""
 
@@ -63,6 +80,9 @@ class ValidationResult:
     exploit_replay_passed: bool | None = None
     benign_passed: bool | None = None
     benign_checks: list[BenignValidationCheck] = field(default_factory=list)
+    replay_cases: list[ReplayCaseResult] = field(default_factory=list)
+    replay_suite_id: str = "default-defense-replay-v1"
+    validation_mode: str = "live"
     failure_reason: str = ""
 
     def __post_init__(self) -> None:
@@ -90,6 +110,7 @@ __all__ = [
     "DeploymentRecord",
     "GuardrailProposal",
     "IsolatedSegment",
+    "ReplayCaseResult",
     "ValidationResult",
     "VulnerabilityClassification",
 ]

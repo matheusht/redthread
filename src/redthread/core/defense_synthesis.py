@@ -6,21 +6,19 @@ import hashlib
 
 from redthread.config.settings import RedThreadSettings
 from redthread.core.defense_assets import (
-    BENIGN_DEFENSE_PACK,
     DEFENSE_ARCHITECT_SYSTEM_PROMPT,
     DEFENSE_ARCHITECT_USER_TEMPLATE,
-    build_guardrail_prefix,
-    evaluate_benign_response,
 )
 from redthread.core.defense_models import (
-    BenignValidationCheck,
     DeploymentRecord,
     GuardrailProposal,
     IsolatedSegment,
+    ReplayCaseResult,
     ValidationResult,
     VulnerabilityClassification,
 )
 from redthread.core.defense_parser import parse_architect_output
+from redthread.core.defense_replay_runner import DefenseReplayRunner
 from redthread.models import AttackResult, AttackTrace, JudgeVerdict
 from redthread.observability.tracing import traced
 
@@ -135,88 +133,38 @@ class DefenseSynthesisEngine:
         trace: AttackTrace,
     ) -> ValidationResult:
         """Replay the exploit and a sealed benign pack against a patched target."""
+        runner = DefenseReplayRunner(self.settings.success_threshold)
         if self.settings.dry_run:
-            checks = [
-                BenignValidationCheck(
-                    case_id=case.case_id,
-                    prompt=case.prompt,
-                    response="[dry-run] benign prompt preserved.",
-                    passed=True,
-                    matched_keywords=list(case.required_terms or case.any_of_terms),
-                )
-                for case in BENIGN_DEFENSE_PACK
-            ]
-            return ValidationResult(
-                passed=True,
-                replay_response="[dry-run] Guardrail blocked replay.",
-                judge_score=1.0,
-                exploit_replay_passed=True,
-                benign_passed=True,
-                benign_checks=checks,
-            )
+            return await runner.run_dry(segment.attack_payload, proposal.clause)
 
         from redthread.evaluation.judge import JudgeAgent
-        from redthread.models import ConversationTurn
         from redthread.pyrit_adapters.targets import build_target
 
         patched_target = None
-        replay_response = ""
-        residual_score = self.settings.success_threshold
-        exploit_replay_passed = False
-        benign_checks: list[BenignValidationCheck] = []
-        prefix = build_guardrail_prefix(proposal.clause)
         try:
             patched_target = build_target(self.settings)
             judge = JudgeAgent(self.settings)
-            replay_response = await patched_target.send(
-                prompt=prefix + segment.attack_payload,
-                conversation_id=f"sandbox-replay-{trace.id}",
+            return await runner.run_live(
+                target=patched_target,
+                judge=judge,
+                attack_payload=segment.attack_payload,
+                guardrail_clause=proposal.clause,
+                trace_id=trace.id,
             )
-            replay_turn = ConversationTurn(
-                turn_number=1,
-                attacker_prompt=segment.attack_payload,
-                target_response=replay_response,
-            )
-            residual_score = judge.evaluate_turn(replay_turn, rubric_name="authorization_bypass")
-            exploit_replay_passed = residual_score < self.settings.success_threshold
-            for case in BENIGN_DEFENSE_PACK:
-                response = await patched_target.send(
-                    prompt=prefix + case.prompt,
-                    conversation_id=f"sandbox-benign-{trace.id}-{case.case_id}",
-                )
-                benign_checks.append(evaluate_benign_response(case, response))
         except Exception as exc:
             return ValidationResult(
                 passed=False,
-                replay_response=replay_response,
-                judge_score=residual_score,
-                exploit_replay_passed=exploit_replay_passed,
+                replay_response="",
+                judge_score=self.settings.success_threshold,
+                exploit_replay_passed=False,
                 benign_passed=False,
-                benign_checks=benign_checks,
+                replay_suite_id="default-defense-replay-v1",
+                validation_mode="live",
                 failure_reason=f"defense validation failed: {exc}",
             )
         finally:
             if patched_target is not None:
                 patched_target.close()
-
-        benign_passed = bool(benign_checks) and all(check.passed for check in benign_checks)
-        failures: list[str] = []
-        if not exploit_replay_passed:
-            failures.append(
-                f"exploit replay score {residual_score:.2f} >= threshold {self.settings.success_threshold:.2f}"
-            )
-        failed_cases = [check.case_id for check in benign_checks if not check.passed]
-        if failed_cases:
-            failures.append(f"benign regression in cases: {', '.join(failed_cases)}")
-        return ValidationResult(
-            passed=exploit_replay_passed and benign_passed,
-            replay_response=replay_response,
-            judge_score=residual_score,
-            exploit_replay_passed=exploit_replay_passed,
-            benign_passed=benign_passed,
-            benign_checks=benign_checks,
-            failure_reason="; ".join(failures),
-        )
 
     def _deploy(
         self,
@@ -243,11 +191,11 @@ class DefenseSynthesisEngine:
 
 
 __all__ = [
-    "BenignValidationCheck",
     "DefenseSynthesisEngine",
     "DeploymentRecord",
     "GuardrailProposal",
     "IsolatedSegment",
+    "ReplayCaseResult",
     "ValidationResult",
     "VulnerabilityClassification",
 ]

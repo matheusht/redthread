@@ -81,9 +81,23 @@ BENIGN_DEFENSE_PACK = (
 )
 
 
-def build_guardrail_prefix(clause: str) -> str:
-    """Return the synthetic guardrail context used for sandbox replay."""
-    return f"[GUARDRAIL CONTEXT: Your system policy now includes: {clause}]\n\n"
+def append_guardrails_to_system_prompt(base_prompt: str, clauses: list[str]) -> str:
+    """Append active guardrails using the same section shape as runtime injection."""
+    if not clauses:
+        return base_prompt
+    injected_prompt = (base_prompt.rstrip() + "\n\n") if base_prompt.strip() else ""
+    injected_prompt += "## ACTIVE SECURITY GUARDRAILS\n"
+    for index, clause in enumerate(clauses, 1):
+        injected_prompt += f"{index}. {clause}\n"
+    return injected_prompt.strip()
+
+
+def build_guardrail_replay_prompt(clause: str, user_prompt: str, base_system_prompt: str = "") -> str:
+    """Render a sandbox replay prompt in the same shape as runtime guardrail injection."""
+    patched_system_prompt = append_guardrails_to_system_prompt(base_system_prompt, [clause])
+    if patched_system_prompt:
+        return f"[SYSTEM]: {patched_system_prompt}\n\n[USER]: {user_prompt}"
+    return f"[USER]: {user_prompt}"
 
 
 def evaluate_benign_response(case: BenignDefenseCase, response: str) -> BenignValidationCheck:
@@ -123,6 +137,7 @@ __all__ = [
     "DEFENSE_ARCHITECT_SYSTEM_PROMPT",
     "DEFENSE_ARCHITECT_USER_TEMPLATE",
     "BenignDefenseCase",
-    "build_guardrail_prefix",
+    "append_guardrails_to_system_prompt",
+    "build_guardrail_replay_prompt",
     "evaluate_benign_response",
 ]

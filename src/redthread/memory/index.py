@@ -10,8 +10,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from redthread.config.settings import RedThreadSettings
+from redthread.core.defense_models import BenignValidationCheck, ReplayCaseResult
 from redthread.core.defense_synthesis import (
-    BenignValidationCheck,
     DeploymentRecord,
     ValidationResult,
     VulnerabilityClassification,
@@ -120,6 +120,10 @@ class MemoryIndex:
             BenignValidationCheck(**check)
             for check in validation_payload.get("benign_checks", [])
         ]
+        replay_cases = [
+            ReplayCaseResult(**case)
+            for case in validation_payload.get("replay_cases", [])
+        ]
         return DeploymentRecord(
             trace_id=payload["trace_id"],
             guardrail_clause=payload["guardrail_clause"],
@@ -128,6 +132,7 @@ class MemoryIndex:
                 **{
                     **validation_payload,
                     "benign_checks": benign_checks,
+                    "replay_cases": replay_cases,
                 }
             ),
             target_model=payload["target_model"],
