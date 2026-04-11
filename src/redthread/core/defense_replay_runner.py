@@ -7,12 +7,9 @@ ValidationResult with per-case evidence.
 
 from __future__ import annotations
 
-from redthread.core.defense_assets import (
-    BENIGN_DEFENSE_PACK,
-    build_guardrail_replay_prompt,
-    evaluate_benign_response,
-)
+from redthread.core.defense_assets import evaluate_benign_response
 from redthread.core.defense_models import BenignValidationCheck, ReplayCaseResult, ValidationResult
+from redthread.core.defense_replay_fixtures import build_default_replay_suite, render_replay_prompt
 from redthread.models import ConversationTurn
 
 
@@ -24,25 +21,26 @@ class DefenseReplayRunner:
 
     async def run_dry(self, attack_payload: str, guardrail_clause: str) -> ValidationResult:
         """Return a deterministic sealed replay result for dry-run mode."""
+        suite = build_default_replay_suite(attack_payload)
         exploit_case = ReplayCaseResult(
-            case_id="exploit_replay",
+            case_id=suite.exploit.case_id,
             kind="exploit",
-            prompt=build_guardrail_replay_prompt(guardrail_clause, attack_payload),
+            prompt=render_replay_prompt(guardrail_clause, suite.exploit.attack_payload),
             response="[dry-run] Guardrail blocked replay.",
             passed=True,
-            rubric_name="authorization_bypass",
+            rubric_name=suite.exploit.rubric_name,
             judge_score=1.0,
         )
         benign_cases = [
             ReplayCaseResult(
                 case_id=case.case_id,
                 kind="benign",
-                prompt=build_guardrail_replay_prompt(guardrail_clause, case.prompt),
+                prompt=render_replay_prompt(guardrail_clause, case.prompt),
                 response="[dry-run] benign prompt preserved.",
                 passed=True,
                 matched_keywords=list(case.required_terms or case.any_of_terms),
             )
-            for case in BENIGN_DEFENSE_PACK
+            for case in suite.benign_cases
         ]
         return ValidationResult(
             passed=True,
@@ -52,7 +50,7 @@ class DefenseReplayRunner:
             benign_passed=True,
             benign_checks=[self._to_benign_check(case) for case in benign_cases],
             replay_cases=[exploit_case, *benign_cases],
-            replay_suite_id="default-defense-replay-v1",
+            replay_suite_id=suite.suite_id,
             validation_mode="dry_run",
         )
 
@@ -67,7 +65,8 @@ class DefenseReplayRunner:
         rubric_name: str = "authorization_bypass",
     ) -> ValidationResult:
         """Run replay cases against a live patched target and score the results."""
-        exploit_prompt = build_guardrail_replay_prompt(guardrail_clause, attack_payload)
+        suite = build_default_replay_suite(attack_payload)
+        exploit_prompt = render_replay_prompt(guardrail_clause, suite.exploit.attack_payload)
         replay_response = await target.send(
             prompt=exploit_prompt,
             conversation_id=f"sandbox-replay-{trace_id}",
@@ -77,15 +76,15 @@ class DefenseReplayRunner:
             attacker_prompt=attack_payload,
             target_response=replay_response,
         )
-        residual_score = judge.evaluate_turn(replay_turn, rubric_name=rubric_name)
+        residual_score = judge.evaluate_turn(replay_turn, rubric_name=suite.exploit.rubric_name or rubric_name)
         exploit_passed = residual_score < self.success_threshold
         exploit_case = ReplayCaseResult(
-            case_id="exploit_replay",
+            case_id=suite.exploit.case_id,
             kind="exploit",
             prompt=exploit_prompt,
             response=replay_response,
             passed=exploit_passed,
-            rubric_name=rubric_name,
+            rubric_name=suite.exploit.rubric_name or rubric_name,
             judge_score=residual_score,
             failure_reason=(
                 ""
@@ -96,8 +95,8 @@ class DefenseReplayRunner:
 
         benign_cases: list[ReplayCaseResult] = []
         benign_checks = []
-        for case in BENIGN_DEFENSE_PACK:
-            benign_prompt = build_guardrail_replay_prompt(guardrail_clause, case.prompt)
+        for case in suite.benign_cases:
+            benign_prompt = render_replay_prompt(guardrail_clause, case.prompt)
             response = await target.send(
                 prompt=benign_prompt,
                 conversation_id=f"sandbox-benign-{trace_id}-{case.case_id}",
@@ -128,7 +127,7 @@ class DefenseReplayRunner:
             benign_passed=benign_passed,
             benign_checks=benign_checks,
             replay_cases=[exploit_case, *benign_cases],
-            replay_suite_id="default-defense-replay-v1",
+            replay_suite_id=suite.suite_id,
             validation_mode="live",
             failure_reason="; ".join(failures),
         )

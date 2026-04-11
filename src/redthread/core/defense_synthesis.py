@@ -13,12 +13,12 @@ from redthread.core.defense_models import (
     DeploymentRecord,
     GuardrailProposal,
     IsolatedSegment,
-    ReplayCaseResult,
     ValidationResult,
     VulnerabilityClassification,
 )
 from redthread.core.defense_parser import parse_architect_output
 from redthread.core.defense_replay_runner import DefenseReplayRunner
+from redthread.core.defense_reporting_models import DefenseValidationReport
 from redthread.models import AttackResult, AttackTrace, JudgeVerdict
 from redthread.observability.tracing import traced
 
@@ -176,6 +176,11 @@ class DefenseSynthesisEngine:
     ) -> DeploymentRecord:
         """Create the structured deployment record for memory/promotion."""
         prompt_hash = hashlib.sha256((segment.target_system_prompt or "").encode("utf-8")).hexdigest()[:16]
+        report = self._build_validation_report(
+            trace_id=trace_id,
+            proposal=proposal,
+            validation=validation,
+        )
         return DeploymentRecord(
             trace_id=trace_id,
             guardrail_clause=proposal.clause,
@@ -183,10 +188,43 @@ class DefenseSynthesisEngine:
             validation=validation,
             target_model=target_model,
             target_system_prompt_hash=prompt_hash,
+            validation_report=report,
             metadata={
                 "rationale": proposal.rationale,
                 "deployed": validation.passed,
+                "replay_suite_id": validation.replay_suite_id,
+                "validation_mode": validation.validation_mode,
+                "failed_case_ids": report.failed_case_ids,
             },
+        )
+
+    def _build_validation_report(
+        self,
+        *,
+        trace_id: str,
+        proposal: GuardrailProposal,
+        validation: ValidationResult,
+    ) -> DefenseValidationReport:
+        exploit_cases = [case.case_id for case in validation.replay_cases if case.kind == "exploit"]
+        benign_cases = [case.case_id for case in validation.replay_cases if case.kind == "benign"]
+        failed_cases = [case.case_id for case in validation.replay_cases if not case.passed]
+        benign_passes = sum(1 for case in validation.replay_cases if case.kind == "benign" and case.passed)
+        benign_total = sum(1 for case in validation.replay_cases if case.kind == "benign")
+        return DefenseValidationReport(
+            trace_id=trace_id,
+            replay_suite_id=validation.replay_suite_id,
+            validation_mode=validation.validation_mode,
+            exploit_case_ids=exploit_cases,
+            benign_case_ids=benign_cases,
+            failed_case_ids=failed_cases,
+            blocked_attack_summary=(
+                "exploit replay blocked"
+                if validation.exploit_replay_passed
+                else f"exploit replay not blocked (score={validation.judge_score:.2f})"
+            ),
+            benign_utility_summary=f"benign suite {benign_passes}/{benign_total} passed",
+            guardrail_clause=proposal.clause,
+            rationale=proposal.rationale,
         )
 
 
@@ -195,7 +233,6 @@ __all__ = [
     "DeploymentRecord",
     "GuardrailProposal",
     "IsolatedSegment",
-    "ReplayCaseResult",
     "ValidationResult",
     "VulnerabilityClassification",
 ]

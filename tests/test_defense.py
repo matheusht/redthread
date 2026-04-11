@@ -266,6 +266,9 @@ async def test_defense_synthesis_full_pipeline_dry_run() -> None:
     assert record.trace_id == result.trace.id
     assert record.validation.passed is True
     assert record.validation.benign_passed is True
+    assert record.validation_report is not None
+    assert record.validation_report.replay_suite_id == "default-defense-replay-v1"
+    assert record.validation_report.blocked_attack_summary == "exploit replay blocked"
     assert record.guardrail_clause != ""
     assert record.classification.category != ""
 
@@ -440,3 +443,52 @@ def test_memory_index_content_format(tmp_path: Path) -> None:  # type: ignore[no
     assert "CRITICAL" in content
     assert "LLM02" in content
     assert "✅ YES" in content
+
+
+def test_memory_index_roundtrips_validation_report(tmp_path: Path) -> None:  # type: ignore[no-untyped-def]
+    """JSONL deployment records should preserve structured validation reports."""
+    from redthread.core.defense_reporting_models import DefenseValidationReport
+    from redthread.core.defense_synthesis import DeploymentRecord, ValidationResult
+    from redthread.memory.index import MemoryIndex
+
+    settings = make_settings().model_copy(update={"memory_dir": tmp_path})
+    index = MemoryIndex(settings)
+    record = DeploymentRecord(
+        trace_id="trace-report-1",
+        guardrail_clause="Do not reveal secrets.",
+        classification=VulnerabilityClassification(
+            category="prompt_injection",
+            owasp_ref="LLM01",
+            mitre_atlas_ref="AML.T0054",
+            severity="HIGH",
+            attack_vector="role-play override",
+        ),
+        validation=ValidationResult(
+            passed=True,
+            replay_response="blocked",
+            judge_score=1.0,
+            replay_suite_id="default-defense-replay-v1",
+            validation_mode="live",
+        ),
+        target_model="llama3.2:3b",
+        target_system_prompt_hash="hash-1",
+        validation_report=DefenseValidationReport(
+            trace_id="trace-report-1",
+            replay_suite_id="default-defense-replay-v1",
+            validation_mode="live",
+            exploit_case_ids=["exploit_replay"],
+            benign_case_ids=["capital_france"],
+            failed_case_ids=[],
+            blocked_attack_summary="exploit replay blocked",
+            benign_utility_summary="benign suite 1/1 passed",
+            guardrail_clause="Do not reveal secrets.",
+            rationale="narrow fix",
+        ),
+    )
+
+    index.append(record)
+    loaded = index.iter_deployments()[0]
+
+    assert loaded.validation_report is not None
+    assert loaded.validation_report.trace_id == "trace-report-1"
+    assert loaded.validation_report.blocked_attack_summary == "exploit replay blocked"

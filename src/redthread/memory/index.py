@@ -11,6 +11,7 @@ from pathlib import Path
 
 from redthread.config.settings import RedThreadSettings
 from redthread.core.defense_models import BenignValidationCheck, ReplayCaseResult
+from redthread.core.defense_reporting_models import DefenseValidationReport
 from redthread.core.defense_synthesis import (
     DeploymentRecord,
     ValidationResult,
@@ -124,6 +125,7 @@ class MemoryIndex:
             ReplayCaseResult(**case)
             for case in validation_payload.get("replay_cases", [])
         ]
+        report_payload = payload.get("validation_report")
         return DeploymentRecord(
             trace_id=payload["trace_id"],
             guardrail_clause=payload["guardrail_clause"],
@@ -137,6 +139,7 @@ class MemoryIndex:
             ),
             target_model=payload["target_model"],
             target_system_prompt_hash=payload["target_system_prompt_hash"],
+            validation_report=DefenseValidationReport(**report_payload) if report_payload else None,
             metadata=payload.get("metadata", {}),
         )
 
