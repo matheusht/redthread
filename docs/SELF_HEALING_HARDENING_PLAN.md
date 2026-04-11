@@ -78,3 +78,8 @@ Move RedThread from "can generate defenses" to "can validate and promote defense
 - add CLI inspection for individual deployment validation reports, not just promotion summaries
 - split protected replay/report/gate surfaces from mutable defense-prompt surfaces in more explicit docs
 - decide whether replay-suite expansion should come from curated fixtures under `tests/` or dedicated runtime fixture artifacts
+
+### Follow-through
+- explicit boundary doc added: `docs/DEFENSE_MUTATION_BOUNDARIES.md`
+- runtime boundary registry extracted to `src/redthread/research/defense_mutation_boundaries.py`
+- Phase 6 policy now consumes the shared boundary registry so docs and runtime name the same protected surfaces

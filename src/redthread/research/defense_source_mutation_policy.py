@@ -4,30 +4,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
-ALLOWED_DEFENSE_FILE = "src/redthread/core/defense_assets.py"
-BLOCKED_DEFENSE_PREFIXES = (
-    "src/redthread/evaluation/",
-    "src/redthread/telemetry/",
-    "tests/golden_dataset/",
-)
-BLOCKED_DEFENSE_FILES = {
-    "src/redthread/core/defense_synthesis.py",
-    "src/redthread/core/defense_replay_fixtures.py",
-    "src/redthread/core/defense_replay_runner.py",
-    "src/redthread/core/defense_reporting_models.py",
-    "src/redthread/core/defense_utility_gate.py",
-    "src/redthread/memory/index.py",
-    "src/redthread/research/promotion.py",
-    "src/redthread/research/promotion_support.py",
-}
+from redthread.research.defense_mutation_boundaries import is_allowed_defense_mutation_path
 
 
 def is_allowed_defense_target(path: Path, root: Path) -> bool:
     """Return True when the file is within the bounded phase6 surface."""
-    rel = path.relative_to(root).as_posix()
-    if rel in BLOCKED_DEFENSE_FILES or any(rel.startswith(prefix) for prefix in BLOCKED_DEFENSE_PREFIXES):
-        return False
-    return rel == ALLOWED_DEFENSE_FILE
+    return is_allowed_defense_mutation_path(path, root)
 
 
 def validate_defense_touched_files(paths: list[Path], root: Path) -> bool:
