@@ -57,9 +57,20 @@ Move RedThread from "can generate defenses" to "can validate and promote defense
 - aligned guardrail loader injection with shared composition helper
 - preserved replay evidence in memory serialization
 - added `DefenseValidationReport`
+- wired validation reports into promotion artifacts
+- made promotion fail when eligible defense records lack validation reports
+- added explicit defense utility gate enforcement in promotion
+- made promotion reject non-promotable validation modes, benign regressions, and missing replay-case evidence
+
+### Process log
+1. stabilized replay semantics first so validation and injection use the same prompt-shaping path
+2. extracted replay execution into dedicated modules before adding more rules
+3. introduced structured validation reports so evidence exists independently of markdown summaries
+4. wired evidence into promotion artifacts before enforcing a utility gate
+5. added utility-gate checks only after report and replay evidence were available
+6. expanded targeted tests after each slice to keep the hardening work evidence-backed
 
 ### Next
-- wire validation reports into promotion artifacts
 - expose report summaries in CLI inspection paths
-- add utility gate enforcement before promotion
 - expand replay fixtures beyond the starter suite
+- split protected replay/report/gate surfaces from mutable defense-prompt surfaces in docs and tests

@@ -162,6 +162,56 @@ def test_promote_fails_when_eligible_defense_record_lacks_validation_report(tmp_
     assert MemoryIndex(settings).known_trace_ids() == []
 
 
+def test_promote_fails_when_defense_record_uses_non_promotable_validation_mode(tmp_path: Path) -> None:
+    workspace = ResearchWorkspace(tmp_path)
+    workspace.ensure_layout()
+    settings = RedThreadSettings().model_copy(update={"memory_dir": tmp_path / "memory"})
+    append_research_record(workspace, "trace-123", validation_mode="dry_run")
+    payload = proposal_payload(workspace, eligible_trace_ids=["trace-123"])
+    workspace.proposal_path("proposal-123").write_text(json.dumps(payload), encoding="utf-8")
+
+    promotion = ResearchPromotionManager(settings, tmp_path).promote_latest()
+
+    assert promotion.validation_status == "failed"
+    validation = json.loads(Path(promotion.validation_ref).read_text(encoding="utf-8"))
+    assert validation["defense_utility_gate"]["trace-123"] == ["validation_mode_not_promotable:dry_run"]
+    assert "failed utility gate" in validation["failure_reason"]
+    assert MemoryIndex(settings).known_trace_ids() == []
+
+
+def test_promote_fails_when_defense_record_has_benign_regression(tmp_path: Path) -> None:
+    workspace = ResearchWorkspace(tmp_path)
+    workspace.ensure_layout()
+    settings = RedThreadSettings().model_copy(update={"memory_dir": tmp_path / "memory"})
+    append_research_record(workspace, "trace-123", benign_passed=False)
+    payload = proposal_payload(workspace, eligible_trace_ids=["trace-123"])
+    workspace.proposal_path("proposal-123").write_text(json.dumps(payload), encoding="utf-8")
+
+    promotion = ResearchPromotionManager(settings, tmp_path).promote_latest()
+
+    assert promotion.validation_status == "failed"
+    validation = json.loads(Path(promotion.validation_ref).read_text(encoding="utf-8"))
+    assert "benign_suite_not_preserved" in validation["defense_utility_gate"]["trace-123"]
+    assert "replay_case_failures_present" in validation["defense_utility_gate"]["trace-123"]
+    assert MemoryIndex(settings).known_trace_ids() == []
+
+
+def test_promote_fails_when_defense_record_lacks_replay_case_evidence(tmp_path: Path) -> None:
+    workspace = ResearchWorkspace(tmp_path)
+    workspace.ensure_layout()
+    settings = RedThreadSettings().model_copy(update={"memory_dir": tmp_path / "memory"})
+    append_research_record(workspace, "trace-123", include_replay_cases=False)
+    payload = proposal_payload(workspace, eligible_trace_ids=["trace-123"])
+    workspace.proposal_path("proposal-123").write_text(json.dumps(payload), encoding="utf-8")
+
+    promotion = ResearchPromotionManager(settings, tmp_path).promote_latest()
+
+    assert promotion.validation_status == "failed"
+    validation = json.loads(Path(promotion.validation_ref).read_text(encoding="utf-8"))
+    assert "missing_replay_case_evidence" in validation["defense_utility_gate"]["trace-123"]
+    assert MemoryIndex(settings).known_trace_ids() == []
+
+
 def test_promote_only_appends_records_linked_to_accepted_proposal(tmp_path: Path) -> None:
     workspace = ResearchWorkspace(tmp_path)
     workspace.ensure_layout()

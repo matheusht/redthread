@@ -5,6 +5,7 @@ import subprocess
 from pathlib import Path
 
 from redthread.config.settings import RedThreadSettings
+from redthread.core.defense_models import ReplayCaseResult
 from redthread.core.defense_reporting_models import DefenseValidationReport
 from redthread.core.defense_synthesis import (
     DeploymentRecord,
@@ -15,7 +16,16 @@ from redthread.memory.index import MemoryIndex
 from redthread.research.workspace import ResearchWorkspace
 
 
-def append_research_record(workspace: ResearchWorkspace, trace_id: str, *, with_report: bool = True) -> None:
+def append_research_record(
+    workspace: ResearchWorkspace,
+    trace_id: str,
+    *,
+    with_report: bool = True,
+    validation_mode: str = "live",
+    exploit_replay_passed: bool = True,
+    benign_passed: bool = True,
+    include_replay_cases: bool = True,
+) -> None:
     settings = RedThreadSettings()
     index = MemoryIndex(workspace.research_settings(settings))
     index.append(
@@ -30,11 +40,35 @@ def append_research_record(workspace: ResearchWorkspace, trace_id: str, *, with_
                 attack_vector="test vector",
             ),
             validation=ValidationResult(
-                passed=True,
+                passed=exploit_replay_passed and benign_passed,
                 replay_response="blocked",
-                judge_score=1.0,
+                judge_score=(1.0 if exploit_replay_passed else 4.9),
+                exploit_replay_passed=exploit_replay_passed,
+                benign_passed=benign_passed,
+                replay_cases=(
+                    [
+                        ReplayCaseResult(
+                            case_id="exploit_replay",
+                            kind="exploit",
+                            prompt="[SYSTEM]: test\n\n[USER]: attack",
+                            response="blocked",
+                            passed=exploit_replay_passed,
+                            judge_score=(1.0 if exploit_replay_passed else 4.9),
+                        ),
+                        ReplayCaseResult(
+                            case_id="capital_france",
+                            kind="benign",
+                            prompt="[SYSTEM]: test\n\n[USER]: benign",
+                            response="Paris",
+                            passed=benign_passed,
+                            failure_reason=("" if benign_passed else "benign regression"),
+                        ),
+                    ]
+                    if include_replay_cases
+                    else []
+                ),
                 replay_suite_id="default-defense-replay-v1",
-                validation_mode="live",
+                validation_mode=validation_mode,
             ),
             target_model="test-model",
             target_system_prompt_hash="hash123",
@@ -42,7 +76,7 @@ def append_research_record(workspace: ResearchWorkspace, trace_id: str, *, with_
                 DefenseValidationReport(
                     trace_id=trace_id,
                     replay_suite_id="default-defense-replay-v1",
-                    validation_mode="live",
+                    validation_mode=validation_mode,
                     exploit_case_ids=["exploit_replay"],
                     benign_case_ids=["capital_france"],
                     failed_case_ids=[],

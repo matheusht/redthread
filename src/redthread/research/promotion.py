@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from redthread.config.settings import RedThreadSettings
+from redthread.core.defense_utility_gate import evaluate_defense_record
 from redthread.memory.index import MemoryIndex
 from redthread.research.checkpoints import load_promotion_checkpoint, save_promotion_checkpoint
 from redthread.research.models import (
@@ -131,6 +132,11 @@ class ResearchPromotionManager:
         records = eligible_records(self.settings, self.workspace, proposal)
         report_coverage = defense_report_coverage(records)
         missing_reports = [trace_id for trace_id, state in report_coverage.items() if state != "present"]
+        utility_gate = {
+            trace_id: evaluate_defense_record(record).failed_checks
+            for trace_id, record in sorted(records.items())
+        }
+        weak_records = [trace_id for trace_id, failed_checks in utility_gate.items() if failed_checks]
         failure_reason = None
         status = "validated"
         if not proposal.accepted:
@@ -148,6 +154,9 @@ class ResearchPromotionManager:
         elif bool(manifest.revalidation_policy.get("require_defense_validation_report")) and missing_reports:
             status = "failed"
             failure_reason = f"eligible defense records missing validation reports: {', '.join(missing_reports)}"
+        elif weak_records:
+            status = "failed"
+            failure_reason = f"eligible defense records failed utility gate: {', '.join(weak_records)}"
 
         validation = PromotionValidationResult(
             promotion_id=manifest.promotion_id,
@@ -156,6 +165,7 @@ class ResearchPromotionManager:
             control_gate_passed=control_gate_passed,
             eligible_trace_ids=sorted(records),
             defense_report_coverage=report_coverage,
+            defense_utility_gate=utility_gate,
             validation_status=status,
             failure_reason=failure_reason,
         )

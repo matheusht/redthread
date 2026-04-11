@@ -195,6 +195,7 @@ class PromotionValidationResult(BaseModel):
     control_gate_passed: bool
     eligible_trace_ids: list[str] = Field(default_factory=list)
     defense_report_coverage: dict[str, str] = Field(default_factory=dict)
+    defense_utility_gate: dict[str, list[str]] = Field(default_factory=dict)
     validation_status: str
     failure_reason: str | None = None
 

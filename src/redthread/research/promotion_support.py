@@ -62,6 +62,5 @@ def eligible_records(
     for record in source_index.iter_deployments():
         if eligible and record.trace_id not in eligible:
             continue
-        if record.validation.passed:
-            records[record.trace_id] = record
+        records[record.trace_id] = record
     return records
