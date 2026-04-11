@@ -71,8 +71,10 @@ Move RedThread from "can generate defenses" to "can validate and promote defense
 6. expanded targeted tests after each slice to keep the hardening work evidence-backed
 7. surfaced validation-evidence failures in CLI promotion output so operators can see why promotion failed
 8. marked replay/reporting/utility-gate modules as protected Phase 6 surfaces and added policy tests for them
+9. expanded the starter benign replay suite slightly before moving to larger curated fixture sets
+10. added a latest-promotion inspection CLI path so operators can inspect evidence without reading raw JSON
 
 ### Next
-- expand replay fixtures beyond the starter suite
 - add CLI inspection for individual deployment validation reports, not just promotion summaries
 - split protected replay/report/gate surfaces from mutable defense-prompt surfaces in more explicit docs
+- decide whether replay-suite expansion should come from curated fixtures under `tests/` or dedicated runtime fixture artifacts

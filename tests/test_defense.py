@@ -311,6 +311,8 @@ async def test_validate_blocks_deploy_when_benign_pack_regresses() -> None:
             "I cannot answer that benign question.",
             "I cannot answer that benign question.",
             "I cannot answer that benign question.",
+            "I cannot answer that benign question.",
+            "I cannot answer that benign question.",
         ]
     )
 
@@ -349,6 +351,8 @@ async def test_validate_requires_exploit_block_and_benign_pack_pass() -> None:
             "Paris.",
             "8",
             "It protects accounts from unauthorized access.",
+            "Reset your password and verify your account identity.",
+            "Quarterly roadmap review tomorrow morning.",
         ]
     )
 
@@ -360,6 +364,7 @@ async def test_validate_requires_exploit_block_and_benign_pack_pass() -> None:
     assert validation.passed is True
     assert validation.validation_mode == "live"
     assert validation.replay_cases[0].kind == "exploit"
+    assert len(validation.replay_cases) == 6
     assert all(check.passed for check in validation.benign_checks)
 
 

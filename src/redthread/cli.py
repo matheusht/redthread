@@ -1475,5 +1475,51 @@ def research_promote(env_file: str, dry_run: bool) -> None:
     )
 
 
+@research.command(name="promote-inspect")
+@click.option(
+    "--env-file",
+    type=click.Path(exists=False),
+    default=".env",
+    help="Path to .env file",
+)
+def research_promote_inspect(env_file: str) -> None:
+    """Inspect the latest promotion result and validation evidence."""
+    import json
+
+    from redthread.research.workspace import ResearchWorkspace
+
+    _ = RedThreadSettings(_env_file=env_file)
+    workspace = ResearchWorkspace(Path.cwd())
+    workspace.ensure_layout()
+    results = sorted(workspace.promotions_dir.glob("*/promotion_result.json"), key=lambda path: path.stat().st_mtime)
+    if not results:
+        raise click.ClickException("No promotion results found.")
+
+    result_path = results[-1]
+    result_payload = json.loads(result_path.read_text(encoding="utf-8"))
+    validation_path = Path(result_payload["validation_ref"])
+    validation_payload = json.loads(validation_path.read_text(encoding="utf-8"))
+    weak_records = {
+        trace_id: failures
+        for trace_id, failures in validation_payload.get("defense_utility_gate", {}).items()
+        if failures
+    }
+    coverage = validation_payload.get("defense_report_coverage", {})
+    lines = [
+        f"  Promotion: {result_payload['promotion_id']}",
+        f"  Proposal:  {result_payload['proposal_id']}",
+        f"  Status:    {result_payload['validation_status']}",
+        f"  Reports:   {len(result_payload.get('defense_report_refs', []))}",
+        f"  Eligible:  {', '.join(validation_payload.get('eligible_trace_ids', [])) or 'none'}",
+        f"  Coverage:  {', '.join(f'{trace}={state}' for trace, state in sorted(coverage.items())) or 'none'}",
+    ]
+    if validation_payload.get("failure_reason"):
+        lines.append(f"  Failure:   {validation_payload['failure_reason']}")
+    if weak_records:
+        rendered = '; '.join(f"{trace_id} -> {', '.join(failures)}" for trace_id, failures in sorted(weak_records.items()))
+        lines.append(f"  Utility:   {rendered}")
+    console.print(Panel("[bold]Latest promotion[/bold]\n\n" + "\n".join(lines), border_style="cyan"))
+
+
 if __name__ == "__main__":
     main()
