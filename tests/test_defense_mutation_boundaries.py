@@ -17,6 +17,7 @@ def test_phase6_boundary_registry_has_no_overlap() -> None:
 
 def test_phase6_boundary_registry_includes_replay_reporting_and_gate_surfaces(tmp_path: Path) -> None:
     blocked = [
+        tmp_path / "src" / "redthread" / "core" / "defense_replay_artifacts.py",
         tmp_path / "src" / "redthread" / "core" / "defense_replay_runner.py",
         tmp_path / "src" / "redthread" / "core" / "defense_reporting_models.py",
         tmp_path / "src" / "redthread" / "core" / "defense_utility_gate.py",

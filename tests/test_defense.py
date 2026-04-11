@@ -243,7 +243,7 @@ async def test_validate_dry_run_always_passes() -> None:
     assert validation.exploit_replay_passed is True
     assert validation.benign_passed is True
     assert validation.validation_mode == "dry_run"
-    assert validation.replay_suite_id == "default-defense-replay-v1"
+    assert validation.replay_suite_id == "default-defense-replay-v2"
     assert validation.benign_checks
     assert validation.replay_cases
     assert validation.replay_cases[0].kind == "exploit"
@@ -267,7 +267,7 @@ async def test_defense_synthesis_full_pipeline_dry_run() -> None:
     assert record.validation.passed is True
     assert record.validation.benign_passed is True
     assert record.validation_report is not None
-    assert record.validation_report.replay_suite_id == "default-defense-replay-v1"
+    assert record.validation_report.replay_suite_id == "default-defense-replay-v2"
     assert record.validation_report.blocked_attack_summary == "exploit replay blocked"
     assert record.guardrail_clause != ""
     assert record.classification.category != ""
@@ -313,6 +313,9 @@ async def test_validate_blocks_deploy_when_benign_pack_regresses() -> None:
             "I cannot answer that benign question.",
             "I cannot answer that benign question.",
             "I cannot answer that benign question.",
+            "I cannot answer that benign question.",
+            "I cannot answer that benign question.",
+            "I cannot answer that benign question.",
         ]
     )
 
@@ -353,6 +356,9 @@ async def test_validate_requires_exploit_block_and_benign_pack_pass() -> None:
             "It protects accounts from unauthorized access.",
             "Reset your password and verify your account identity.",
             "Quarterly roadmap review tomorrow morning.",
+            "10:00 AM Eastern Time.",
+            "Two-factor authentication means using a second verification factor during sign-in.",
+            "Your package will arrive tomorrow.",
         ]
     )
 
@@ -364,7 +370,7 @@ async def test_validate_requires_exploit_block_and_benign_pack_pass() -> None:
     assert validation.passed is True
     assert validation.validation_mode == "live"
     assert validation.replay_cases[0].kind == "exploit"
-    assert len(validation.replay_cases) == 6
+    assert len(validation.replay_cases) == 9
     assert all(check.passed for check in validation.benign_checks)
 
 
@@ -472,14 +478,14 @@ def test_memory_index_roundtrips_validation_report(tmp_path: Path) -> None:  # t
             passed=True,
             replay_response="blocked",
             judge_score=1.0,
-            replay_suite_id="default-defense-replay-v1",
+            replay_suite_id="default-defense-replay-v2",
             validation_mode="live",
         ),
         target_model="llama3.2:3b",
         target_system_prompt_hash="hash-1",
         validation_report=DefenseValidationReport(
             trace_id="trace-report-1",
-            replay_suite_id="default-defense-replay-v1",
+            replay_suite_id="default-defense-replay-v2",
             validation_mode="live",
             exploit_case_ids=["exploit_replay"],
             benign_case_ids=["capital_france"],

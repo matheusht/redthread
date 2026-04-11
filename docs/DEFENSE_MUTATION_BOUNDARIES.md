@@ -23,6 +23,7 @@ These are prompt-contract assets. They influence how the Defense Architect reaso
 Phase 6 must not mutate:
 
 ### Replay and evidence
+- `src/redthread/core/defense_replay_artifacts.py`
 - `src/redthread/core/defense_replay_fixtures.py`
 - `src/redthread/core/defense_replay_runner.py`
 - `src/redthread/core/defense_reporting_models.py`
@@ -47,6 +48,7 @@ The mutable surface may change **how candidate defenses are proposed**.
 
 The protected surface preserves **how candidate defenses are validated and trusted**:
 - replay semantics stay sealed
+- replay fixtures come from dedicated runtime artifacts, not `tests/`
 - validation reports stay structured
 - utility gates stay fail-closed
 - memory serialization stays stable

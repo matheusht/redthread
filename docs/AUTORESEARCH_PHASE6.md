@@ -36,6 +36,12 @@ Protected surface:
 - memory indexing semantics
 - production promotion logic
 
+## Replay Fixture Source
+
+Richer sealed replay fixtures now come from dedicated runtime artifacts under `src/redthread/core/`, not from `tests/`.
+
+That keeps production validation logic independent from test-only fixtures while preserving a sealed, protected replay surface.
+
 ## Pre-Apply Gate
 
 Every Phase 6 candidate must pass a sealed validation step before it is applied:

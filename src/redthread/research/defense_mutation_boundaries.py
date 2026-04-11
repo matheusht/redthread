@@ -16,6 +16,7 @@ PROTECTED_DEFENSE_MUTATION_PREFIXES = (
 
 PROTECTED_DEFENSE_MUTATION_FILES = (
     "src/redthread/core/defense_synthesis.py",
+    "src/redthread/core/defense_replay_artifacts.py",
     "src/redthread/core/defense_replay_fixtures.py",
     "src/redthread/core/defense_replay_runner.py",
     "src/redthread/core/defense_reporting_models.py",

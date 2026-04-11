@@ -83,3 +83,5 @@ Move RedThread from "can generate defenses" to "can validate and promote defense
 - explicit boundary doc added: `docs/DEFENSE_MUTATION_BOUNDARIES.md`
 - runtime boundary registry extracted to `src/redthread/research/defense_mutation_boundaries.py`
 - Phase 6 policy now consumes the shared boundary registry so docs and runtime name the same protected surfaces
+- replay-suite expansion path chosen: dedicated runtime fixture artifacts under `src/redthread/core/`, not `tests/`
+- default sealed replay suite expanded from the starter benign pack into the runtime artifact-backed `default-defense-replay-v2`

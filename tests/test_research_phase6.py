@@ -40,6 +40,7 @@ def test_phase6_policy_allows_only_defense_prompt_asset(tmp_path: Path) -> None:
 
 def test_phase6_policy_blocks_replay_reporting_and_utility_gate_surfaces(tmp_path: Path) -> None:
     blocked_paths = [
+        tmp_path / "src" / "redthread" / "core" / "defense_replay_artifacts.py",
         tmp_path / "src" / "redthread" / "core" / "defense_replay_fixtures.py",
         tmp_path / "src" / "redthread" / "core" / "defense_replay_runner.py",
         tmp_path / "src" / "redthread" / "core" / "defense_reporting_models.py",

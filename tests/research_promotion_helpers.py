@@ -67,7 +67,7 @@ def append_research_record(
                     if include_replay_cases
                     else []
                 ),
-                replay_suite_id="default-defense-replay-v1",
+                replay_suite_id="default-defense-replay-v2",
                 validation_mode=validation_mode,
             ),
             target_model="test-model",
@@ -75,7 +75,7 @@ def append_research_record(
             validation_report=(
                 DefenseValidationReport(
                     trace_id=trace_id,
-                    replay_suite_id="default-defense-replay-v1",
+                    replay_suite_id="default-defense-replay-v2",
                     validation_mode=validation_mode,
                     exploit_case_ids=["exploit_replay"],
                     benign_case_ids=["capital_france"],

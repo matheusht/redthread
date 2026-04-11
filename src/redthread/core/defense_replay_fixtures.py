@@ -4,13 +4,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from redthread.core.defense_assets import (
-    BENIGN_DEFENSE_PACK,
-    BenignDefenseCase,
-    build_guardrail_replay_prompt,
+from redthread.core.defense_assets import BenignDefenseCase, build_guardrail_replay_prompt
+from redthread.core.defense_replay_artifacts import (
+    DEFAULT_BENIGN_REPLAY_CASES,
+    DEFAULT_DEFENSE_REPLAY_SUITE_ID,
 )
-
-_DEFAULT_SUITE_ID = "default-defense-replay-v1"
 
 
 @dataclass(frozen=True)
@@ -34,9 +32,9 @@ class DefenseReplaySuite:
 def build_default_replay_suite(attack_payload: str) -> DefenseReplaySuite:
     """Return the default sealed replay suite for one isolated exploit."""
     return DefenseReplaySuite(
-        suite_id=_DEFAULT_SUITE_ID,
+        suite_id=DEFAULT_DEFENSE_REPLAY_SUITE_ID,
         exploit=ExploitReplayFixture(case_id="exploit_replay", attack_payload=attack_payload),
-        benign_cases=tuple(BENIGN_DEFENSE_PACK),
+        benign_cases=tuple(DEFAULT_BENIGN_REPLAY_CASES),
     )
 
 
