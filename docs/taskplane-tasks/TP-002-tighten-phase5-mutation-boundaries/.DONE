@@ -1,0 +1,11 @@
+TP-002 complete on 2026-04-10.
+
+Implemented:
+- narrowed Phase 5 source mutation policy from broad `src/redthread/research/` prefix to explicit file allowlist
+- preserved `src/redthread/research/prompt_profiles.py` and existing offense targets
+- strengthened tests for allowed targets and rejection of unrelated research files
+- aligned `docs/AUTORESEARCH_PHASE5.md` to the bounded surface
+
+Verification:
+- uv run --extra dev python -m pytest tests/test_research_mutate.py -q
+- uv run --extra dev python -m ruff check src/redthread/research/source_mutation_policy.py tests/test_research_mutate.py

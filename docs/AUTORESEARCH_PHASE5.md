@@ -20,7 +20,7 @@ Allowed mutation surface:
 - `src/redthread/core/tap.py`
 - `src/redthread/core/crescendo.py`
 - `src/redthread/core/mcts.py`
-- `src/redthread/research/`
+- `src/redthread/research/prompt_profiles.py`
 
 Protected surface:
 - evaluation and judge logic
@@ -28,6 +28,7 @@ Protected surface:
 - telemetry
 - golden dataset
 - production promotion logic
+- unrelated research modules outside `src/redthread/research/prompt_profiles.py`
 
 ## CLI
 

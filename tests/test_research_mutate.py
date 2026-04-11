@@ -9,6 +9,7 @@ from redthread.config.settings import RedThreadSettings
 from redthread.research.models import PhaseThreeProposal, SupervisorCycleSummary
 from redthread.research.phase3 import PhaseThreeHarness
 from redthread.research.source_mutation_harness import SourceMutationHarness
+from redthread.research.source_mutation_policy import is_allowed_target
 from redthread.research.source_mutation_registry import SourceMutationTemplate
 from redthread.research.source_mutation_worker import SourceMutationWorker
 from tests.research_mutation_helpers import (
@@ -43,12 +44,46 @@ def test_patch_touching_blocked_file_is_rejected(tmp_path: Path, monkeypatch: Mo
         raise AssertionError("expected blocked target rejection")
 
 
-def test_mutation_worker_only_selects_approved_files(tmp_path: Path) -> None:
+def test_phase5_allowlist_keeps_current_template_targets(tmp_path: Path) -> None:
     scaffold_source_mutation_targets(tmp_path)
 
-    candidate = SourceMutationWorker(tmp_path).generate_and_apply(["authorization_bypass"])
+    allowed_targets = (
+        "src/redthread/core/pair.py",
+        "src/redthread/core/tap.py",
+        "src/redthread/core/crescendo.py",
+        "src/redthread/core/mcts.py",
+        "src/redthread/personas/generator.py",
+        "src/redthread/research/prompt_profiles.py",
+    )
 
-    assert candidate.target_files == ["src/redthread/core/pair.py"]
+    assert all(is_allowed_target(tmp_path / rel, tmp_path) for rel in allowed_targets)
+
+
+def test_unrelated_research_file_is_rejected(tmp_path: Path, monkeypatch: MonkeyPatch) -> None:
+    path = tmp_path / "src" / "redthread" / "research" / "source_mutation_worker.py"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text('HEADER = "blocked by narrow phase5 boundary"\n', encoding="utf-8")
+    monkeypatch.setattr(
+        "redthread.research.source_mutation_worker.TEMPLATES",
+        (
+            SourceMutationTemplate(
+                mutation_family="blocked_research_file",
+                rationale="test",
+                metric_goal="test",
+                target_file="src/redthread/research/source_mutation_worker.py",
+                old='HEADER = "blocked by narrow phase5 boundary"',
+                new='HEADER = "mutated"',
+                selected_tests=("tests/test_research_mutate.py",),
+            ),
+        ),
+    )
+
+    try:
+        SourceMutationWorker(tmp_path).generate_and_apply(["authorization_bypass"])
+    except ValueError as exc:
+        assert "failed validation" in str(exc)
+    else:
+        raise AssertionError("expected unrelated research target rejection")
 
 
 def test_forward_and_reverse_patch_artifacts_are_written_before_apply(tmp_path: Path) -> None:
