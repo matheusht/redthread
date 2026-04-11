@@ -6,6 +6,7 @@ logs/
 memory/
 autoresearch/runtime/
 
+.pi
 # Python caches
 __pycache__/
 *.py[cod]
@@ -53,3 +54,19 @@ ollama.ipynb
 # OS
 .DS_Store
 Thumbs.db
+
+# Taskplane runtime artifacts (machine-specific, do not commit)
+.pi/batch-state.json
+.pi/batch-history.json
+.pi/lane-state-*
+.pi/merge-result-*
+.pi/merge-request-*
+.pi/worker-conversation-*
+.pi/orch-logs/
+.pi/orch-abort-signal
+.pi/settings.json
+.worktrees/
+.taskplane-tasks/
+
+# Pi project-local packages (if using pi install -l)
+.pi/npm/
