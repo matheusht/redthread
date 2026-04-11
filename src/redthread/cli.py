@@ -1521,5 +1521,39 @@ def research_promote_inspect(env_file: str) -> None:
     console.print(Panel("[bold]Latest promotion[/bold]\n\n" + "\n".join(lines), border_style="cyan"))
 
 
+@research.command(name="report-inspect")
+@click.option(
+    "--env-file",
+    type=click.Path(exists=False),
+    default=".env",
+    help="Path to .env file",
+)
+@click.option(
+    "--memory-source",
+    type=click.Choice(["research", "production"], case_sensitive=False),
+    default="research",
+    show_default=True,
+    help="Which memory plane to inspect for deployment validation reports.",
+)
+@click.option("--trace-id", default=None, help="Optional trace_id filter for one deployment validation report.")
+def research_report_inspect(env_file: str, memory_source: str, trace_id: str | None) -> None:
+    """Inspect deployment validation reports from research or production memory."""
+    from redthread.research.report_inspection import load_validation_reports, render_validation_report
+
+    settings = RedThreadSettings(_env_file=env_file)
+    try:
+        records = load_validation_reports(settings, Path.cwd(), memory_source.lower(), trace_id)
+    except LookupError as exc:
+        raise click.ClickException(str(exc)) from exc
+
+    for record in records:
+        console.print(
+            Panel(
+                "[bold]Deployment validation report[/bold]\n\n" + render_validation_report(record, memory_source.lower()),
+                border_style="magenta",
+            )
+        )
+
+
 if __name__ == "__main__":
     main()
