@@ -19,6 +19,8 @@ from redthread.research.models import (
 from redthread.research.phase3 import PhaseThreeHarness
 from redthread.research.promotion_support import (
     control_limit,
+    defense_report_coverage,
+    defense_report_refs,
     eligible_records,
     promotion_id_for,
     proposal_fingerprint,
@@ -52,6 +54,7 @@ class ResearchPromotionManager:
         validation = self._write_validation(proposal, manifest)
         promoted_trace_ids = self._write_production(proposal, validation, dry_run)
 
+        records = eligible_records(self.settings, self.workspace, proposal)
         record = PromotionRecord(
             promotion_id=promotion_id,
             proposal_id=proposal.proposal_id,
@@ -63,6 +66,7 @@ class ResearchPromotionManager:
             target_memory_dir=str(self.settings.memory_dir),
             proposal_fingerprint=proposal_fingerprint(proposal),
             validation_status=validation.validation_status,
+            defense_report_refs=defense_report_refs(records),
             dry_run=dry_run,
             created_at=datetime.now(timezone.utc),
         )
@@ -94,10 +98,12 @@ class ResearchPromotionManager:
             checkpoint_refs=proposal.checkpoint_refs,
             mutation_refs=proposal.mutation_refs,
             expected_targets=expected_targets,
+            defense_report_refs=defense_report_refs(records),
             research_memory_snapshot_ref=proposal.research_memory_snapshot_ref,
             revalidation_policy={
                 "proposal_must_be_accepted": True,
                 "require_control_gate": True,
+                "require_defense_validation_report": True,
                 "control_max_average_asr": control_limit("asr", proposal),
                 "control_max_average_score": control_limit("score", proposal),
             },
@@ -123,6 +129,8 @@ class ResearchPromotionManager:
         )
         lane_names = {item.lane for item in proposal.cycle.lane_summaries}
         records = eligible_records(self.settings, self.workspace, proposal)
+        report_coverage = defense_report_coverage(records)
+        missing_reports = [trace_id for trace_id, state in report_coverage.items() if state != "present"]
         failure_reason = None
         status = "validated"
         if not proposal.accepted:
@@ -137,6 +145,9 @@ class ResearchPromotionManager:
         elif proposal.eligible_trace_ids and len(records) != len(set(proposal.eligible_trace_ids)):
             status = "failed"
             failure_reason = "promotion artifacts reference missing research deployment records"
+        elif bool(manifest.revalidation_policy.get("require_defense_validation_report")) and missing_reports:
+            status = "failed"
+            failure_reason = f"eligible defense records missing validation reports: {', '.join(missing_reports)}"
 
         validation = PromotionValidationResult(
             promotion_id=manifest.promotion_id,
@@ -144,6 +155,7 @@ class ResearchPromotionManager:
             replayed_cycle=proposal.cycle,
             control_gate_passed=control_gate_passed,
             eligible_trace_ids=sorted(records),
+            defense_report_coverage=report_coverage,
             validation_status=status,
             failure_reason=failure_reason,
         )

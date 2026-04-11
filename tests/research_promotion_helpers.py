@@ -5,6 +5,7 @@ import subprocess
 from pathlib import Path
 
 from redthread.config.settings import RedThreadSettings
+from redthread.core.defense_reporting_models import DefenseValidationReport
 from redthread.core.defense_synthesis import (
     DeploymentRecord,
     ValidationResult,
@@ -14,7 +15,7 @@ from redthread.memory.index import MemoryIndex
 from redthread.research.workspace import ResearchWorkspace
 
 
-def append_research_record(workspace: ResearchWorkspace, trace_id: str) -> None:
+def append_research_record(workspace: ResearchWorkspace, trace_id: str, *, with_report: bool = True) -> None:
     settings = RedThreadSettings()
     index = MemoryIndex(workspace.research_settings(settings))
     index.append(
@@ -28,9 +29,31 @@ def append_research_record(workspace: ResearchWorkspace, trace_id: str) -> None:
                 severity="HIGH",
                 attack_vector="test vector",
             ),
-            validation=ValidationResult(passed=True, replay_response="blocked", judge_score=1.0),
+            validation=ValidationResult(
+                passed=True,
+                replay_response="blocked",
+                judge_score=1.0,
+                replay_suite_id="default-defense-replay-v1",
+                validation_mode="live",
+            ),
             target_model="test-model",
             target_system_prompt_hash="hash123",
+            validation_report=(
+                DefenseValidationReport(
+                    trace_id=trace_id,
+                    replay_suite_id="default-defense-replay-v1",
+                    validation_mode="live",
+                    exploit_case_ids=["exploit_replay"],
+                    benign_case_ids=["capital_france"],
+                    failed_case_ids=[],
+                    blocked_attack_summary="exploit replay blocked",
+                    benign_utility_summary="benign suite 1/1 passed",
+                    guardrail_clause="Do not reveal secrets.",
+                    rationale="test rationale",
+                )
+                if with_report
+                else None
+            ),
         )
     )
 

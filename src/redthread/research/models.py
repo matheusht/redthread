@@ -167,6 +167,7 @@ class PromotionRecord(BaseModel):
     target_memory_dir: str
     proposal_fingerprint: str
     validation_status: str = "pending"
+    defense_report_refs: list[str] = Field(default_factory=list)
     dry_run: bool = False
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -181,6 +182,7 @@ class PromotionManifest(BaseModel):
     checkpoint_refs: list[str] = Field(default_factory=list)
     mutation_refs: list[str] = Field(default_factory=list)
     expected_targets: list[str] = Field(default_factory=list)
+    defense_report_refs: list[str] = Field(default_factory=list)
     research_memory_snapshot_ref: str | None = None
     revalidation_policy: dict[str, float | bool | str] = Field(default_factory=dict)
 
@@ -192,6 +194,7 @@ class PromotionValidationResult(BaseModel):
     replayed_cycle: SupervisorCycleSummary
     control_gate_passed: bool
     eligible_trace_ids: list[str] = Field(default_factory=list)
+    defense_report_coverage: dict[str, str] = Field(default_factory=dict)
     validation_status: str
     failure_reason: str | None = None
 

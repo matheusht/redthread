@@ -13,6 +13,24 @@ from redthread.research.models import PhaseThreeProposal
 from redthread.research.workspace import ResearchWorkspace
 
 
+def defense_report_refs(records: dict[str, DeploymentRecord]) -> list[str]:
+    """Return stable pseudo-refs for deployment validation reports."""
+    refs: list[str] = []
+    for trace_id, record in sorted(records.items()):
+        if record.validation_report is None:
+            continue
+        refs.append(f"deployment:{trace_id}:validation_report")
+    return refs
+
+
+def defense_report_coverage(records: dict[str, DeploymentRecord]) -> dict[str, str]:
+    """Summarize whether each eligible record carries a defense validation report."""
+    return {
+        trace_id: ("present" if record.validation_report is not None else "missing")
+        for trace_id, record in sorted(records.items())
+    }
+
+
 def proposal_fingerprint(proposal: PhaseThreeProposal) -> str:
     payload = f"{proposal.proposal_id}:{proposal.session_tag}:{proposal.session_base_commit}"
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:12]

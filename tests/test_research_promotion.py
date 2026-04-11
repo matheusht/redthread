@@ -86,6 +86,11 @@ def test_promotion_reconstructs_from_manifest_and_artifacts_only(tmp_path: Path)
     assert result_path.exists()
     assert promotion.promoted_trace_ids == ["trace-123"]
 
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    validation = json.loads(validation_path.read_text(encoding="utf-8"))
+    assert manifest["defense_report_refs"] == ["deployment:trace-123:validation_report"]
+    assert validation["defense_report_coverage"]["trace-123"] == "present"
+
 
 def test_promotion_replays_full_supervisor_pack_not_winning_lane_only(tmp_path: Path) -> None:
     workspace = ResearchWorkspace(tmp_path)
@@ -137,6 +142,24 @@ def test_duplicate_promotion_is_idempotent(tmp_path: Path) -> None:
     assert first.promotion_id == second.promotion_id
     assert first.promoted_trace_ids == ["trace-123"]
     assert MemoryIndex(settings).known_trace_ids() == ["trace-123"]
+
+
+def test_promote_fails_when_eligible_defense_record_lacks_validation_report(tmp_path: Path) -> None:
+    workspace = ResearchWorkspace(tmp_path)
+    workspace.ensure_layout()
+    settings = RedThreadSettings().model_copy(update={"memory_dir": tmp_path / "memory"})
+    append_research_record(workspace, "trace-123", with_report=False)
+    payload = proposal_payload(workspace, eligible_trace_ids=["trace-123"])
+    workspace.proposal_path("proposal-123").write_text(json.dumps(payload), encoding="utf-8")
+
+    promotion = ResearchPromotionManager(settings, tmp_path).promote_latest()
+
+    assert promotion.validation_status == "failed"
+    assert promotion.defense_report_refs == []
+    validation = json.loads(Path(promotion.validation_ref).read_text(encoding="utf-8"))
+    assert validation["defense_report_coverage"]["trace-123"] == "missing"
+    assert "missing validation reports" in validation["failure_reason"]
+    assert MemoryIndex(settings).known_trace_ids() == []
 
 
 def test_promote_only_appends_records_linked_to_accepted_proposal(tmp_path: Path) -> None:
