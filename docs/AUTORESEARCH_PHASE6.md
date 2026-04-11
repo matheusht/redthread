@@ -17,14 +17,18 @@ This phase keeps the existing safety boundaries intact:
 
 This phase reuses the bounded source mutation worker, but with a defense-only policy and validator.
 
+The explicit mutable/protected split is documented in [docs/DEFENSE_MUTATION_BOUNDARIES.md](docs/DEFENSE_MUTATION_BOUNDARIES.md).
+
 Allowed mutation surface:
 - `src/redthread/core/defense_assets.py`
   - `DEFENSE_ARCHITECT_SYSTEM_PROMPT`
   - `DEFENSE_ARCHITECT_USER_TEMPLATE`
 
 Protected surface:
-- `BENIGN_DEFENSE_PACK`
-- benign response heuristics
+- replay fixtures and replay runner
+- validation reporting models
+- utility-gate logic
+- `BENIGN_DEFENSE_PACK` and benign response heuristics
 - `src/redthread/core/defense_synthesis.py`
 - evaluation and judge logic
 - telemetry
