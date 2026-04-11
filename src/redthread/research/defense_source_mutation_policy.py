@@ -12,6 +12,10 @@ BLOCKED_DEFENSE_PREFIXES = (
 )
 BLOCKED_DEFENSE_FILES = {
     "src/redthread/core/defense_synthesis.py",
+    "src/redthread/core/defense_replay_fixtures.py",
+    "src/redthread/core/defense_replay_runner.py",
+    "src/redthread/core/defense_reporting_models.py",
+    "src/redthread/core/defense_utility_gate.py",
     "src/redthread/memory/index.py",
     "src/redthread/research/promotion.py",
     "src/redthread/research/promotion_support.py",

@@ -69,8 +69,10 @@ Move RedThread from "can generate defenses" to "can validate and promote defense
 4. wired evidence into promotion artifacts before enforcing a utility gate
 5. added utility-gate checks only after report and replay evidence were available
 6. expanded targeted tests after each slice to keep the hardening work evidence-backed
+7. surfaced validation-evidence failures in CLI promotion output so operators can see why promotion failed
+8. marked replay/reporting/utility-gate modules as protected Phase 6 surfaces and added policy tests for them
 
 ### Next
-- expose report summaries in CLI inspection paths
 - expand replay fixtures beyond the starter suite
-- split protected replay/report/gate surfaces from mutable defense-prompt surfaces in docs and tests
+- add CLI inspection for individual deployment validation reports, not just promotion summaries
+- split protected replay/report/gate surfaces from mutable defense-prompt surfaces in more explicit docs

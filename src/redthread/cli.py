@@ -1438,21 +1438,38 @@ def research_clean_runtime(env_file: str) -> None:
 )
 def research_promote(env_file: str, dry_run: bool) -> None:
     """Explicitly promote accepted research memory into production memory."""
+    import json
+
     from redthread.research.promotion import ResearchPromotionManager
 
     settings = RedThreadSettings(_env_file=env_file)
     manager = ResearchPromotionManager(settings, Path.cwd())
     promotion = manager.promote_latest(dry_run=dry_run)
+    validation_payload = json.loads(Path(promotion.validation_ref).read_text(encoding="utf-8"))
+    report_coverage = validation_payload.get("defense_report_coverage", {})
+    utility_gate = validation_payload.get("defense_utility_gate", {})
+    missing_reports = sorted(trace_id for trace_id, state in report_coverage.items() if state != "present")
+    weak_records = {
+        trace_id: failures for trace_id, failures in utility_gate.items() if failures
+    }
+    detail_lines = [
+        f"  Promotion: {promotion.promotion_id}",
+        f"  Proposal:  {promotion.proposal_id}",
+        f"  Validation:{promotion.validation_status}",
+        f"  Entries:   {promotion.promoted_deployments}",
+        f"  Reports:   {len(promotion.defense_report_refs)}",
+        f"  Manifest:  {promotion.manifest_ref}",
+        f"  Validation:{promotion.validation_ref}",
+        f"  Target:    {promotion.target_memory_dir}",
+    ]
+    if missing_reports:
+        detail_lines.append(f"  Missing reports: {', '.join(missing_reports)}")
+    if weak_records:
+        rendered = '; '.join(f"{trace_id} -> {', '.join(failures)}" for trace_id, failures in sorted(weak_records.items()))
+        detail_lines.append(f"  Utility gate: {rendered}")
     console.print(
         Panel(
-            f"[bold]Research promotion complete[/bold]\n\n"
-            f"  Promotion: {promotion.promotion_id}\n"
-            f"  Proposal:  {promotion.proposal_id}\n"
-            f"  Validation:{promotion.validation_status}\n"
-            f"  Entries:   {promotion.promoted_deployments}\n"
-            f"  Manifest:  {promotion.manifest_ref}\n"
-            f"  Validation:{promotion.validation_ref}\n"
-            f"  Target:    {promotion.target_memory_dir}",
+            "[bold]Research promotion complete[/bold]\n\n" + "\n".join(detail_lines),
             border_style="green",
         )
     )

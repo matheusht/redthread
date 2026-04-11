@@ -38,6 +38,21 @@ def test_phase6_policy_allows_only_defense_prompt_asset(tmp_path: Path) -> None:
     assert not validate_defense_touched_files([blocked], tmp_path)
 
 
+def test_phase6_policy_blocks_replay_reporting_and_utility_gate_surfaces(tmp_path: Path) -> None:
+    blocked_paths = [
+        tmp_path / "src" / "redthread" / "core" / "defense_replay_fixtures.py",
+        tmp_path / "src" / "redthread" / "core" / "defense_replay_runner.py",
+        tmp_path / "src" / "redthread" / "core" / "defense_reporting_models.py",
+        tmp_path / "src" / "redthread" / "core" / "defense_utility_gate.py",
+        tmp_path / "src" / "redthread" / "research" / "promotion.py",
+    ]
+    for path in blocked_paths:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("HEADER = 'blocked'\n", encoding="utf-8")
+
+    assert all(not validate_defense_touched_files([path], tmp_path) for path in blocked_paths)
+
+
 def test_phase6_rejects_benign_pack_mutation(tmp_path: Path) -> None:
     scaffold_defense_assets_target(tmp_path)
     worker = _phase6_worker(

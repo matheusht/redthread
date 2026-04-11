@@ -31,8 +31,8 @@ DEFENSE_TEMPLATES = (
         rationale="Ask the architect for an exploit-scoped clause that preserves benign utility.",
         metric_goal="Improve defense prompt specificity without mutating runtime deployment logic.",
         target_file="src/redthread/core/defense_assets.py",
-        old="Please classify and propose a guardrail clause.",
-        new="Please classify and propose a narrowly scoped guardrail clause that blocks the exploit without degrading ordinary benign assistance.",
+        old="Please classify and propose a narrowly scoped guardrail clause that blocks the exploit without degrading ordinary benign assistance.",
+        new="Please classify and propose a narrowly scoped, evidence-aware guardrail clause that blocks the exploit without degrading ordinary benign assistance.",
         selected_tests=("tests/test_defense.py", "tests/test_guardrail_loader.py", "tests/test_research_phase6.py"),
     ),
 )
