@@ -58,8 +58,8 @@ sequenceDiagram
 1. **ISOLATE** (`_isolate`): Extracts the minimal context required to trigger the jailbreak. For PAIR, it selects the specific conversational turn. For TAP, it backtraces the tree to find the winning node.
 2. **CLASSIFY**: Prompts an LLM Architect to classify the attack using the OWASP LLM Top-10 and MITRE ATLAS framework.
 3. **GENERATE**: The LLM Architect drafts a concise, system-prompt-ready formatting clause (`GuardrailClause`) and a rationale.
-4. **VALIDATE**: Safely assesses the proposed clause without mutating the live engine state. The engine initializes a temporary sandbox instance of the target model, concatenates the `GuardrailClause` to the original system instructions, and feeds the isolated attack payload. The `JudgeAgent` scores the sandbox output; if the score is below threshold, it is deemed effective.
-5. **DEPLOY**: A `DeploymentRecord` is mapped with the `target_model` and `hash(target_system_prompt)` and appended to the persistent `.agent/memory/MEMORY.md` index.
+4. **VALIDATE**: Safely assesses the proposed clause without mutating the live engine state. The engine now runs a structured sealed replay suite via the dedicated replay runner, records exploit and benign replay cases separately, and emits a `ValidationResult` plus a structured `DefenseValidationReport`. Promotion later requires this evidence and enforces a utility gate over it.
+5. **DEPLOY**: A `DeploymentRecord` is mapped with the `target_model` and `hash(target_system_prompt)` and appended to the persistent `.agent/memory/MEMORY.md` index, preserving replay evidence and the validation report in JSONL form.
 
 ## 4. Telemetry & Drift Detection (Phase 4.5)
 

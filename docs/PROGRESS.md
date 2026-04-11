@@ -19,10 +19,16 @@ Both lanes emit Phase 3 proposals, preserve research-plane acceptance state in t
 
 The next steps are no longer “add another attack algorithm.”
 
-They are:
-1. deepen Phase 6 validation from prompt-contract checks into richer sealed replay fixtures
-2. add defense-specific promotion and revalidation reporting
-3. prove end-to-end benign utility preservation more rigorously before widening any mutable defense surface
+The recent self-healing hardening tranche has now delivered:
+1. richer sealed replay suites with case-level replay evidence
+2. defense-specific validation reports and promotion evidence
+3. promotion-time utility-gate enforcement
+4. explicit protected surfaces for replay/reporting/utility-gate code
+
+So the next milestones are now:
+1. validate the hardened path against more live scenarios and curated runtime replay fixtures
+2. keep operator inspection UX strong for deployment validation and promotion evidence
+3. align the historical docs with the current hardened runtime behavior before considering any broader mutable defense surface
 
 ---
 

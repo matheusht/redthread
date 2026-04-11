@@ -32,11 +32,17 @@ This means the project direction after GS-MCTS is no longer “add more jailbrea
 
 ## Next Bounded Steps
 
-The next finite milestones after 7A and 7B are:
-1. deepen Phase 6 from prompt-contract checks into richer sealed replay fixtures
-2. add defense-specific promotion and revalidation reporting before production promotion
-3. keep offense mutation surfaces stable while hardening end-to-end defense utility guarantees
-4. only after that, consider widening the mutable defense surface beyond prompt/template assets
+The self-healing hardening tranche that followed 7A and 7B is now largely implemented:
+1. Phase 6 no longer stops at prompt-contract checks; it now uses richer sealed replay suites and structured replay evidence
+2. defense-specific validation reports and promotion evidence now exist
+3. promotion now enforces a defense utility gate instead of relying only on generic proposal validation
+4. replay/reporting/utility-gate surfaces are now protected from Phase 6 mutation
+
+The next finite steps are now smaller and more operational:
+1. expand replay suites further with curated runtime fixture artifacts as needed
+2. keep operator inspection UX strong for validation and promotion evidence
+3. align historical docs and runtime behavior as the hardened self-healing path evolves
+4. only after sustained validation, consider widening the mutable defense surface beyond prompt/template assets
 
 ---
 

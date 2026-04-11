@@ -97,7 +97,13 @@ RedThread can safely:
 
 ## Next Bounded Steps
 
-After Phase 6, the next finite milestones are:
-1. upgrade Phase 6 from prompt-contract checks to richer sealed replay fixtures
-2. add defense-specific promotion/revalidation reporting before production promotion
-3. only then consider widening the mutable defense surface beyond prompt/template assets
+The immediate hardening follow-through after Phase 6 is now largely implemented:
+1. richer sealed replay suites back the hardened self-healing validation path
+2. defense-specific promotion/revalidation reporting exists
+3. promotion enforces a defense utility gate
+4. replay/reporting/utility-gate modules are protected surfaces, not mutable Phase 6 targets
+
+The remaining next steps are:
+1. deepen replay-suite coverage with additional curated runtime fixtures as needed
+2. keep operator inspection paths clear for deployments and promotion evidence
+3. only after sustained validation, consider widening the mutable defense surface beyond prompt/template assets
