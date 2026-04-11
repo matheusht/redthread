@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -16,7 +17,7 @@ from redthread.research.daemon_models import (
 )
 from redthread.research.workspace import ResearchWorkspace
 from tests.research_mutation_helpers import make_candidate
-from tests.research_promotion_helpers import git_init
+from tests.research_promotion_helpers import git_init, proposal_payload
 
 
 def test_daemon_start_refuses_without_active_session(tmp_path: Path) -> None:
@@ -27,12 +28,9 @@ def test_daemon_start_refuses_without_active_session(tmp_path: Path) -> None:
         assert "No active Phase 3 session" in str(exc)
     else:
         raise AssertionError("expected missing session failure")
-
-
 def test_daemon_create_session_bootstraps_phase3_session(tmp_path: Path, monkeypatch: MonkeyPatch) -> None:
     git_init(tmp_path)
     daemon = ResearchDaemon(RedThreadSettings(), tmp_path)
-
     async def fake_run_once() -> ResearchDaemonState:
         return daemon.stop()
 
@@ -41,8 +39,6 @@ def test_daemon_create_session_bootstraps_phase3_session(tmp_path: Path, monkeyp
 
     assert state.session_tag == "tag"
     assert daemon.phase3.session_path.exists()
-
-
 def test_stale_lock_requires_explicit_recovery(tmp_path: Path, monkeypatch: MonkeyPatch) -> None:
     git_init(tmp_path)
     daemon = ResearchDaemon(RedThreadSettings(), tmp_path)
@@ -63,15 +59,12 @@ def test_stale_lock_requires_explicit_recovery(tmp_path: Path, monkeypatch: Monk
         assert "Stale research daemon lock detected" in str(exc)
     else:
         raise AssertionError("expected stale lock failure")
-
     async def fake_run_once() -> ResearchDaemonState:
         return daemon.stop()
 
     monkeypatch.setattr(daemon, "run_once", fake_run_once)
     state = asyncio.run(daemon.start(recover_stale=True, max_cycles=1))
     assert state.session_tag == "tag"
-
-
 def test_daemon_rejects_concurrent_active_lock(tmp_path: Path) -> None:
     git_init(tmp_path)
     daemon = ResearchDaemon(RedThreadSettings(), tmp_path)
@@ -92,15 +85,12 @@ def test_daemon_rejects_concurrent_active_lock(tmp_path: Path) -> None:
         assert "lock already active" in str(exc)
     else:
         raise AssertionError("expected active lock failure")
-
-
 def test_repeated_failures_trigger_cooldown_and_halt(tmp_path: Path, monkeypatch: MonkeyPatch) -> None:
     git_init(tmp_path)
     daemon = ResearchDaemon(RedThreadSettings(), tmp_path)
     daemon.phase3.start_session("tag")
     monkeypatch.setattr("redthread.research.daemon._POLL_SECONDS", 0)
     monkeypatch.setattr(daemon.git, "has_non_artifact_changes", lambda: False)
-
     async def boom_cycle(*_args: object, **_kwargs: object) -> tuple[object, object]:
         raise RuntimeError("loop failed")
 
@@ -111,8 +101,6 @@ def test_repeated_failures_trigger_cooldown_and_halt(tmp_path: Path, monkeypatch
     assert state.status == "cooldown"
     state = asyncio.run(daemon.start(recover_stale=True, max_cycles=1))
     assert state.status == "halted"
-
-
 def test_divergence_during_resume_halts_without_clobbering_state(tmp_path: Path, monkeypatch: MonkeyPatch) -> None:
     git_init(tmp_path)
     daemon = ResearchDaemon(RedThreadSettings(), tmp_path)
@@ -125,10 +113,75 @@ def test_divergence_during_resume_halts_without_clobbering_state(tmp_path: Path,
     monkeypatch.setattr("redthread.research.daemon.latest_proposal_or_none", lambda phase3: None)
 
     result = asyncio.run(daemon.run_once())
-
     assert result.status == "halted"
     assert "unsafe mutation divergence" in (result.last_error or "")
+def test_start_pauses_when_latest_proposal_is_awaiting_review(tmp_path: Path, monkeypatch: MonkeyPatch) -> None:
+    git_init(tmp_path)
+    daemon = ResearchDaemon(RedThreadSettings(), tmp_path)
+    daemon.phase3.start_session("tag")
+    payload = proposal_payload(daemon.workspace, eligible_trace_ids=["trace-123"])
+    payload["research_plane_status"] = "pending"
+    daemon.workspace.proposal_path("proposal-123").write_text(json.dumps(payload), encoding="utf-8")
+    async def should_not_run() -> ResearchDaemonState:
+        raise AssertionError("run_once should not execute while review is pending")
 
+    monkeypatch.setattr(daemon, "run_once", should_not_run)
+    state = asyncio.run(daemon.start(recover_stale=True, max_cycles=1))
+    assert state.status == "awaiting_review"
+    assert state.last_completed_step == "proposal_emitted"
+def test_run_once_keeps_accept_proposal_pending_for_manual_review(tmp_path: Path, monkeypatch: MonkeyPatch) -> None:
+    git_init(tmp_path)
+    daemon = ResearchDaemon(RedThreadSettings(), tmp_path)
+    daemon.phase3.start_session("tag")
+    state = ResearchDaemonState(owner_id=daemon.owner_id, session_tag="tag", branch="autoresearch/tag", status="running")
+    save_json_model(daemon.workspace.daemon_state_path, state)
+    payload = proposal_payload(daemon.workspace, eligible_trace_ids=["trace-123"])
+    payload["research_plane_status"] = "pending"
+    daemon.workspace.proposal_path("proposal-123").write_text(json.dumps(payload), encoding="utf-8")
+    monkeypatch.setattr(daemon.git, "has_non_artifact_changes", lambda: True)
+    monkeypatch.setattr("redthread.research.daemon.latest_candidate", lambda root: None)
+    result = asyncio.run(daemon.run_once())
+    updated = json.loads(daemon.workspace.proposal_path("proposal-123").read_text(encoding="utf-8"))
+    assert result.status == "awaiting_review"
+    assert result.latest_proposal_id == "proposal-123"
+    assert updated["research_plane_status"] == "pending"
+def test_run_once_keeps_reject_proposal_pending_for_manual_review(tmp_path: Path, monkeypatch: MonkeyPatch) -> None:
+    git_init(tmp_path)
+    daemon = ResearchDaemon(RedThreadSettings(), tmp_path)
+    daemon.phase3.start_session("tag")
+    state = ResearchDaemonState(owner_id=daemon.owner_id, session_tag="tag", branch="autoresearch/tag", status="running")
+    save_json_model(daemon.workspace.daemon_state_path, state)
+    payload = proposal_payload(daemon.workspace, eligible_trace_ids=["trace-123"])
+    payload["accepted"] = False
+    payload["recommended_action"] = "reject"
+    payload["research_plane_status"] = "pending"
+    payload["promotion_eligibility_status"] = "rejected_by_supervisor"
+    daemon.workspace.proposal_path("proposal-123").write_text(json.dumps(payload), encoding="utf-8")
+    monkeypatch.setattr(daemon.git, "has_non_artifact_changes", lambda: True)
+    monkeypatch.setattr("redthread.research.daemon.latest_candidate", lambda root: None)
+    result = asyncio.run(daemon.run_once())
+    updated = json.loads(daemon.workspace.proposal_path("proposal-123").read_text(encoding="utf-8"))
+    assert result.status == "awaiting_review"
+    assert result.latest_proposal_id == "proposal-123"
+    assert updated["research_plane_status"] == "pending"
+def test_run_once_leaves_new_proposal_in_awaiting_review(tmp_path: Path, monkeypatch: MonkeyPatch) -> None:
+    git_init(tmp_path)
+    daemon = ResearchDaemon(RedThreadSettings(), tmp_path)
+    daemon.phase3.start_session("tag")
+    save_json_model(daemon.workspace.daemon_state_path, ResearchDaemonState(owner_id=daemon.owner_id, session_tag="tag", branch="autoresearch/tag", status="running"))
+    monkeypatch.setattr(daemon.git, "has_non_artifact_changes", lambda: False)
+    candidate = make_candidate()
+    payload = proposal_payload(daemon.workspace, eligible_trace_ids=["trace-123"])
+    payload["research_plane_status"] = "pending"
+    async def fake_cycle(*_args: object, **_kwargs: object) -> tuple[object, object]:
+        daemon.workspace.proposal_path("proposal-123").write_text(json.dumps(payload), encoding="utf-8")
+        from redthread.research.models import PhaseThreeProposal
+        return candidate, PhaseThreeProposal.model_validate(payload)
+    monkeypatch.setattr(daemon.mutator, "run_cycle", fake_cycle)
+    result = asyncio.run(daemon.run_once())
+    assert result.status == "awaiting_review"
+    assert result.latest_candidate_id == candidate.candidate_id
+    assert result.latest_proposal_id == "proposal-123"
 
 def test_resume_completes_pending_promotion_checkpoint(tmp_path: Path, monkeypatch: MonkeyPatch) -> None:
     git_init(tmp_path)
@@ -141,8 +194,6 @@ def test_resume_completes_pending_promotion_checkpoint(tmp_path: Path, monkeypat
     (promotion_dir / "promotion_checkpoint.json").write_text('{"checkpoint_id":"c","promotion_id":"p","proposal_id":"proposal-1","step":"manifest_written"}', encoding="utf-8")
     called: list[str] = []
     monkeypatch.setattr(daemon.promoter, "promote_latest", lambda: called.append("promote"))
-
     result = asyncio.run(daemon.run_once())
-
     assert called == ["promote"]
     assert result.last_completed_step == "promotion_completed"

@@ -22,15 +22,19 @@ def test_research_daemon_status_cli(monkeypatch: MonkeyPatch) -> None:
                 stale_lock=False,
                 last_heartbeat_at="now",
                 current_step="proposal_emitted",
-                status="running",
+                status="awaiting_review",
                 consecutive_failures=0,
                 cooldown_until=None,
+                latest_proposal_id="proposal-123",
+                latest_candidate_id="candidate-123",
             )
 
     monkeypatch.setattr("redthread.research.daemon.ResearchDaemon", StubDaemon)
     result = CliRunner().invoke(main, ["research", "daemon", "status"])
     assert result.exit_code == 0
     assert "autoresearch/tag" in result.output
+    assert "awaiting_review" in result.output
+    assert "manual Phase 3 review" in result.output
 
 
 def test_research_daemon_start_cli(monkeypatch: MonkeyPatch) -> None:
@@ -43,15 +47,19 @@ def test_research_daemon_start_cli(monkeypatch: MonkeyPatch) -> None:
             return SimpleNamespace(
                 session_tag="tag",
                 branch="autoresearch/tag",
-                status="stopped",
+                status="awaiting_review",
                 last_completed_step="proposal_emitted",
                 consecutive_failures=0,
+                latest_proposal_id="proposal-123",
+                latest_candidate_id="candidate-123",
             )
 
     monkeypatch.setattr("redthread.research.daemon.ResearchDaemon", StubDaemon)
     result = CliRunner().invoke(main, ["research", "daemon", "start", "--create-session", "tag"])
     assert result.exit_code == 0
     assert "Research daemon stopped" in result.output
+    assert "awaiting_review" in result.output
+    assert "manual Phase 3 review" in result.output
 
 
 def test_research_resume_cli(monkeypatch: MonkeyPatch) -> None:
@@ -61,12 +69,19 @@ def test_research_resume_cli(monkeypatch: MonkeyPatch) -> None:
 
         async def resume(self, create_session_tag: str | None = None) -> SimpleNamespace:
             assert create_session_tag == "tag"
-            return SimpleNamespace(session_tag="tag", status="stopped", last_completed_step="promotion_completed")
+            return SimpleNamespace(
+                session_tag="tag",
+                status="awaiting_review",
+                last_completed_step="proposal_emitted",
+                latest_proposal_id="proposal-123",
+            )
 
     monkeypatch.setattr("redthread.research.daemon.ResearchDaemon", StubDaemon)
     result = CliRunner().invoke(main, ["research", "resume", "--create-session", "tag"])
     assert result.exit_code == 0
-    assert "promotion_completed" in result.output
+    assert "awaiting_review" in result.output
+    assert "proposal-123" in result.output
+    assert "manual Phase 3 review" in result.output
 
 
 def test_research_daemon_stop_cli(monkeypatch: MonkeyPatch) -> None:

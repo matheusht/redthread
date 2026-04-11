@@ -1246,6 +1246,9 @@ def research_daemon_start(create_session: str | None, env_file: str, verbose: bo
     settings = RedThreadSettings(_env_file=env_file)
     daemon = ResearchDaemon(settings, Path.cwd())
     state = asyncio.run(daemon.start(create_session_tag=create_session))
+    note = ""
+    if state.status == "awaiting_review":
+        note = "\n  Note:      Awaiting manual Phase 3 review"
     console.print(
         Panel(
             f"[bold]Research daemon stopped[/bold]\n\n"
@@ -1253,7 +1256,10 @@ def research_daemon_start(create_session: str | None, env_file: str, verbose: bo
             f"  Branch:    {state.branch}\n"
             f"  Status:    {state.status}\n"
             f"  Step:      {state.last_completed_step}\n"
-            f"  Failures:  {state.consecutive_failures}",
+            f"  Proposal:  {state.latest_proposal_id}\n"
+            f"  Candidate: {state.latest_candidate_id}\n"
+            f"  Failures:  {state.consecutive_failures}"
+            f"{note}",
             border_style="cyan",
         )
     )
@@ -1271,6 +1277,9 @@ def research_daemon_status(env_file: str) -> None:
     from redthread.research.daemon import ResearchDaemon
 
     status = ResearchDaemon(RedThreadSettings(_env_file=env_file), Path.cwd()).status()
+    note = ""
+    if status.status == "awaiting_review":
+        note = "\n  Note:       Awaiting manual Phase 3 review"
     console.print(
         Panel(
             f"[bold]Research daemon status[/bold]\n\n"
@@ -1281,8 +1290,11 @@ def research_daemon_status(env_file: str) -> None:
             f"  Heartbeat:  {status.last_heartbeat_at}\n"
             f"  Step:       {status.current_step}\n"
             f"  Status:     {status.status}\n"
+            f"  Proposal:   {status.latest_proposal_id}\n"
+            f"  Candidate:  {status.latest_candidate_id}\n"
             f"  Failures:   {status.consecutive_failures}\n"
-            f"  Cooldown:   {status.cooldown_until}",
+            f"  Cooldown:   {status.cooldown_until}"
+            f"{note}",
             border_style="yellow",
         )
     )
@@ -1332,12 +1344,17 @@ def research_resume(create_session: str | None, env_file: str, verbose: bool) ->
     _setup_logging(verbose)
     settings = RedThreadSettings(_env_file=env_file)
     state = asyncio.run(ResearchDaemon(settings, Path.cwd()).resume(create_session_tag=create_session))
+    note = ""
+    if state.status == "awaiting_review":
+        note = "\n  Note:    Awaiting manual Phase 3 review"
     console.print(
         Panel(
             f"[bold]Research resume complete[/bold]\n\n"
             f"  Session:  {state.session_tag}\n"
             f"  Status:   {state.status}\n"
-            f"  Step:     {state.last_completed_step}",
+            f"  Step:     {state.last_completed_step}\n"
+            f"  Proposal: {state.latest_proposal_id}"
+            f"{note}",
             border_style="green",
         )
     )

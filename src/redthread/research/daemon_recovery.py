@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from redthread.research.models import PhaseThreeProposal
@@ -37,9 +38,24 @@ def latest_proposal_or_none(phase3: PhaseThreeHarness) -> PhaseThreeProposal | N
         return None
 
 
-def finalize_proposal(phase3: PhaseThreeHarness, action: str) -> None:
-    """Apply the research-plane accept/reject action for the latest proposal."""
-    if action == "accept":
-        phase3.accept_latest()
-    else:
-        phase3.reject_latest()
+def load_proposal_or_none(
+    workspace: ResearchWorkspace,
+    phase3: PhaseThreeHarness,
+    proposal_id: str | None,
+) -> PhaseThreeProposal | None:
+    """Load a specific proposal when known, otherwise fall back to the latest proposal."""
+    if proposal_id is not None:
+        path = workspace.proposal_path(proposal_id)
+        if path.exists():
+            return PhaseThreeProposal.model_validate(json.loads(path.read_text(encoding="utf-8")))
+    return latest_proposal_or_none(phase3)
+
+
+def proposal_awaits_review(
+    workspace: ResearchWorkspace,
+    phase3: PhaseThreeHarness,
+    proposal_id: str | None,
+) -> bool:
+    """Return True when the referenced proposal still requires manual Phase 3 review."""
+    proposal = load_proposal_or_none(workspace, phase3, proposal_id)
+    return proposal is not None and proposal.research_plane_status == "pending"

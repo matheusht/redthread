@@ -7,7 +7,15 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-DaemonStatusValue = Literal["idle", "running", "cooldown", "halted", "stop_requested", "stopped"]
+DaemonStatusValue = Literal[
+    "idle",
+    "running",
+    "awaiting_review",
+    "cooldown",
+    "halted",
+    "stop_requested",
+    "stopped",
+]
 ResearchStep = Literal[
     "idle",
     "baseline_completed",
@@ -79,3 +87,5 @@ class ResearchDaemonStatus(BaseModel):
     status: DaemonStatusValue = "idle"
     consecutive_failures: int = 0
     cooldown_until: datetime | None = None
+    latest_candidate_id: str | None = None
+    latest_proposal_id: str | None = None
