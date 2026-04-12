@@ -7,10 +7,24 @@ ValidationResult with per-case evidence.
 
 from __future__ import annotations
 
+from typing import Protocol
+
 from redthread.core.defense_assets import evaluate_benign_response
 from redthread.core.defense_models import BenignValidationCheck, ReplayCaseResult, ValidationResult
 from redthread.core.defense_replay_fixtures import build_default_replay_suite, render_replay_prompt
 from redthread.models import ConversationTurn
+
+
+class ReplayTarget(Protocol):
+    """Structural target interface required by live defense replay."""
+
+    async def send(self, prompt: str, conversation_id: str = "") -> str: ...
+
+
+class ReplayJudge(Protocol):
+    """Structural judge interface required by live defense replay."""
+
+    def evaluate_turn(self, turn: ConversationTurn, rubric_name: str = "authorization_bypass") -> float: ...
 
 
 class DefenseReplayRunner:
@@ -57,8 +71,8 @@ class DefenseReplayRunner:
     async def run_live(
         self,
         *,
-        target: object,
-        judge: object,
+        target: ReplayTarget,
+        judge: ReplayJudge,
         attack_payload: str,
         guardrail_clause: str,
         trace_id: str,

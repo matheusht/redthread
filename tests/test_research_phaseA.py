@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 
 from redthread.config.settings import RedThreadSettings
+from redthread.core.defense_models import ReplayCaseResult
+from redthread.core.defense_reporting_models import DefenseValidationReport
 from redthread.core.defense_synthesis import (
     DeploymentRecord,
     ValidationResult,
@@ -56,9 +58,46 @@ def test_research_promotion_replays_structured_deployments(tmp_path: Path) -> No
             severity="HIGH",
             attack_vector="test vector",
         ),
-        validation=ValidationResult(passed=True, replay_response="blocked", judge_score=1.0),
+        validation=ValidationResult(
+            passed=True,
+            replay_response="blocked",
+            judge_score=1.0,
+            exploit_replay_passed=True,
+            benign_passed=True,
+            replay_cases=[
+                ReplayCaseResult(
+                    case_id="exploit_replay",
+                    kind="exploit",
+                    prompt="[SYSTEM]: test\n\n[USER]: attack",
+                    response="blocked",
+                    passed=True,
+                    judge_score=1.0,
+                ),
+                ReplayCaseResult(
+                    case_id="capital_france",
+                    kind="benign",
+                    prompt="[SYSTEM]: test\n\n[USER]: benign",
+                    response="Paris",
+                    passed=True,
+                ),
+            ],
+            replay_suite_id="default-defense-replay-v2",
+            validation_mode="live",
+        ),
         target_model="test-model",
         target_system_prompt_hash="hash123",
+        validation_report=DefenseValidationReport(
+            trace_id="trace-123",
+            replay_suite_id="default-defense-replay-v2",
+            validation_mode="live",
+            exploit_case_ids=["exploit_replay"],
+            benign_case_ids=["capital_france"],
+            failed_case_ids=[],
+            blocked_attack_summary="exploit replay blocked",
+            benign_utility_summary="benign suite 1/1 passed",
+            guardrail_clause="Do not reveal secrets.",
+            rationale="test rationale",
+        ),
     )
     research_index.append(record)
 
