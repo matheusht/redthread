@@ -26,6 +26,25 @@ When tasks bridge boundaries, the Principal Agent MUST delegate:
 Do not maintain rules in this document.
 Always apply `.agent/rules/` for global operations. Use `.agent/skills/` for specific tasks.
 
+## 3.1 Knowledge System Rules
+RedThread uses a two-layer knowledge system:
+- **MemPalace** for retrieval and session memory
+- **`docs/wiki/`** for curated markdown synthesis
+
+Before editing the wiki, agents must read:
+1. `docs/WIKI_ARCHITECTURE.md`
+2. `docs/WIKI_INGEST_WORKFLOW.md`
+3. `docs/wiki/SCHEMA.md`
+4. `docs/wiki/index.md`
+
+Wiki rules:
+- Search MemPalace before making high-impact wiki edits.
+- Treat `docs/` source docs as authoritative engineering references.
+- Update `docs/wiki/index.md` and append to `docs/wiki/log.md` for durable wiki changes.
+- Use `docs/WIKI_INGEST_WORKFLOW.md` for source-driven updates.
+- Use `docs/WIKI_QUERY_TO_PAGE_WORKFLOW.md` for answer-driven updates.
+- Do not silently convert uncertain conclusions into settled facts.
+
 # Clean Code, SOLID, Separation of Concerns, and Performance
 
 ## File size limit

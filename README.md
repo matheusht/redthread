@@ -120,6 +120,23 @@ make test-golden  # Golden Dataset evaluation; live judge validation requires ba
 
 ---
 
+## 🧠 Knowledge System
+
+RedThread now uses a two-layer knowledge system for durable recall and durable synthesis:
+
+- **MemPalace** — persistent memory and retrieval for Codex/agent sessions
+- **LLM Wiki** — curated markdown knowledge base under `docs/wiki/`
+
+Use these docs to navigate it:
+
+- `docs/MEMPALACE_SETUP.md` — installation, Codex MCP wiring, mining, and verification
+- `docs/WIKI_ARCHITECTURE.md` — how raw sources, MemPalace, and the wiki fit together
+- `docs/WIKI_INGEST_WORKFLOW.md` — repeatable ingest procedure for durable wiki updates
+- `docs/WIKI_QUERY_TO_PAGE_WORKFLOW.md` — repeatable procedure for turning durable chat answers into wiki pages
+- `docs/WIKI_MAINTENANCE_CHECKLIST.md` — daily operational checklist for wiki upkeep
+- `docs/wiki/SCHEMA.md` — wiki page types, update rules, index/log contract, and guardrails
+- `docs/wiki/index.md` — current wiki map
+
 ## 📂 Project Structure
 - `src/redthread/orchestration/`: LangGraph supervisor and worker nodes.
 - `src/redthread/core/`: Implementation of TAP, PAIR, and Defense Synthesis.
@@ -132,6 +149,8 @@ make test-golden  # Golden Dataset evaluation; live judge validation requires ba
 - `docs/PHASE_REGISTRY.md`: Master registry of all development phases.
 - `docs/AUTORESEARCH_PHASE5.md`: Offense-side bounded source mutation contract.
 - `docs/AUTORESEARCH_PHASE6.md`: Defense-side bounded prompt mutation contract.
+- `docs/WIKI_ARCHITECTURE.md`: Knowledge-system overview for the LLM-maintained wiki.
+- `docs/wiki/`: Persistent synthesis layer for decisions, systems, research, and timelines.
 
 ---
 

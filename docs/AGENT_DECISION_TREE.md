@@ -8,3 +8,4 @@
 | Defense Synthesis / Guardrails | phases.md | research-algorithms-attack-pt2.md |
 | Deep Research Investigation | research-algorithms-pt1.md | research-algorithms-attack-pt2.md |
 | General Project Overviews | product-info.md | ANTIGRAVITY_AGENT_SOURCE_OF_TRUTH.md |
+| Knowledge System / Memory / Wiki Maintenance | WIKI_ARCHITECTURE.md | MEMPALACE_SETUP.md |

@@ -1,4 +1,4 @@
-.PHONY: lint typecheck test test-golden ci dev install
+.PHONY: lint typecheck test test-golden ci dev install wiki-lint
 
 # ── Help ─────────────────────────────────────────────────────────────────────
 
@@ -9,6 +9,9 @@ help:  ## Show this help
 
 lint:  ## Ruff lint check (no auto-fix)
 	.venv/bin/ruff check src/ tests/
+
+wiki-lint:  ## Validate docs/wiki structure and metadata
+	python3 scripts/wiki_lint.py
 
 lint-fix:  ## Ruff lint with auto-fix
 	.venv/bin/ruff check --fix src/ tests/

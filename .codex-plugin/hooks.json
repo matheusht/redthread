@@ -1,0 +1,10 @@
+{
+  "stop": {
+    "command": "bash",
+    "args": ["/Users/matheusvsky/Documents/personal/redthread/.codex-plugin/hooks/mempal_save_hook.sh"]
+  },
+  "precompact": {
+    "command": "bash",
+    "args": ["/Users/matheusvsky/Documents/personal/redthread/.codex-plugin/hooks/mempal_precompact_hook.sh"]
+  }
+}
