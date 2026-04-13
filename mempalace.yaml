@@ -1,0 +1,45 @@
+wing: redthread
+rooms:
+- name: autoresearch
+  description: Files from autoresearch/
+  keywords:
+  - autoresearch
+  - autoresearch
+- name: memory
+  description: Files from memory/
+  keywords:
+  - memory
+  - memory
+- name: plugins
+  description: Files from plugins/
+  keywords:
+  - plugins
+  - plugins
+- name: testing
+  description: Files from tests/
+  keywords:
+  - testing
+  - tests
+- name: documentation
+  description: Files from docs/
+  keywords:
+  - documentation
+  - docs
+- name: logs
+  description: Files from logs/
+  keywords:
+  - logs
+  - logs
+- name: vendor
+  description: Files from vendor/
+  keywords:
+  - vendor
+  - vendor
+- name: src
+  description: Files from src/
+  keywords:
+  - src
+  - src
+- name: general
+  description: Files that don't fit other rooms
+  keywords: []
