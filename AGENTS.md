@@ -41,6 +41,8 @@ Wiki rules:
 - Search MemPalace before making high-impact wiki edits.
 - Treat `docs/` source docs as authoritative engineering references.
 - Update `docs/wiki/index.md` and append to `docs/wiki/log.md` for durable wiki changes.
+- Use `docs/WIKI_INGEST_WORKFLOW.md` for source-driven updates.
+- Use `docs/WIKI_QUERY_TO_PAGE_WORKFLOW.md` for answer-driven updates.
 - Do not silently convert uncertain conclusions into settled facts.
 
 # Clean Code, SOLID, Separation of Concerns, and Performance

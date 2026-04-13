@@ -132,6 +132,8 @@ Use these docs to navigate it:
 - `docs/MEMPALACE_SETUP.md` — installation, Codex MCP wiring, mining, and verification
 - `docs/WIKI_ARCHITECTURE.md` — how raw sources, MemPalace, and the wiki fit together
 - `docs/WIKI_INGEST_WORKFLOW.md` — repeatable ingest procedure for durable wiki updates
+- `docs/WIKI_QUERY_TO_PAGE_WORKFLOW.md` — repeatable procedure for turning durable chat answers into wiki pages
+- `docs/WIKI_MAINTENANCE_CHECKLIST.md` — daily operational checklist for wiki upkeep
 - `docs/wiki/SCHEMA.md` — wiki page types, update rules, index/log contract, and guardrails
 - `docs/wiki/index.md` — current wiki map
 
