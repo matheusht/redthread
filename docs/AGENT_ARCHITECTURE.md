@@ -117,7 +117,17 @@ Priority 4 (Load via Skill):
 | MCP | Purpose | Documented In |
 |-----|---------|---------------|
 | **Context7** | Fetch up-to-date library/framework docs | `.agent/skills/context7/SKILL.md` |
+| **MemPalace** | Persistent retrieval and session memory via Codex MCP | `docs/MEMPALACE_SETUP.md` |
 
 ### When to Use MCP vs Docs
-- **MCP**: External library docs, APIs you don't control
+- **MCP**: External library docs, APIs you don't control, or persistent retrieval such as MemPalace
 - **docs/**: Internal project knowledge, architecture, patterns
+
+## Wiki Maintenance
+
+When maintaining the repo-local wiki under `docs/wiki/`:
+- read `docs/WIKI_ARCHITECTURE.md`, `docs/WIKI_INGEST_WORKFLOW.md`, and `docs/wiki/SCHEMA.md` first
+- treat the wiki as a synthesis layer, not the source-of-truth engineering layer
+- update `docs/wiki/index.md` and `docs/wiki/log.md` when making durable wiki changes
+- search MemPalace before making high-impact architecture or research edits
+- run `python3 scripts/wiki_lint.py` or `make wiki-lint` before considering the wiki update complete

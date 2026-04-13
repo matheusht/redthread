@@ -148,8 +148,34 @@ codex /init
 
 If the plugin is detected, Codex should be able to start the MemPalace MCP server and use the configured hooks.
 
+## Wiki integration
+
+MemPalace is now paired with a repo-local LLM-maintained wiki under `docs/wiki/`.
+
+Use the pair like this:
+
+- **MemPalace** for retrieval, search, wake-up context, and session continuity
+- **Wiki** for durable markdown synthesis, decisions, system summaries, and research pages
+
+Primary wiki docs:
+
+- `docs/WIKI_ARCHITECTURE.md`
+- `docs/WIKI_INGEST_WORKFLOW.md`
+- `docs/wiki/SCHEMA.md`
+- `docs/wiki/index.md`
+- `docs/wiki/log.md`
+
+Recommended workflow:
+
+1. search MemPalace for prior context
+2. read the raw source docs relevant to the topic
+3. update or create wiki pages
+4. update the wiki index and append to the log
+5. re-mine durable wiki changes when useful
+
 ## Notes
 
 - MemPalace project data lives in the standard global location under `~/.mempalace/`.
 - Repo taxonomy/config lives in this repo (`mempalace.yaml`, `entities.json`, `.codex-plugin/`).
 - The hook wrappers use MemPalace’s built-in Codex hook runner instead of custom logic.
+- The wiki is a synthesis layer, not a replacement for source-of-truth engineering docs.
