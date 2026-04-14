@@ -7,6 +7,7 @@ This document dictates the behavior and orchestration of the Antigravity Agent w
 ## 1. Core Operating Guidelines
 * **Decision Matrix:** Before running *any* operation, the agent must consult [docs/AGENT_DECISION_TREE.md](docs/AGENT_DECISION_TREE.md) to identify which domain document to load based on the user's intent.
 * **Working Methodology:** All tasks must follow the RPI (Research → Plan → Implement) flow outlined in [docs/RPI_METHODOLOGY.md](docs/RPI_METHODOLOGY.md). Context must not exceed 40% window utilization.
+* **Default Response Style:** Use full caveman mode by default unless the user asks for a different style. That means simple words, short direct sentences, practical structure, low fluff, and clear "what this is / why it matters / what next" guidance.
 
 ## 2. The Orchestration Workflow (Principal vs Subagents)
 Antigravity operates as the **Principal Agent** inside the RedThread ecosystem. It acts identically to the LangGraph supervisor defined in Phase 1 of `phases.md`—it manages the task graph while delegating execution.
@@ -44,6 +45,7 @@ Wiki rules:
 - Use `docs/WIKI_INGEST_WORKFLOW.md` for source-driven updates.
 - Use `docs/WIKI_QUERY_TO_PAGE_WORKFLOW.md` for answer-driven updates.
 - Do not silently convert uncertain conclusions into settled facts.
+- When writing docs or operator guidance, default to full caveman mode unless the user asks for a different tone.
 
 # Clean Code, SOLID, Separation of Concerns, and Performance
 
