@@ -53,7 +53,7 @@ class RedThreadSettings(BaseSettings):
         description="Backend for the target LLM (ollama | openai | llama_cpp)",
     )
     target_model: str = Field(
-        default="gemma4:e4b",
+        default="llama3.2:3b",
         description="Model name for the target LLM (e.g., gemma4:e4b)",
     )
     target_base_url: str = Field(
