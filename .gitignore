@@ -1,8 +1,6 @@
 # Secrets
 .env
 
-
-.codex-plugin/
 # Campaign artifacts (potentially sensitive)
 logs/
 autoresearch/runtime/
