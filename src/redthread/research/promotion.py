@@ -7,7 +7,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from redthread.config.settings import RedThreadSettings
-from redthread.core.defense_utility_gate import evaluate_defense_record
 from redthread.memory.index import MemoryIndex
 from redthread.research.checkpoints import load_promotion_checkpoint, save_promotion_checkpoint
 from redthread.research.models import (
@@ -18,9 +17,12 @@ from redthread.research.models import (
     PromotionValidationResult,
 )
 from redthread.research.phase3 import PhaseThreeHarness
+from redthread.research.promotion_evidence import (
+    promotion_failure_reason,
+    summarize_promotion_records,
+)
 from redthread.research.promotion_support import (
     control_limit,
-    defense_report_coverage,
     defense_report_refs,
     eligible_records,
     promotion_id_for,
@@ -130,13 +132,7 @@ class ResearchPromotionManager:
         )
         lane_names = {item.lane for item in proposal.cycle.lane_summaries}
         records = eligible_records(self.settings, self.workspace, proposal)
-        report_coverage = defense_report_coverage(records)
-        missing_reports = [trace_id for trace_id, state in report_coverage.items() if state != "present"]
-        utility_gate = {
-            trace_id: evaluate_defense_record(record).failed_checks
-            for trace_id, record in sorted(records.items())
-        }
-        weak_records = [trace_id for trace_id, failed_checks in utility_gate.items() if failed_checks]
+        evidence_summary = summarize_promotion_records(records)
         failure_reason = None
         status = "validated"
         if not proposal.accepted:
@@ -151,12 +147,12 @@ class ResearchPromotionManager:
         elif proposal.eligible_trace_ids and len(records) != len(set(proposal.eligible_trace_ids)):
             status = "failed"
             failure_reason = "promotion artifacts reference missing research deployment records"
-        elif bool(manifest.revalidation_policy.get("require_defense_validation_report")) and missing_reports:
+        elif (
+            bool(manifest.revalidation_policy.get("require_defense_validation_report"))
+            and evidence_summary.missing_report_trace_ids
+        ) or evidence_summary.validation_failures_by_trace:
             status = "failed"
-            failure_reason = f"eligible defense records missing validation reports: {', '.join(missing_reports)}"
-        elif weak_records:
-            status = "failed"
-            failure_reason = f"eligible defense records failed utility gate: {', '.join(weak_records)}"
+            failure_reason = promotion_failure_reason(evidence_summary)
 
         validation = PromotionValidationResult(
             promotion_id=manifest.promotion_id,
@@ -164,8 +160,12 @@ class ResearchPromotionManager:
             replayed_cycle=proposal.cycle,
             control_gate_passed=control_gate_passed,
             eligible_trace_ids=sorted(records),
-            defense_report_coverage=report_coverage,
-            defense_utility_gate=utility_gate,
+            defense_report_coverage=evidence_summary.report_coverage,
+            defense_utility_gate=evidence_summary.utility_gate,
+            missing_report_trace_ids=evidence_summary.missing_report_trace_ids,
+            weak_evidence_trace_ids=evidence_summary.weak_evidence_trace_ids,
+            failed_validation_trace_ids=evidence_summary.failed_validation_trace_ids,
+            validation_failures_by_trace=evidence_summary.validation_failures_by_trace,
             validation_status=status,
             failure_reason=failure_reason,
         )

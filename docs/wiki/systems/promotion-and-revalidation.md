@@ -53,6 +53,19 @@ Promotion should treat defense evidence classes conservatively:
 - `sealed_dry_run_replay` is useful sealed evidence, but not strong enough for promotion
 - `live_validation_error` means live replay evidence is incomplete, so promotion must fail closed
 
+Promotion validation now also persists operator-facing buckets:
+- `missing_report_trace_ids`
+- `weak_evidence_trace_ids`
+- `failed_validation_trace_ids`
+- `validation_failures_by_trace`
+
+This matters because promotion is not magic approval.
+It is a replayed evidence check with explicit reasons for why a trace was blocked.
+Operators should be able to see whether the problem was:
+- missing validation evidence
+- weak or non-promotable evidence
+- failed exploit-blocking or benign-utility replay
+
 ## Why it matters
 
 Without this discipline, "self-improvement" would quickly become unsafe self-modification.

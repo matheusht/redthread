@@ -84,3 +84,8 @@
 - expanded the default replay suite to `default-defense-replay-v3` with an `exploit_override_probe` plus extra bounded benign utility cases
 - pinned weak exploit-blocking and over-refusal regressions in focused replay confidence tests
 - documented replay breadth honestly so operators can see what the suite covers and what it still does not prove
+
+## [2026-04-15] defense-confidence-pass-m3 | hardened promotion evidence inspection
+- added explicit promotion evidence buckets for missing reports, weak evidence, failed replay validation, and per-trace failure maps
+- updated promotion failure reasons and CLI output so operators can see why promotion failed without opening raw JSON manually
+- documented promotion as an evidence gate rather than a magic approval step

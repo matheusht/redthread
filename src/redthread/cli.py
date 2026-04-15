@@ -1461,12 +1461,10 @@ def research_promote(env_file: str, dry_run: bool) -> None:
     manager = ResearchPromotionManager(settings, Path.cwd())
     promotion = manager.promote_latest(dry_run=dry_run)
     validation_payload = json.loads(Path(promotion.validation_ref).read_text(encoding="utf-8"))
-    report_coverage = validation_payload.get("defense_report_coverage", {})
-    utility_gate = validation_payload.get("defense_utility_gate", {})
-    missing_reports = sorted(trace_id for trace_id, state in report_coverage.items() if state != "present")
-    weak_records = {
-        trace_id: failures for trace_id, failures in utility_gate.items() if failures
-    }
+    missing_reports = validation_payload.get("missing_report_trace_ids", [])
+    weak_evidence = validation_payload.get("weak_evidence_trace_ids", [])
+    failed_validation = validation_payload.get("failed_validation_trace_ids", [])
+    weak_records = validation_payload.get("validation_failures_by_trace", {})
     detail_lines = [
         f"  Promotion: {promotion.promotion_id}",
         f"  Proposal:  {promotion.proposal_id}",
@@ -1479,9 +1477,13 @@ def research_promote(env_file: str, dry_run: bool) -> None:
     ]
     if missing_reports:
         detail_lines.append(f"  Missing reports: {', '.join(missing_reports)}")
+    if weak_evidence:
+        detail_lines.append(f"  Weak evidence: {', '.join(weak_evidence)}")
+    if failed_validation:
+        detail_lines.append(f"  Failed replay: {', '.join(failed_validation)}")
     if weak_records:
         rendered = '; '.join(f"{trace_id} -> {', '.join(failures)}" for trace_id, failures in sorted(weak_records.items()))
-        detail_lines.append(f"  Utility gate: {rendered}")
+        detail_lines.append(f"  Failure map: {rendered}")
     console.print(
         Panel(
             "[bold]Research promotion complete[/bold]\n\n" + "\n".join(detail_lines),
@@ -1514,11 +1516,7 @@ def research_promote_inspect(env_file: str) -> None:
     result_payload = json.loads(result_path.read_text(encoding="utf-8"))
     validation_path = Path(result_payload["validation_ref"])
     validation_payload = json.loads(validation_path.read_text(encoding="utf-8"))
-    weak_records = {
-        trace_id: failures
-        for trace_id, failures in validation_payload.get("defense_utility_gate", {}).items()
-        if failures
-    }
+    weak_records = validation_payload.get("validation_failures_by_trace", {})
     coverage = validation_payload.get("defense_report_coverage", {})
     lines = [
         f"  Promotion: {result_payload['promotion_id']}",
@@ -1530,9 +1528,21 @@ def research_promote_inspect(env_file: str) -> None:
     ]
     if validation_payload.get("failure_reason"):
         lines.append(f"  Failure:   {validation_payload['failure_reason']}")
+    if validation_payload.get("missing_report_trace_ids"):
+        lines.append(
+            f"  Missing:   {', '.join(validation_payload['missing_report_trace_ids'])}"
+        )
+    if validation_payload.get("weak_evidence_trace_ids"):
+        lines.append(
+            f"  Weak:      {', '.join(validation_payload['weak_evidence_trace_ids'])}"
+        )
+    if validation_payload.get("failed_validation_trace_ids"):
+        lines.append(
+            f"  Failed:    {', '.join(validation_payload['failed_validation_trace_ids'])}"
+        )
     if weak_records:
         rendered = '; '.join(f"{trace_id} -> {', '.join(failures)}" for trace_id, failures in sorted(weak_records.items()))
-        lines.append(f"  Utility:   {rendered}")
+        lines.append(f"  Fail map:  {rendered}")
     console.print(Panel("[bold]Latest promotion[/bold]\n\n" + "\n".join(lines), border_style="cyan"))
 
 

@@ -117,10 +117,13 @@ Acceptance criteria:
 Goal:
 - make promotion decisions easier to trust and easier to inspect
 
-Planned work:
-- strengthen promotion summaries and failure reasons
-- ensure operators can quickly see weak evidence, missing evidence, and failed evidence
-- keep promotion discipline clearly separate from mutation generation
+Status:
+- complete
+
+Implemented notes:
+- promotion validation now persists explicit buckets for missing reports, weak evidence, failed validation, and per-trace failure maps
+- promotion failure reasons now say whether the block came from missing evidence, weak evidence, or failed replay/utility validation
+- CLI promotion output and promotion inspection now surface those buckets directly
 
 Acceptance criteria:
 - promotion failures point to the exact missing or weak evidence class

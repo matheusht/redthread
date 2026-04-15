@@ -196,6 +196,10 @@ class PromotionValidationResult(BaseModel):
     eligible_trace_ids: list[str] = Field(default_factory=list)
     defense_report_coverage: dict[str, str] = Field(default_factory=dict)
     defense_utility_gate: dict[str, list[str]] = Field(default_factory=dict)
+    missing_report_trace_ids: list[str] = Field(default_factory=list)
+    weak_evidence_trace_ids: list[str] = Field(default_factory=list)
+    failed_validation_trace_ids: list[str] = Field(default_factory=list)
+    validation_failures_by_trace: dict[str, list[str]] = Field(default_factory=dict)
     validation_status: str
     failure_reason: str | None = None
 
