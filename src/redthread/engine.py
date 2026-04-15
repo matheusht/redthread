@@ -98,9 +98,10 @@ class RedThreadEngine:
     ) -> None:
         """Phase 5B post-campaign diagnostic.
 
-        Collects and embeds canary probes against the target, then
-        computes the ASI health report. The report is attached to
-        campaign.metadata and appended to the JSONL transcript.
+        Runs a probe-first telemetry pass after the campaign.
+        This currently injects canaries, optionally fits a stored baseline,
+        computes ASI, and attaches the result to campaign metadata.
+        It is an operator signal, not proof of benign utility.
         """
         from redthread.pyrit_adapters.targets import build_target
         from redthread.telemetry.asi import AgentStabilityIndex
@@ -147,6 +148,12 @@ class RedThreadEngine:
                     "operational_health": report.operational_health,
                     "behavioral_stability": report.behavioral_stability,
                     "anomaly_count": sum(1 for a in report.anomalies if a.is_anomaly),
+                    "organic_records": report.metadata.get("organic_records", 0),
+                    "canary_records": report.metadata.get("canary_records", 0),
+                    "baseline_fitted": report.metadata.get("baseline_fitted", False),
+                    "semantic_drift_mode": report.metadata.get("semantic_drift_mode", "unknown"),
+                    "response_consistency_mode": report.metadata.get("response_consistency_mode", "unknown"),
+                    "evidence_warnings": report.metadata.get("evidence_warnings", []),
                     "recommendation": report.recommendation,
                 }) + "\n")
 

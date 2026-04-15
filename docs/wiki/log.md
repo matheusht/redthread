@@ -44,3 +44,8 @@
 - added `docs/wiki/research/next-deep-dive-subsystem.md` to record the post-hardening recommendation
 - updated `docs/wiki/index.md` so the new research page is discoverable
 - recommended telemetry and monitoring as the next deep investigation because it now has the best leverage-to-ambiguity ratio after the trust hardening tranche
+
+## [2026-04-15] telemetry-truth-pass | hardened telemetry claims against runtime reality
+- updated telemetry source docs to clarify the current probe-first runtime path and the limit between monitoring signal and proof
+- rewrote `docs/wiki/systems/telemetry-and-monitoring.md` around what telemetry measures, what ASI/drift mean in practice, and which daemon actions are safe to automate
+- refreshed `docs/wiki/entities/asi.md` and `docs/wiki/index.md` so operators can find the new trust-boundary framing quickly

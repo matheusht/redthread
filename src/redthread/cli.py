@@ -354,6 +354,13 @@ def monitor_status(env_file: str) -> None:
     
     status_color = "red" if report.is_alert else "green"
     from rich.panel import Panel
+
+    evidence_warnings = report.metadata.get("evidence_warnings", [])
+    evidence_block = ""
+    if evidence_warnings:
+        evidence_lines = "\n".join(f"    - {warning}" for warning in evidence_warnings)
+        evidence_block = f"\n\n  Evidence warnings:\n{evidence_lines}"
+
     console.print()
     console.print(
         Panel(
@@ -361,8 +368,12 @@ def monitor_status(env_file: str) -> None:
             f"  Response Consistency: {report.response_consistency:.1f}/100\n"
             f"  Semantic Drift:       {report.semantic_drift:.1f}/100\n"
             f"  Operational Health:   {report.operational_health:.1f}/100\n"
-            f"  Behavioral Stability: {report.behavioral_stability:.1f}/100\n\n"
-            f"  Recommendation:       {report.recommendation}",
+            f"  Behavioral Stability: {report.behavioral_stability:.1f}/100\n"
+            f"  Organic records:      {report.metadata.get('organic_records', 0)}\n"
+            f"  Canary records:       {report.metadata.get('canary_records', 0)}\n"
+            f"  Baseline fitted:      {report.metadata.get('baseline_fitted', False)}\n\n"
+            f"  Recommendation:       {report.recommendation}"
+            f"{evidence_block}",
             border_style=status_color,
             title="Daemon Status",
         )

@@ -19,7 +19,12 @@ logger = logging.getLogger(__name__)
 
 
 class SecurityGuardDaemon:
-    """Daemon that continuously monitors ASI and triggers auto-campaigns on degradation."""
+    """Daemon that monitors ASI and can launch bounded follow-up campaigns.
+
+    Important truth boundary: telemetry alerts are operator signals.
+    They can justify investigation, not automatic claims that a target is
+    unsafe, safe, or utility-regressed.
+    """
 
     def __init__(self, settings: RedThreadSettings) -> None:
         self.settings = settings
@@ -28,7 +33,11 @@ class SecurityGuardDaemon:
         self._last_alert_time = 0.0
 
     async def _warmup(self, target: Any) -> DriftDetector:
-        """Bootstrap the drift baseline if it doesn't exist."""
+        """Bootstrap the drift baseline if it doesn't exist.
+
+        Current warmup uses canary probes, so the resulting baseline is useful
+        for continuity but not a full proof-grade benign utility baseline.
+        """
         drift_detector = DriftDetector(k_neighbors=5, distance_metric="cosine")
         baseline = self.collector.storage.load_baseline()
 
@@ -42,10 +51,9 @@ class SecurityGuardDaemon:
         # Run 10 random canary probes
         import random
 
-        from redthread.telemetry.collector import CANARY_PROMPTS
-        
-        # Sort so choice is deterministic if seeded, mostly just converting values to list
-        prompts = sorted(list(CANARY_PROMPTS.values()))
+        from redthread.telemetry.prompts import CANARY_PROMPTS
+
+        prompts = sorted(CANARY_PROMPTS.values())
 
         for i in range(10):
             prompt = random.choice(prompts)
@@ -77,8 +85,8 @@ class SecurityGuardDaemon:
         return drift_detector
 
     async def _trigger_campaign(self) -> None:
-        """Run an isolated auto-campaign to diagnose the regression."""
-        logger.warning("🛡️ Daemon | 🔥 Triggering Security Guard Campaign")
+        """Run an isolated follow-up campaign after a telemetry alert."""
+        logger.warning("🛡️ Daemon | 🔥 Triggering follow-up campaign from telemetry alert")
         engine = RedThreadEngine(self.settings)
         # Use an exploratory "drift investigation" profile
         config = CampaignConfig(
@@ -115,7 +123,11 @@ class SecurityGuardDaemon:
                     now = time.monotonic()
                     time_since_alert = now - self._last_alert_time
                     if time_since_alert >= self.settings.monitor_cooldown_period:
-                        logger.warning("🛡️ Daemon | ASI ALERT (%.1f < %.1f)", report.overall_score, self.settings.asi_alert_threshold)
+                        logger.warning(
+                            "🛡️ Daemon | ASI ALERT (%.1f < %.1f) | telemetry suggests instability, verify with campaign/replay evidence",
+                            report.overall_score,
+                            self.settings.asi_alert_threshold,
+                        )
                         if self.settings.monitor_auto_campaign:
                             self._last_alert_time = now
                             # Auto-campaign blocks the daemon loop, this is intended
@@ -126,7 +138,11 @@ class SecurityGuardDaemon:
                     else:
                         logger.info("🛡️ Daemon | alert suppressed (cooling down, %ds remaining)", int(self.settings.monitor_cooldown_period - time_since_alert))
                 else:
-                    logger.info("🛡️ Daemon | health OK (%.1f >= %.1f)", report.overall_score, self.settings.asi_alert_threshold)
+                    logger.info(
+                        "🛡️ Daemon | health OK (%.1f >= %.1f) | telemetry signal only",
+                        report.overall_score,
+                        self.settings.asi_alert_threshold,
+                    )
                 
                 # 4. Sleep
                 try:

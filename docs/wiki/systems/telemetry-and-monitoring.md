@@ -2,59 +2,170 @@
 title: Telemetry and Monitoring
 type: system
 status: active
-summary: How RedThread tracks drift, stability, and continuous health monitoring after campaign execution.
+summary: How RedThread monitors runtime health, what ASI measures, and where telemetry stops being proof.
 source_of_truth:
+  - README.md
   - docs/DEFENSE_PIPELINE.md
   - docs/PHASE_REGISTRY.md
 updated_by: codex
-updated_at: 2026-04-13
+updated_at: 2026-04-15
 ---
 
 # Telemetry and Monitoring
 
 ## Scope
 
-This page summarizes RedThread's telemetry, drift detection, and continuous monitoring stack.
+This page summarizes RedThread's telemetry, drift detection, ASI scoring, and monitoring daemon.
 
-## Core idea
+Main truth boundary:
+- telemetry is an **operator signal layer**
+- telemetry is **not** the same thing as validation truth
 
-RedThread does not stop at finding jailbreaks. It also tracks whether target behavior is drifting or degrading over time.
+## Current runtime path
 
-## Main components
+Telemetry currently runs in two main places.
 
-### Drift detection
-The documented telemetry stack uses embedding-based drift detection.
+### 1. Post-campaign telemetry pass
+File: `src/redthread/engine.py`
 
-Key ideas:
-- establish a benign baseline
-- embed later responses
-- compare them against the baseline manifold
-- treat large distance increases as potential drift
+After a campaign finishes, RedThread can:
+- inject a canary batch
+- load a stored drift baseline if one exists
+- compute ASI
+- attach the report to campaign metadata and transcript
+- export raw telemetry JSONL
 
-### ARIMA and ASI
-The phase history records a later hardening step that adds:
-- ARIMA-based anomaly detection
-- ASI as a composite agent stability score
+Important:
+- this is a **post-run diagnostic pass**
+- it is not full live tracing of every campaign interaction
 
-This turns telemetry from passive observation into a more operational health signal.
+### 2. Monitoring daemon
+File: `src/redthread/daemon/monitor.py`
 
-### Continuous monitoring daemon
-The monitoring layer adds recurring health checks and can trigger follow-up behavior when the target appears degraded.
+The daemon can:
+- warm a drift baseline if one is missing
+- inject recurring canary probes
+- compute ASI on stored telemetry
+- trigger a bounded follow-up campaign when the alert threshold is crossed
 
-## Why it matters
+Important:
+- daemon alerts are for **investigation**
+- daemon alerts do not by themselves prove safety failure or benign-utility regression
 
-This protects against a narrow view of success.
+## What telemetry really measures
 
-A newly injected guardrail might block a jailbreak but still damage normal behavior. Telemetry exists to catch that tradeoff instead of treating refusal alone as a win.
+Telemetry records these main signal families:
+- latency
+- estimated token counts
+- response text
+- response embeddings
+- error markers
+- canary-vs-organic identity
 
-## Risks
+In practice, the current runtime is mostly **probe-first**.
+That means the strongest telemetry evidence today comes from canary monitoring passes and whatever organic records are explicitly sent through the collector.
 
-- over-triggering on noise
-- weak baselines
-- hidden utility regressions if benign probes are too shallow
+## What ASI means in practice
+
+ASI combines four sub-scores:
+- **Response Consistency (30%)** — are repeated canary responses semantically similar over time?
+- **Semantic Drift (30%)** — how far do stored organic embeddings move from the fitted baseline manifold?
+- **Operational Health (25%)** — do latency, token count, or response length look anomalous?
+- **Behavioral Stability (15%)** — are output token counts varying unusually?
+
+This makes ASI useful as a compact health signal.
+It does **not** make ASI a proof object.
+
+ASI is best read as:
+- a summary of monitoring evidence
+- a trigger for closer inspection
+- a reason to launch bounded follow-up work
+
+ASI is **not** best read as:
+- proof that the model is safe
+- proof that the model is unsafe
+- proof that benign utility is preserved
+- proof that a defense worked
+
+## What drift scores mean
+
+Semantic drift uses K Core-Distance against a stored baseline.
+
+A low drift score suggests:
+- the current organic responses are farther from the stored baseline manifold
+- meaning-level behavior may have shifted
+
+A low drift score does **not** prove:
+- a harmful regression
+- a jailbreak vulnerability
+- a user-visible utility failure
+
+A strong interpretation depends on baseline quality.
+If the baseline is thin, stale, or built from narrow probes, the drift result should be treated conservatively.
+
+## Benign baseline and canary strength
+
+Current strengths:
+- canaries are deterministic and stable
+- canaries give a noise-light consistency control group
+- daemon warmup can ensure telemetry is not completely blind
+
+Current limits:
+- canaries are shallow probes, not a broad benign utility suite
+- daemon warmup can build the baseline from canary probes, which is useful for continuity but weak as a proof-grade benign baseline
+- semantic drift only measures against the embeddings that were actually stored
+- if no baseline or no usable organic embeddings exist, some sub-scores default high and must be read with the report caveats
+
+So the current baseline/canary stack is:
+- useful for monitoring
+- useful for alerting
+- not yet strong enough to stand in for full benign validation
+
+## Safe daemon action boundary
+
+Telemetry can safely support:
+- health reporting
+- alerting operators
+- recommending investigation
+- launching bounded follow-up campaigns for diagnosis
+- cooldown-based rate limiting so monitoring does not spiral
+
+Telemetry should not be treated as enough, by itself, for:
+- declaring a target healthy in the strong sense
+- declaring a defense validated
+- approving promotion or deployment
+- claiming a benign baseline is preserved without replay or evaluation evidence
+
+## What telemetry suggests vs what it proves
+
+### Telemetry suggests
+- the target may be drifting
+- the target may be less consistent
+- operational behavior may have changed
+- a follow-up campaign or replay check is worth running
+
+### Telemetry proves
+- only that the measured telemetry signals changed in the measured way
+- only that the scoring logic produced the reported composite score from the available inputs
+
+### Telemetry does not prove
+- full benign utility retention
+- exploit resistance
+- defense correctness
+- promotion readiness
+
+## Bottom line
+
+Telemetry is valuable because it widens operator vision beyond simple jailbreak success or failure.
+
+But in RedThread's current runtime, telemetry should be spoken about honestly:
+- **signal, not proof**
+- **monitoring, not validation**
+- **investigation trigger, not final verdict**
 
 ## Related pages
 
 - [evaluation-and-anti-hallucination.md](evaluation-and-anti-hallucination.md)
+- [../entities/asi.md](../entities/asi.md)
 - [../../DEFENSE_PIPELINE.md](../../DEFENSE_PIPELINE.md)
 - [../../PHASE_REGISTRY.md](../../PHASE_REGISTRY.md)

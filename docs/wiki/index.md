@@ -6,7 +6,7 @@ This is the primary content map for the RedThread wiki.
 
 - [systems/knowledge-stack.md](systems/knowledge-stack.md) — How MemPalace, raw sources, and the wiki fit together.
 - [systems/evaluation-and-anti-hallucination.md](systems/evaluation-and-anti-hallucination.md) — Evaluation baseline, grounded generation rules, and why anti-hallucination is treated as an engineering control.
-- [systems/telemetry-and-monitoring.md](systems/telemetry-and-monitoring.md) — Drift detection, ASI, and continuous monitoring behavior.
+- [systems/telemetry-and-monitoring.md](systems/telemetry-and-monitoring.md) — Drift detection, ASI, monitoring daemon behavior, and the signal-vs-proof boundary.
 - [systems/promotion-and-revalidation.md](systems/promotion-and-revalidation.md) — Promotion discipline, revalidation evidence, and why mutation execution is kept separate from acceptance.
 - [systems/defense-synthesis-and-validation.md](systems/defense-synthesis-and-validation.md) — Self-healing path from confirmed jailbreak to validated defense proposal.
 - [systems/subsystem-focus-map.md](systems/subsystem-focus-map.md) — Current subsystem-by-subsystem focus map for what to harden now and what to delay.
@@ -21,7 +21,7 @@ This is the primary content map for the RedThread wiki.
 - [entities/mempalace.md](entities/mempalace.md) — Memory and retrieval layer used by the repo.
 - [entities/judge-agent.md](entities/judge-agent.md) — Evaluation role responsible for scoring attack traces.
 - [entities/defense-architect.md](entities/defense-architect.md) — Grounded defensive generation role in the self-healing loop.
-- [entities/asi.md](entities/asi.md) — Composite Agent Stability Index used by telemetry.
+- [entities/asi.md](entities/asi.md) — Composite Agent Stability Index and what it does versus what it does not prove.
 - [entities/prometheus-2.md](entities/prometheus-2.md) — Evaluation model referenced in the grounded judging stack.
 - [entities/langgraph-supervisor.md](entities/langgraph-supervisor.md) — Coordinator role for macro-workflow orchestration.
 

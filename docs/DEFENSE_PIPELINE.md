@@ -71,8 +71,9 @@ To ensure that injecting guardrails does not fundamentally degrade the target mo
 
 ### Drift Detector (`src/redthread/telemetry/drift.py`)
 - Calculates statistical shift using **K Core-Distance** (density estimation).
+- **Current runtime truth:** the telemetry path is probe-first. The post-campaign pass injects canaries and optionally compares organic records already present in telemetry storage against a fitted baseline. The daemon warmup can also bootstrap a baseline from canary probes when no prior baseline exists.
 - **Core Loop:**
-  1. A baseline of benign conversational responses is embedded to map the target's "normal" density manifold.
-  2. As the campaign evolves (or as guardrails are injected), target responses are embedded.
+  1. A stored baseline embedding set is used as the reference manifold.
+  2. Later telemetry records with compatible embeddings are compared against that manifold.
   3. The `numpy`-powered `DriftDetector` computes the Euclidean/Cosine distance from the test embedding to the $k$-th nearest baseline neighbor.
-  4. Distances significantly exceeding the baseline average indicate functional drift in the target's behavior.
+  4. Distances significantly exceeding the baseline average suggest functional drift in the target's behavior, but do not prove a benign-utility regression by themselves.

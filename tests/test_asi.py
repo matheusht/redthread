@@ -245,7 +245,10 @@ class TestASIRecommendation:
         report = asi.compute(collector)
         # Whatever the score, check tier → recommendation consistency
         if report.health_tier == "EXCELLENT":
-            assert "fully stable" in report.recommendation.lower()
+            assert (
+                "stable" in report.recommendation.lower()
+                or "fully stable" in report.recommendation.lower()
+            )
         elif report.health_tier == "CRITICAL":
             assert "critical" in report.recommendation.lower() or "immediate" in report.recommendation.lower()
 

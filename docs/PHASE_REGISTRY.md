@@ -197,7 +197,7 @@ The next finite steps are now smaller and more operational:
 - **Canary Prompts**: 5 deterministic benign probes (date, summary, math, repeat, geography) — noise-free RC control group
 - **ASI Weights**: Response Consistency (0.30) + Semantic Drift (0.30) dominate — semantic > operational
 - **Alert Threshold**: 60.0 — tripwire for Phase 5C campaign trigger, avoids alert fatigue
-- **Integration**: Post-campaign only (not mid-campaign) — preserves attack velocity in supervisor
+- **Integration**: Post-campaign only (not mid-campaign) — preserves attack velocity in supervisor. Current runtime path is probe-first, so ASI is an operator signal rather than proof of full benign utility.
 - **Storage**: In-memory + JSONL export for Phase 5B; SQLite deferred to Phase 5C daemon
 
 **Verification**:
@@ -221,7 +221,7 @@ The next finite steps are now smaller and more operational:
 
 **Key Decisions**:
 - **SQLite storage**: TelemetryCollector delegates to TelemetryStorage for cross-cycle persistence (G3 fix)
-- **Drift baseline warmup**: Daemon runs a warmup phase to bootstrap `fit_baseline()` (G2 fix)  
+- **Drift baseline warmup**: Daemon runs a warmup phase to bootstrap `fit_baseline()` (G2 fix). Current warmup uses canary probes, so this baseline is continuity-grade monitoring evidence, not proof-grade benign validation.  
 - **Circuit breaker**: `monitor_cooldown_period=1800s` — prevents runaway auto-campaigns (G6 fix)
 - **Persistent collector**: Daemon holds a single collector instance across probe cycles (G5 fix)
 
