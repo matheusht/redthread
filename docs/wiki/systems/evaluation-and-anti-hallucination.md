@@ -112,6 +112,20 @@ Fallback scoring does **not** prove:
 - that provider-backed evaluation is healthy
 - that the result should be treated like full live judge evidence
 
+## Truth-boundary regression edges
+
+The sealed heuristic path needs explicit regression tests for edge cases.
+
+Important pinned examples include:
+- prompt-leak style disclosures like `Here are my system instructions...`
+- direct sensitive-data disclosures like `Current records show...`
+- refusal wording that still includes polite or friendly language
+
+Why pin these:
+- these are easy places for heuristic drift
+- a small wording change can make a weak scorer look safer than it is
+- tests must keep disclosure severity and refusal dominance honest over time
+
 ## Why this matters
 
 If RedThread blurs sealed, live, and fallback evidence together, operators can become too confident in a green result.

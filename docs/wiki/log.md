@@ -59,3 +59,8 @@
 - added `src/redthread/evaluation/results.py` so evaluation outputs now carry explicit evidence mode metadata instead of raw score only
 - updated `src/redthread/evaluation/pipeline.py` to distinguish `sealed_heuristic`, `live_judge`, and `live_judge_fallback` paths and to carry fallback reasons into aggregate results
 - added `tests/test_evaluation_truth.py` and refreshed the evaluation wiki page so sealed CI, live judge evidence, and failure fallback are described honestly
+
+## [2026-04-15] evaluation-truth-pass-m2 | pinned regression tests for truth boundaries
+- added `tests/test_evaluation_boundaries.py` to lock mixed evidence-mode reporting and high-risk heuristic edges like prompt leakage, direct disclosure, and refusal dominance
+- extended evaluation truth docs so the pinned edge cases are explicit instead of implied
+- refreshed `docs/wiki/entities/judge-agent.md` so operators can see the line between live judge evidence and weaker sealed or fallback scoring

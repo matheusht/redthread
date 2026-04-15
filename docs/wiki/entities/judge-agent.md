@@ -35,6 +35,18 @@ Judge behavior is documented through:
 - anti-hallucination and grounding standards
 - phase history describing judge/evaluation milestones
 - rubric-driven evaluation paths in the implementation docs
+- explicit evidence-mode handling in the evaluation pipeline so operators can tell live judge evidence from sealed or fallback scoring
+
+## Truth boundary
+
+JudgeAgent is the strongest normal scoring path in this subsystem when live evaluation succeeds.
+
+But operator trust should still separate three cases:
+- live judge success
+- sealed dry-run heuristic evaluation
+- live-judge failure fallback
+
+JudgeAgent therefore matters not just for score quality, but for keeping the system honest about what kind of evidence a score really is.
 
 ## Related pages
 
