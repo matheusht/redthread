@@ -8,15 +8,14 @@ from pathlib import Path
 
 from redthread.config.settings import RedThreadSettings
 from redthread.memory.index import MemoryIndex
-from redthread.research.checkpoints import load_promotion_checkpoint, save_promotion_checkpoint
 from redthread.research.models import (
     PhaseThreeProposal,
-    PromotionCheckpoint,
     PromotionManifest,
     PromotionRecord,
     PromotionValidationResult,
 )
 from redthread.research.phase3 import PhaseThreeHarness
+from redthread.research.promotion_checkpointing import persist_promotion_checkpoint
 from redthread.research.promotion_evidence import (
     promotion_failure_reason,
     summarize_promotion_records,
@@ -33,7 +32,6 @@ from redthread.research.workspace import ResearchWorkspace
 
 class ResearchPromotionManager:
     """Promote accepted research memory into production memory on operator intent."""
-
     def __init__(self, settings: RedThreadSettings, root: Path) -> None:
         self.settings = settings
         self.root = root
@@ -51,9 +49,14 @@ class ResearchPromotionManager:
         result_path = self.workspace.promotion_result_path(promotion_id)
         if result_path.exists() and not dry_run:
             return PromotionRecord.model_validate(json.loads(result_path.read_text(encoding="utf-8")))
-
         manifest = self._write_manifest(proposal, promotion_id)
-        self._save_checkpoint(proposal, promotion_id, "manifest_written", manifest_written=True)
+        persist_promotion_checkpoint(
+            self.workspace,
+            proposal,
+            promotion_id,
+            "manifest_written",
+            manifest_written=True,
+        )
         validation = self._write_validation(proposal, manifest)
         promoted_trace_ids = self._write_production(proposal, validation, dry_run)
 
@@ -75,7 +78,8 @@ class ResearchPromotionManager:
         )
         result_path.parent.mkdir(parents=True, exist_ok=True)
         result_path.write_text(record.model_dump_json(indent=2), encoding="utf-8")
-        self._save_checkpoint(
+        persist_promotion_checkpoint(
+            self.workspace,
             proposal,
             promotion_id,
             "production_write_complete",
@@ -114,7 +118,6 @@ class ResearchPromotionManager:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(manifest.model_dump_json(indent=2), encoding="utf-8")
         return manifest
-
     def _write_validation(
         self,
         proposal: PhaseThreeProposal,
@@ -171,7 +174,8 @@ class ResearchPromotionManager:
         )
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(validation.model_dump_json(indent=2), encoding="utf-8")
-        self._save_checkpoint(
+        persist_promotion_checkpoint(
+            self.workspace,
             proposal,
             manifest.promotion_id,
             "replay_complete",
@@ -194,26 +198,3 @@ class ResearchPromotionManager:
             [records[trace_id] for trace_id in validation.eligible_trace_ids if trace_id in records]
         )
 
-    def _save_checkpoint(
-        self,
-        proposal: PhaseThreeProposal,
-        promotion_id: str,
-        step: str,
-        manifest_written: bool = False,
-        validation_ref: str | None = None,
-        result_ref: str | None = None,
-    ) -> PromotionCheckpoint:
-        path = self.workspace.promotion_checkpoint_path(promotion_id)
-        checkpoint = load_promotion_checkpoint(path) or PromotionCheckpoint(
-            checkpoint_id=f"{promotion_id}-checkpoint",
-            promotion_id=promotion_id,
-            proposal_id=proposal.proposal_id,
-            step=step,
-        )
-        checkpoint.step = step
-        if manifest_written:
-            checkpoint.manifest_ref = str(self.workspace.promotion_manifest_path(promotion_id))
-        checkpoint.validation_ref = validation_ref
-        checkpoint.result_ref = result_ref
-        save_promotion_checkpoint(path, checkpoint)
-        return checkpoint

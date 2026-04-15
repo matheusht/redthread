@@ -89,3 +89,8 @@
 - added explicit promotion evidence buckets for missing reports, weak evidence, failed replay validation, and per-trace failure maps
 - updated promotion failure reasons and CLI output so operators can see why promotion failed without opening raw JSON manually
 - documented promotion as an evidence gate rather than a magic approval step
+
+## [2026-04-15] defense-confidence-pass-m4 | cleaned defense hardening structure
+- reduced `src/redthread/research/promotion.py` to the 200-line target by extracting checkpoint persistence
+- split oversized defense and promotion tests into smaller files by concern
+- moved shared defense test builders into a helper module so future hardening work carries less context and duplication

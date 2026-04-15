@@ -7,7 +7,7 @@ import pytest
 from redthread.core.defense_models import GuardrailProposal, VulnerabilityClassification
 from redthread.core.defense_replay_fixtures import build_default_replay_suite
 from redthread.core.defense_synthesis import DefenseSynthesisEngine
-from tests.test_defense import FakeTarget, make_settings, make_tap_result
+from tests.defense_helpers import FakeTarget, make_settings, make_tap_result
 
 
 def test_default_replay_suite_pins_override_probe_and_benign_breadth() -> None:

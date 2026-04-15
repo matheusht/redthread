@@ -1,7 +1,7 @@
 ---
 title: Defense Confidence Hardening Plan
 type: research
-status: active
+status: complete
 summary: Research-backed execution plan for the defense synthesis, validation, and promotion deep dive.
 source_of_truth:
   - docs/DEFENSE_PIPELINE.md
@@ -134,10 +134,13 @@ Acceptance criteria:
 Goal:
 - reduce file-size and mixed-responsibility risk inside the defense confidence path
 
-Planned work:
-- split oversized defense and promotion modules where needed
-- split oversized tests where needed
-- keep reporting, replay, gating, and orchestration responsibilities more isolated
+Status:
+- complete
+
+Implemented notes:
+- reduced `src/redthread/research/promotion.py` to the 200-line target by extracting checkpoint persistence into `src/redthread/research/promotion_checkpointing.py`
+- split oversized defense and promotion tests into smaller files by concern
+- moved shared defense test builders into `tests/defense_helpers.py` so future edits need less duplicate setup code
 
 Acceptance criteria:
 - touched files move closer to repo size and separation rules
@@ -150,11 +153,12 @@ Acceptance criteria:
 - Evaluation metrics: the defense path still relies on judge-derived exploit scoring during live replay, so evidence hardening must keep that judgment path visible
 - Defense pipeline continuity: the loop must remain isolate -> generate -> validate -> promote, with truth labels added instead of hidden shortcuts
 
-## Immediate next move
+## Outcome
 
-Start Milestone 1.
+Defense-confidence hardening is complete for this pass.
 
-Reason:
-- it is the narrowest, highest-leverage truth fix
-- it improves operator understanding and promotion correctness before replay breadth expansion
-- it gives the later milestones a cleaner evidence vocabulary to build on
+What improved most:
+- defense evidence classes are explicit
+- replay confidence is broader and more honest
+- promotion blocks now explain missing, weak, and failed evidence clearly
+- the touched code/tests are cleaner for the next hardening pass

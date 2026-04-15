@@ -11,7 +11,7 @@ from redthread.core.defense_evidence import (
 )
 from redthread.core.defense_models import GuardrailProposal, VulnerabilityClassification
 from redthread.core.defense_synthesis import DefenseSynthesisEngine
-from tests.test_defense import FakeTarget, make_settings, make_tap_result
+from tests.defense_helpers import FakeTarget, make_settings, make_tap_result
 
 
 @pytest.mark.asyncio
