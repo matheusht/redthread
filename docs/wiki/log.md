@@ -109,3 +109,8 @@
 - updated `docs/DEFENSE_PIPELINE.md` and `docs/wiki/systems/defense-synthesis-and-validation.md` for `default-defense-replay-v4`, including the new `exploit_roleplay_probe` and `yaml_status_note` coverage
 - refreshed `docs/wiki/research/current-hardening-tracks.md` with the new operator-inspection bridge and replay-breadth execution note
 - marked `docs/wiki/research/defense-promotion-trust-pass.md` complete after the wiki, operator-inspection, and replay-breadth milestones all shipped and passed verification
+
+## [2026-04-15] orchestration-runtime-pass-m1 | added degraded runtime truth to campaign artifacts
+- added `src/redthread/orchestration/runtime_summary.py` and wired supervisor runtime counts for attack, judge, and defense worker failures
+- updated campaign metadata and transcript summaries so operators can see `degraded_runtime`, `error_count`, and compact runtime-stage counts
+- added new wiki pages for `systems/orchestration-and-engine-runtime.md` and `research/orchestration-runtime-hardening-pass.md`, then linked them from the wiki index

@@ -181,6 +181,7 @@ class RedThreadEngine:
 
         with transcript_path.open("w", encoding="utf-8") as f:
             # Write summary line
+            runtime_summary = campaign.metadata.get("runtime_summary", {})
             summary = {
                 "type": "campaign_result",
                 "id": campaign.id,
@@ -191,6 +192,9 @@ class RedThreadEngine:
                 "judge_model": self.settings.judge_model,
                 "runtime_mode": campaign.metadata.get("runtime_mode", campaign_runtime_mode(self.settings)),
                 "telemetry_mode": campaign.metadata.get("telemetry_mode", telemetry_runtime_mode(self.settings)),
+                "degraded_runtime": campaign.metadata.get("degraded_runtime", False),
+                "error_count": campaign.metadata.get("error_count", 0),
+                "runtime_summary": runtime_summary,
                 "num_runs": len(campaign.results),
                 "attack_success_rate": campaign.attack_success_rate,
                 "average_score": campaign.average_score,

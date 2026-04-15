@@ -9,6 +9,7 @@ This is the primary content map for the RedThread wiki.
 - [systems/telemetry-and-monitoring.md](systems/telemetry-and-monitoring.md) — Drift detection, ASI, monitoring daemon behavior, and the signal-vs-proof boundary.
 - [systems/promotion-and-revalidation.md](systems/promotion-and-revalidation.md) — Promotion discipline, revalidation evidence, and why mutation execution is kept separate from acceptance.
 - [systems/defense-synthesis-and-validation.md](systems/defense-synthesis-and-validation.md) — Self-healing path from confirmed jailbreak to validated defense proposal.
+- [systems/orchestration-and-engine-runtime.md](systems/orchestration-and-engine-runtime.md) — Engine facade, LangGraph supervisor flow, runtime modes, and degraded-runtime truth.
 - [systems/subsystem-focus-map.md](systems/subsystem-focus-map.md) — Current subsystem-by-subsystem focus map for what to harden now and what to delay.
 
 ## Decisions
@@ -38,6 +39,7 @@ This is the primary content map for the RedThread wiki.
 - [research/evaluation-truth-hardening-plan.md](research/evaluation-truth-hardening-plan.md) — Research-backed execution plan for the judge and evaluation deep dive.
 - [research/defense-confidence-hardening-plan.md](research/defense-confidence-hardening-plan.md) — Research-backed execution plan for the defense synthesis, validation, and promotion deep dive.
 - [research/defense-promotion-trust-pass.md](research/defense-promotion-trust-pass.md) — Durable deep-dive synthesis for what defense validation and promotion actually prove, what they do not prove, and what to harden next.
+- [research/orchestration-runtime-hardening-pass.md](research/orchestration-runtime-hardening-pass.md) — Execution log for runtime-truth hardening across the engine facade, supervisor flow, and operator surfaces.
 
 ## Timelines
 

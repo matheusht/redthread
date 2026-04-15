@@ -47,12 +47,19 @@ class SupervisorState(TypedDict):
 
     # Attack worker outputs — collected via Send fan-out
     attack_results: Annotated[list[dict[str, Any]], _merge_lists]
+    attack_worker_total: int
+    attack_worker_failures: int
 
     # Post-judge results
     judged_results: Annotated[list[dict[str, Any]], _merge_lists]
+    judge_worker_total: int
+    judge_worker_failures: int
 
     # Defense outputs
     defense_records: Annotated[list[dict[str, Any]], _merge_lists]
+    defense_worker_total: int
+    defense_worker_failures: int
+    defense_deployments: int
 
     # Final
     campaign_result_dict: dict[str, Any] | None
@@ -113,7 +120,14 @@ async def collect_results_node(state: SupervisorState) -> dict[str, Any]:
         for r in state["attack_results"]
         if r.get("error")
     ]
-    return {"errors": errors}
+    attack_worker_failures = sum(
+        1 for r in state["attack_results"] if r.get("error") or not r.get("result_dict")
+    )
+    return {
+        "errors": errors,
+        "attack_worker_total": len(state["attack_results"]),
+        "attack_worker_failures": attack_worker_failures,
+    }
 
 
 async def judge_all_results_node(state: SupervisorState) -> dict[str, Any]:
@@ -122,13 +136,12 @@ async def judge_all_results_node(state: SupervisorState) -> dict[str, Any]:
 
     judged: list[dict[str, Any]] = []
     errors: list[str] = []
+    judge_worker_failures = 0
 
     config = state["config_dict"]
+    judge_inputs = [r for r in state["attack_results"] if r.get("result_dict")]
 
-    for raw_result in state["attack_results"]:
-        if not raw_result.get("result_dict"):
-            continue  # Skip failed workers
-
+    for raw_result in judge_inputs:
         worker_output = await run_judge_worker({
             "settings_dict": state["settings_dict"],
             "result_dict": raw_result["result_dict"],
@@ -143,13 +156,19 @@ async def judge_all_results_node(state: SupervisorState) -> dict[str, Any]:
             judged.append(worker_output["judged_result_dict"])
         if worker_output.get("error"):
             errors.append(worker_output["error"])
+            judge_worker_failures += 1
 
     logger.info(
         "🔬 Supervisor: %d results judged | jailbreaks=%d",
         len(judged),
         sum(1 for r in judged if r.get("verdict", {}).get("is_jailbreak")),
     )
-    return {"judged_results": judged, "errors": errors}
+    return {
+        "judged_results": judged,
+        "errors": errors,
+        "judge_worker_total": len(judge_inputs),
+        "judge_worker_failures": judge_worker_failures,
+    }
 
 
 def route_to_defense(state: SupervisorState) -> Literal["defense_synthesis", "finalize"]:
@@ -174,11 +193,15 @@ async def defense_synthesis_node(state: SupervisorState) -> dict[str, Any]:
 
     records: list[dict[str, Any]] = []
     errors: list[str] = []
+    defense_worker_failures = 0
+    defense_deployments = 0
+    defense_inputs = [
+        result_dict
+        for result_dict in state["judged_results"]
+        if result_dict.get("verdict", {}).get("is_jailbreak")
+    ]
 
-    for result_dict in state["judged_results"]:
-        if not result_dict.get("verdict", {}).get("is_jailbreak"):
-            continue
-
+    for result_dict in defense_inputs:
         worker_output = await run_defense_worker({
             "settings_dict": state["settings_dict"],
             "result_dict": result_dict,
@@ -191,10 +214,19 @@ async def defense_synthesis_node(state: SupervisorState) -> dict[str, Any]:
             "defense_deployed": worker_output["defense_deployed"],
             "guardrail_clause": worker_output.get("guardrail_clause"),
         })
+        if worker_output.get("defense_deployed"):
+            defense_deployments += 1
         if worker_output.get("error"):
             errors.append(worker_output["error"])
+            defense_worker_failures += 1
 
-    return {"defense_records": records, "errors": errors}
+    return {
+        "defense_records": records,
+        "errors": errors,
+        "defense_worker_total": len(defense_inputs),
+        "defense_worker_failures": defense_worker_failures,
+        "defense_deployments": defense_deployments,
+    }
 
 
 async def finalize_node(state: SupervisorState) -> dict[str, Any]:
@@ -202,6 +234,7 @@ async def finalize_node(state: SupervisorState) -> dict[str, Any]:
     from datetime import datetime, timezone
 
     from redthread.models import AttackResult, CampaignConfig, CampaignResult
+    from redthread.orchestration.runtime_summary import build_runtime_summary
 
     config = CampaignConfig.model_validate(state["config_dict"])
     results: list[AttackResult] = []
@@ -212,17 +245,24 @@ async def finalize_node(state: SupervisorState) -> dict[str, Any]:
         except Exception as exc:
             logger.warning("Failed to deserialize judged result: %s", exc)
 
+    runtime_summary = build_runtime_summary(state)
     campaign = CampaignResult(
         config=config,
         results=results,
         ended_at=datetime.now(timezone.utc),
+        metadata={
+            "runtime_summary": runtime_summary,
+            "degraded_runtime": runtime_summary["degraded_runtime"],
+            "error_count": runtime_summary["error_count"],
+        },
     )
 
     logger.info(
-        "✅ Supervisor finalized | ASR=%.1f%% | avg_score=%.2f | runs=%d",
+        "✅ Supervisor finalized | ASR=%.1f%% | avg_score=%.2f | runs=%d | degraded=%s",
         campaign.attack_success_rate * 100,
         campaign.average_score,
         len(campaign.results),
+        runtime_summary["degraded_runtime"],
     )
 
     return {"campaign_result_dict": campaign.model_dump(mode="json")}
@@ -307,8 +347,15 @@ class RedThreadSupervisor:
             "config_dict": injected_config.model_dump(mode="json"),
             "persona_dicts": [],
             "attack_results": [],
+            "attack_worker_total": 0,
+            "attack_worker_failures": 0,
             "judged_results": [],
+            "judge_worker_total": 0,
+            "judge_worker_failures": 0,
             "defense_records": [],
+            "defense_worker_total": 0,
+            "defense_worker_failures": 0,
+            "defense_deployments": 0,
             "campaign_result_dict": None,
             "errors": [],
         }
