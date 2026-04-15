@@ -73,6 +73,8 @@ def render_validation_report(record: DeploymentRecord, source: MemorySource) -> 
             f"  Category:    {record.classification.category}",
             f"  Passed:      {validation.passed}",
             f"  Mode:        {report.validation_mode}",
+            f"  Evidence:    {validation.evidence_mode}",
+            f"  Why:         {validation.evidence_label}",
             f"  Replay suite:{report.replay_suite_id}",
             f"  Exploit:     {exploit_cases}",
             f"  Benign:      {benign_cases}",

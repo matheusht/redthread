@@ -9,7 +9,7 @@ source_of_truth:
   - docs/DEFENSE_PIPELINE.md
   - docs/PHASE_REGISTRY.md
 updated_by: codex
-updated_at: 2026-04-13
+updated_at: 2026-04-15
 ---
 
 # Promotion and Revalidation
@@ -47,6 +47,11 @@ This is critical because otherwise the system could evolve the gatekeeper instea
 
 ### Defense validation evidence
 The defense pipeline includes sealed replay and structured validation reporting. Promotion later depends on evidence, not just a proposed clause.
+
+Promotion should treat defense evidence classes conservatively:
+- `live_replay` is the promotable class
+- `sealed_dry_run_replay` is useful sealed evidence, but not strong enough for promotion
+- `live_validation_error` means live replay evidence is incomplete, so promotion must fail closed
 
 ## Why it matters
 

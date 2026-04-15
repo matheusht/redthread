@@ -69,3 +69,13 @@
 - tightened `README.md` so sealed CI, successful live judge evidence, and fallback scoring are described as different evidence strengths
 - updated `docs/PROGRESS.md`, `docs/ANTI_HALLUCINATION_SOP.md`, and `docs/PHASE_REGISTRY.md` so the source docs match the real evaluation truth boundary
 - refreshed `docs/wiki/entities/judge-agent.md` metadata after the evaluation honesty pass so the wiki stays aligned with the source docs
+
+## [2026-04-15] defense-confidence-research-pass | planned the defense confidence deep dive
+- added `docs/wiki/research/defense-confidence-hardening-plan.md` with milestones for defense evidence modes, replay confidence, promotion evidence, and structural cleanup
+- updated `docs/wiki/index.md` so the new defense hardening plan is discoverable
+- grounded the plan in source docs plus current runtime evidence from defense replay, utility gate, promotion, and report inspection paths
+
+## [2026-04-15] defense-confidence-pass-m1 | added explicit defense evidence modes
+- added explicit defense evidence classes for `sealed_dry_run_replay`, `live_replay`, and `live_validation_error`
+- tightened promotion utility gating so promotability depends on strong defense evidence instead of coarse validation mode alone
+- updated defense docs/wiki so operators can see what each defense evidence class proves and what it does not

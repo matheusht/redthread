@@ -7,7 +7,7 @@ source_of_truth:
   - docs/DEFENSE_PIPELINE.md
   - docs/PHASE_REGISTRY.md
 updated_by: codex
-updated_at: 2026-04-13
+updated_at: 2026-04-15
 ---
 
 # Defense Synthesis and Validation
@@ -34,6 +34,17 @@ This is the core difference between a tool that only reports failures and one th
 - proposals are not treated as production-ready by default
 - validation evidence matters as much as the proposal text
 - promotion stays separate from generation
+
+## Defense evidence modes
+
+Defense validation should now be read in three classes:
+- `sealed_dry_run_replay` — sealed offline replay evidence for consistency checks
+- `live_replay` — successful live replay evidence with exploit and benign cases recorded
+- `live_validation_error` — live validation infrastructure failed before replay evidence completed
+
+This matters because these are not equally strong.
+A sealed dry-run replay is useful, but it is not promotable proof.
+A live validation error is a warning about missing evidence, not proof that a defense passed or failed the real replay path cleanly.
 
 ## Related pages
 

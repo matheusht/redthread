@@ -4,9 +4,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from redthread.core.defense_evidence import LIVE_REPLAY
 from redthread.core.defense_models import DeploymentRecord
-
-_ALLOWED_PROMOTION_MODES = {"live"}
 
 
 @dataclass
@@ -31,8 +30,8 @@ def evaluate_defense_record(record: DeploymentRecord) -> DefenseUtilityGateResul
         failed_checks.append("exploit_replay_not_blocked")
     if not validation.benign_passed:
         failed_checks.append("benign_suite_not_preserved")
-    if validation.validation_mode not in _ALLOWED_PROMOTION_MODES:
-        failed_checks.append(f"validation_mode_not_promotable:{validation.validation_mode}")
+    if validation.evidence_mode != LIVE_REPLAY:
+        failed_checks.append(f"evidence_mode_not_promotable:{validation.evidence_mode}")
     if not validation.replay_cases:
         failed_checks.append("missing_replay_case_evidence")
     elif any(not case.passed for case in validation.replay_cases):

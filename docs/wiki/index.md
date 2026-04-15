@@ -36,6 +36,7 @@ This is the primary content map for the RedThread wiki.
 - [research/current-hardening-tracks.md](research/current-hardening-tracks.md) — Current ordered execution plans for verification, governance, runtime truth, and defense confidence hardening.
 - [research/next-deep-dive-subsystem.md](research/next-deep-dive-subsystem.md) — Recommendation for the next subsystem RedThread should investigate deeply after the current hardening tranche.
 - [research/evaluation-truth-hardening-plan.md](research/evaluation-truth-hardening-plan.md) — Research-backed execution plan for the judge and evaluation deep dive.
+- [research/defense-confidence-hardening-plan.md](research/defense-confidence-hardening-plan.md) — Research-backed execution plan for the defense synthesis, validation, and promotion deep dive.
 
 ## Timelines
 

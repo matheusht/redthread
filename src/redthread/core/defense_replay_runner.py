@@ -10,6 +10,7 @@ from __future__ import annotations
 from typing import Protocol
 
 from redthread.core.defense_assets import evaluate_benign_response
+from redthread.core.defense_evidence import LIVE_REPLAY, SEALED_DRY_RUN_REPLAY
 from redthread.core.defense_models import BenignValidationCheck, ReplayCaseResult, ValidationResult
 from redthread.core.defense_replay_fixtures import build_default_replay_suite, render_replay_prompt
 from redthread.models import ConversationTurn
@@ -66,6 +67,7 @@ class DefenseReplayRunner:
             replay_cases=[exploit_case, *benign_cases],
             replay_suite_id=suite.suite_id,
             validation_mode="dry_run",
+            evidence_mode=SEALED_DRY_RUN_REPLAY,
         )
 
     async def run_live(
@@ -143,6 +145,7 @@ class DefenseReplayRunner:
             replay_cases=[exploit_case, *benign_cases],
             replay_suite_id=suite.suite_id,
             validation_mode="live",
+            evidence_mode=LIVE_REPLAY,
             failure_reason="; ".join(failures),
         )
 

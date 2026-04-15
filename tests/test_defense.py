@@ -243,6 +243,7 @@ async def test_validate_dry_run_always_passes() -> None:
     assert validation.exploit_replay_passed is True
     assert validation.benign_passed is True
     assert validation.validation_mode == "dry_run"
+    assert validation.evidence_mode == "sealed_dry_run_replay"
     assert validation.replay_suite_id == "default-defense-replay-v2"
     assert validation.benign_checks
     assert validation.replay_cases
@@ -330,6 +331,7 @@ async def test_validate_blocks_deploy_when_benign_pack_regresses() -> None:
     assert validation.benign_passed is False
     assert validation.passed is False
     assert validation.validation_mode == "live"
+    assert validation.evidence_mode == "live_replay"
     assert any(case.kind == "benign" and not case.passed for case in validation.replay_cases)
     assert "response refused a benign prompt" in validation.failure_reason
     assert fake_target.closed is True
@@ -375,6 +377,7 @@ async def test_validate_requires_exploit_block_and_benign_pack_pass() -> None:
     assert validation.benign_passed is True
     assert validation.passed is True
     assert validation.validation_mode == "live"
+    assert validation.evidence_mode == "live_replay"
     assert validation.replay_cases[0].kind == "exploit"
     assert len(validation.replay_cases) == 11
     assert all(check.passed for check in validation.benign_checks)
@@ -508,4 +511,5 @@ def test_memory_index_roundtrips_validation_report(tmp_path: Path) -> None:  # t
 
     assert loaded.validation_report is not None
     assert loaded.validation_report.trace_id == "trace-report-1"
+    assert loaded.validation_report.evidence_mode == "live_replay"
     assert loaded.validation_report.blocked_attack_summary == "exploit replay blocked"

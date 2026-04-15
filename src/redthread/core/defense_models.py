@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
+from redthread.core.defense_evidence import evidence_label_for, infer_evidence_mode
 from redthread.core.defense_reporting_models import DefenseValidationReport
 
 
@@ -85,6 +86,8 @@ class ValidationResult:
     replay_cases: list[ReplayCaseResult] = field(default_factory=list)
     replay_suite_id: str = "default-defense-replay-v2"
     validation_mode: str = "live"
+    evidence_mode: str = ""
+    evidence_label: str = ""
     failure_reason: str = ""
 
     def __post_init__(self) -> None:
@@ -92,6 +95,14 @@ class ValidationResult:
             self.exploit_replay_passed = self.passed
         if self.benign_passed is None:
             self.benign_passed = self.passed
+        if not self.evidence_mode:
+            self.evidence_mode = infer_evidence_mode(
+                self.validation_mode,
+                has_replay_cases=bool(self.replay_cases),
+                failure_reason=self.failure_reason,
+            )
+        if not self.evidence_label:
+            self.evidence_label = evidence_label_for(self.evidence_mode)
 
 
 @dataclass
