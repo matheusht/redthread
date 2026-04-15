@@ -104,6 +104,8 @@ This is important because the runtime is currently **best-effort**, not fail-clo
 ### Judge worker failure
 - worker records an error
 - judged result still passes through for continuity
+- per-trace metadata marks this as `live_judge_error_passthrough`
+- transcript attack-result lines expose both `judge_runtime_status` and `judge_error`
 - runtime should be read as degraded, not clean live proof
 
 ### Defense worker failure
@@ -131,6 +133,7 @@ Current transcript summary and dashboard now prove:
 - whether telemetry ran or was skipped
 - whether runtime degraded due to worker failures
 - compact failure counts across attack, judge, and defense stages
+- whether a trace stayed on sealed passthrough or degraded into live judge error passthrough
 
 Current transcript summary and dashboard do **not** prove:
 - that live providers were healthy across every stage unless a live smoke path also succeeded

@@ -217,6 +217,8 @@ class RedThreadEngine:
                     "duration_seconds": result.duration_seconds,
                     "reasoning": result.verdict.reasoning,
                     "feedback": result.verdict.feedback,
+                    "judge_runtime_status": result.trace.metadata.get("judge_runtime_status"),
+                    "judge_error": result.trace.metadata.get("judge_error"),
                     "turns": [
                         {
                             "turn": t.turn_number,

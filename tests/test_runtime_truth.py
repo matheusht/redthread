@@ -61,9 +61,13 @@ async def test_engine_dry_run_stays_offline_and_labels_runtime_mode(tmp_path: Pa
     assert result.metadata["runtime_summary"]["attack_worker_failures"] == 0
     assert result.metadata["runtime_summary"]["judge_worker_failures"] == 0
     transcript = settings.log_dir / f"{result.id}.jsonl"
-    summary = json.loads(transcript.read_text(encoding="utf-8").splitlines()[0])
+    lines = transcript.read_text(encoding="utf-8").splitlines()
+    summary = json.loads(lines[0])
+    first_result = json.loads(lines[1])
     assert summary["runtime_mode"] == "sealed_dry_run"
     assert summary["telemetry_mode"] == "skipped_in_dry_run"
     assert summary["degraded_runtime"] is False
     assert summary["runtime_summary"]["attack_worker_total"] == 2
     assert summary["runtime_summary"]["attack_worker_failures"] == 0
+    assert first_result["judge_runtime_status"] == "sealed_passthrough"
+    assert first_result["judge_error"] is None

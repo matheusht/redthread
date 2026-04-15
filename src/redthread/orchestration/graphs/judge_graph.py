@@ -15,7 +15,30 @@ from typing import Any
 
 from typing_extensions import TypedDict
 
+from redthread.models import AttackResult
+
 logger = logging.getLogger(__name__)
+
+
+_JUDGE_STATUS_KEY = "judge_runtime_status"
+_JUDGE_ERROR_KEY = "judge_error"
+
+
+def _annotate_judge_runtime(
+    result: AttackResult,
+    status: str,
+    error: str | None = None,
+) -> AttackResult:
+    """Attach judge-runtime truth to the trace metadata."""
+    metadata = dict(result.trace.metadata)
+    metadata[_JUDGE_STATUS_KEY] = status
+    if error:
+        metadata[_JUDGE_ERROR_KEY] = error
+    else:
+        metadata.pop(_JUDGE_ERROR_KEY, None)
+
+    trace = result.trace.model_copy(update={"metadata": metadata})
+    return result.model_copy(update={"trace": trace})
 
 
 # ── Worker state ──────────────────────────────────────────────────────────────
@@ -43,7 +66,7 @@ async def run_judge_worker(state: JudgeWorkerState) -> JudgeWorkerState:
     """
     from redthread.config.settings import RedThreadSettings
     from redthread.evaluation.judge import JudgeAgent
-    from redthread.models import AttackOutcome, AttackResult
+    from redthread.models import AttackOutcome
 
     try:
         settings = RedThreadSettings.model_validate(state["settings_dict"])
@@ -51,6 +74,7 @@ async def run_judge_worker(state: JudgeWorkerState) -> JudgeWorkerState:
 
         if settings.dry_run:
             logger.debug("JudgeWorker: dry_run=True — skipping G-Eval re-evaluation.")
+            result = _annotate_judge_runtime(result, status="sealed_passthrough")
             return {
                 **state,
                 "judged_result_dict": result.model_dump(mode="json"),
@@ -80,8 +104,15 @@ async def run_judge_worker(state: JudgeWorkerState) -> JudgeWorkerState:
 
             # Rebuild result with updated verdict
             updated_result = result.model_copy(update={"verdict": new_verdict})
+            updated_result = _annotate_judge_runtime(
+                updated_result,
+                status="live_re_evaluated",
+            )
         else:
-            updated_result = result
+            updated_result = _annotate_judge_runtime(
+                result,
+                status="live_empty_trace_passthrough",
+            )
 
         return {
             **state,
@@ -93,9 +124,15 @@ async def run_judge_worker(state: JudgeWorkerState) -> JudgeWorkerState:
 
     except Exception as exc:
         logger.exception("JudgeWorker failed: %s", exc)
+        result = AttackResult.model_validate(state["result_dict"])
+        result = _annotate_judge_runtime(
+            result,
+            status="live_judge_error_passthrough",
+            error=str(exc),
+        )
         return {
             **state,
-            "judged_result_dict": state.get("result_dict"),  # Pass through if judge fails
+            "judged_result_dict": result.model_dump(mode="json"),
             "is_jailbreak": False,
             "final_score": 0.0,
             "error": str(exc),

@@ -119,3 +119,8 @@
 - split transcript parsing into `src/redthread/dashboard_history.py` so the dashboard module stays under the repo size target while the history parser can grow independently
 - updated `src/redthread/dashboard.py` so operators can see mode, clean-vs-degraded runtime state, and compact `A/J/D` worker-failure counts
 - added `tests/test_dashboard.py` to pin runtime parsing and rendered dashboard output for the new operator surface
+
+## [2026-04-15] orchestration-runtime-pass-m3 | exposed judge passthrough truth per trace and closed the pass
+- updated `src/redthread/orchestration/graphs/judge_graph.py` so traces now carry explicit `judge_runtime_status` metadata for sealed passthrough, live re-evaluation, and live judge error passthrough
+- updated `src/redthread/engine.py` transcript attack-result lines to expose `judge_runtime_status` and `judge_error` for operator inspection
+- marked `docs/wiki/research/orchestration-runtime-hardening-pass.md` complete and refreshed `docs/wiki/entities/langgraph-supervisor.md` with current runtime-truth notes

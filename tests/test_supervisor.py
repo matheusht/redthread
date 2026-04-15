@@ -29,6 +29,16 @@ from redthread.models import (
 # ── Fixtures ──────────────────────────────────────────────────────────────────
 
 def make_dry_run_settings(algorithm: str = "tap") -> RedThreadSettings:
+    return make_settings(dry_run=True, algorithm=algorithm)
+
+
+
+def make_live_settings(algorithm: str = "tap") -> RedThreadSettings:
+    return make_settings(dry_run=False, algorithm=algorithm)
+
+
+
+def make_settings(dry_run: bool, algorithm: str = "tap") -> RedThreadSettings:
     return RedThreadSettings(
         target_backend=TargetBackend.OLLAMA,
         target_model="llama3.2:3b",
@@ -41,7 +51,7 @@ def make_dry_run_settings(algorithm: str = "tap") -> RedThreadSettings:
         branching_factor=2,
         tree_depth=2,
         tree_width=3,
-        dry_run=True,
+        dry_run=dry_run,
     )
 
 
@@ -181,6 +191,41 @@ async def test_judge_worker_dry_run_passes_through() -> None:
     assert output["judged_result_dict"] is not None
     assert output["is_jailbreak"] == result.verdict.is_jailbreak
     assert output["final_score"] == result.verdict.score
+    assert (
+        output["judged_result_dict"]["trace"]["metadata"]["judge_runtime_status"]
+        == "sealed_passthrough"
+    )
+
+
+@pytest.mark.asyncio
+async def test_judge_worker_marks_live_judge_failure_passthrough() -> None:
+    """JudgeWorker should mark live judge failures as passthrough, not clean live proof."""
+    from redthread.orchestration.graphs.judge_graph import run_judge_worker
+
+    settings = make_live_settings()
+    result = make_mock_attack_result(make_persona(), is_jailbreak=False, score=2.0)
+
+    with patch(
+        "redthread.evaluation.judge.JudgeAgent.evaluate",
+        new=AsyncMock(side_effect=RuntimeError("judge boom")),
+    ):
+        output = await run_judge_worker({
+            "settings_dict": settings.model_dump(mode="json"),
+            "result_dict": result.model_dump(mode="json"),
+            "rubric_name": "authorization_bypass",
+            "judged_result_dict": None,
+            "is_jailbreak": False,
+            "final_score": 0.0,
+            "error": None,
+        })
+
+    assert output["error"] == "judge boom"
+    assert output["judged_result_dict"] is not None
+    assert (
+        output["judged_result_dict"]["trace"]["metadata"]["judge_runtime_status"]
+        == "live_judge_error_passthrough"
+    )
+    assert output["judged_result_dict"]["trace"]["metadata"]["judge_error"] == "judge boom"
 
 
 # ── Test: defense routing ─────────────────────────────────────────────────────

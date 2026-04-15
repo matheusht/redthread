@@ -1,7 +1,7 @@
 ---
 title: Orchestration Runtime Hardening Pass
 type: research
-status: active
+status: complete
 summary: Research and execution log for tightening runtime truth, degraded execution reporting, and operator-facing orchestration evidence.
 source_of_truth:
   - README.md
@@ -67,12 +67,19 @@ Verification:
 - full suite in mirror: passed (`201 passed` + golden `25 passed`)
 
 ### Milestone 3 — Judge passthrough truth + docs closeout
-Status: pending
+Status: complete
 
-Planned:
-- make judge failure passthrough easier to interpret
-- add focused runtime truth tests around degraded judge semantics
-- close the wiki/docs loop once runtime behavior is final
+Shipped:
+- judge worker now records per-trace `judge_runtime_status` metadata
+- sealed dry-run traces are labeled `sealed_passthrough`
+- live judge failure passthrough is labeled `live_judge_error_passthrough` with `judge_error`
+- attack-result transcript lines now expose `judge_runtime_status` and `judge_error`
+- focused runtime truth tests now pin dry-run passthrough and live judge failure passthrough semantics
+
+Verification:
+- focused: `./scripts/test_then_ci.sh tests/test_runtime_truth.py tests/test_supervisor.py tests/test_dashboard.py -q`
+- local PR-CI mirror: passed
+- full suite in mirror: passed (`202 passed` + golden `25 passed`)
 
 ## Acceptance line
 
@@ -80,4 +87,19 @@ This pass is done when an operator can tell:
 - sealed vs live
 - clean vs degraded
 - where worker failures happened
+- when judge results were passthrough rather than clean live re-evaluation
 - what still needs live smoke proof
+
+## Final synthesis
+
+This pass is now complete.
+
+RedThread's runtime truth is better because operators can now see:
+- campaign mode
+- degraded runtime state
+- runtime-stage failure counts
+- dashboard-visible runtime truth
+- per-trace judge passthrough status
+
+What still remains for a future pass:
+- a very small opt-in live smoke path that proves real-provider orchestration end to end
