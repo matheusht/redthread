@@ -37,6 +37,7 @@ This is the primary content map for the RedThread wiki.
 - [research/next-deep-dive-subsystem.md](research/next-deep-dive-subsystem.md) — Recommendation for the next subsystem RedThread should investigate deeply after the current hardening tranche.
 - [research/evaluation-truth-hardening-plan.md](research/evaluation-truth-hardening-plan.md) — Research-backed execution plan for the judge and evaluation deep dive.
 - [research/defense-confidence-hardening-plan.md](research/defense-confidence-hardening-plan.md) — Research-backed execution plan for the defense synthesis, validation, and promotion deep dive.
+- [research/defense-promotion-trust-pass.md](research/defense-promotion-trust-pass.md) — Durable deep-dive synthesis for what defense validation and promotion actually prove, what they do not prove, and what to harden next.
 
 ## Timelines
 

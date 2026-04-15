@@ -94,3 +94,13 @@
 - reduced `src/redthread/research/promotion.py` to the 200-line target by extracting checkpoint persistence
 - split oversized defense and promotion tests into smaller files by concern
 - moved shared defense test builders into a helper module so future hardening work carries less context and duplication
+
+## [2026-04-15] research-note-refresh | documented the defense deep-dive selection result
+- refreshed `docs/wiki/research/next-deep-dive-subsystem.md` to capture the research result that selected defense synthesis/validation plus promotion/revalidation
+- recorded the selection in caveman-clear language: next hardening track in source docs, RedThread core differentiator, and trust story needed stronger evidence layers
+- marked the page as a completed historical research result because the defense-confidence pass has now been executed
+
+## [2026-04-15] defense-promotion-trust-pass-m1 | durable research synthesis for defense and promotion trust
+- added `docs/wiki/research/defense-promotion-trust-pass.md` to capture the new deep-dive findings about what defense validation and promotion do and do not prove
+- recorded the main trust gaps for this pass: operator bridge from promotion bucket to replay failure, bounded replay breadth, and doc overclaim risk
+- linked the new research page from `docs/wiki/index.md` so future sessions can start from the durable synthesis instead of re-deriving it
