@@ -64,3 +64,8 @@
 - added `tests/test_evaluation_boundaries.py` to lock mixed evidence-mode reporting and high-risk heuristic edges like prompt leakage, direct disclosure, and refusal dominance
 - extended evaluation truth docs so the pinned edge cases are explicit instead of implied
 - refreshed `docs/wiki/entities/judge-agent.md` so operators can see the line between live judge evidence and weaker sealed or fallback scoring
+
+## [2026-04-15] evaluation-truth-pass-m3 | finished the honesty pass across docs and wiki
+- tightened `README.md` so sealed CI, successful live judge evidence, and fallback scoring are described as different evidence strengths
+- updated `docs/PROGRESS.md`, `docs/ANTI_HALLUCINATION_SOP.md`, and `docs/PHASE_REGISTRY.md` so the source docs match the real evaluation truth boundary
+- refreshed `docs/wiki/entities/judge-agent.md` metadata after the evaluation honesty pass so the wiki stays aligned with the source docs

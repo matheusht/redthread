@@ -163,6 +163,7 @@ The next finite steps are now smaller and more operational:
 - **Observability**: LangSmith (first-party LangGraph support). Deferred to Phase 5D.
 - **Golden Dataset**: Hybrid (synthetic bootstrap + manual curation).
 - **Scope**: Phase 5A only. Phases 5B-5D deferred until baseline is mathematically proven stable.
+- **Evaluation Truth Boundary**: sealed dry-run golden regression, successful live judge scoring, and live-judge fallback scoring are different evidence classes and must be reported separately.
 
 **CI/CD Thresholds**:
 | Metric | Threshold |

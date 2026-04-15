@@ -127,6 +127,13 @@ class AnalysisOutput(BaseModel):
 
 #### 4.1 Evaluation Framework (DeepEval)
 
+Use Pytest-native evaluation gates.
+
+Important truth boundary:
+- sealed dry-run golden checks are offline regression evidence
+- successful live judge runs are stronger evidence
+- heuristic fallback after judge failure is useful continuity signal, but not equal to successful live judge proof
+
 Use Pytest-native evaluation gates:
 
 ```python

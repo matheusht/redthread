@@ -127,4 +127,5 @@ redthread test golden
 - **Dependency Isolation**: Use `.venv/bin/python` to ensure `pydantic` and `pyrit` are found.
 - **Ollama Persistence**: `ollama serve` must be running locally for offensive workers.
 - **Sealed CI vs live validation**: PR CI commonly uses sealed dry-run golden checks; full live-provider validation is a separate confidence pass.
-- **Dry-run semantics**: `redthread run --dry-run` is not yet a fully sealed offline path because some flows still initialize backend-dependent components.
+- **Evaluation evidence modes**: sealed dry-run heuristic scoring, live judge scoring, and live-judge failure fallback are now treated as different evidence classes and should not be read as equally strong.
+- **Dry-run semantics**: `redthread run --dry-run` now stays on a sealed offline path for campaign execution, with deterministic persona generation, lazy provider construction, and telemetry skipped.

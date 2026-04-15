@@ -7,7 +7,7 @@ source_of_truth:
   - docs/ANTI_HALLUCINATION_SOP.md
   - docs/PHASE_REGISTRY.md
 updated_by: codex
-updated_at: 2026-04-13
+updated_at: 2026-04-15
 ---
 
 # JudgeAgent

@@ -43,7 +43,7 @@ Composite Agent Stability Index (ASI) monitors target model health in real time:
 A comprehensive engineering standard ensuring all LLM outputs are grounded, verifiable, and regression-tested:
 - **Decoupled Defense Architect** — guardrail synthesis uses a dedicated frontier model (GPT-4o), not the uncensored Attacker
 - **Golden Dataset** — 30 curated traces for sealed regression gates and optional live judge validation
-- **DeepEval Pipeline** — Pytest-native faithfulness checks (≥ 0.92 threshold)
+- **DeepEval Pipeline** — Pytest-native faithfulness checks (≥ 0.92 threshold) with explicit evidence modes for sealed heuristic, live judge, and live-judge fallback scoring
 - **Per-Role Temperature Control** — deterministic evaluation (0.0), near-deterministic defense (0.1), creative attacks (0.8)
 
 ### 6. Security Guard Daemon (Phase 5C)
@@ -115,7 +115,9 @@ make test-golden  # Golden Dataset evaluation; live judge validation requires ba
 ### Validation Notes
 
 - Current PR CI runs the golden dataset in a sealed `REDTHREAD_DRY_RUN=true` mode to catch offline regressions consistently.
+- Sealed golden CI is a **consistency gate**, not proof that the live judge path is healthy right now.
 - Live backend validation is still valuable, but it is a separate check from the sealed CI gate.
+- If live judge evaluation fails, the evaluation pipeline can fall back to deterministic heuristic scoring. That fallback is useful continuity signal, but it is weaker than successful live judge evidence.
 - `redthread run --dry-run` now stays on a sealed offline path for campaign execution: persona generation is deterministic, attack workers lazily avoid provider construction, and post-campaign telemetry is skipped with explicit runtime-mode labels in transcripts.
 - The bounded research daemon pauses in `awaiting_review` after proposal emission. It does not auto-accept new proposals; operator Phase 3 review remains the default control boundary.
 
