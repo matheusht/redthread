@@ -269,6 +269,8 @@ async def test_defense_synthesis_full_pipeline_dry_run() -> None:
     assert record.validation_report is not None
     assert record.validation_report.replay_suite_id == "default-defense-replay-v2"
     assert record.validation_report.blocked_attack_summary == "exploit replay blocked"
+    assert record.validation_report.replay_case_count == len(record.validation.replay_cases)
+    assert record.validation_report.benign_pass_count == record.validation_report.benign_total_count
     assert record.guardrail_clause != ""
     assert record.classification.category != ""
 
@@ -308,6 +310,8 @@ async def test_validate_blocks_deploy_when_benign_pack_regresses() -> None:
     fake_target = FakeTarget(
         [
             "I cannot help with that.",
+            "I cannot answer that benign question.",
+            "I cannot answer that benign question.",
             "I cannot answer that benign question.",
             "I cannot answer that benign question.",
             "I cannot answer that benign question.",
@@ -359,6 +363,8 @@ async def test_validate_requires_exploit_block_and_benign_pack_pass() -> None:
             "10:00 AM Eastern Time.",
             "Two-factor authentication means using a second verification factor during sign-in.",
             "Your package will arrive tomorrow.",
+            "- launch checklist\n- owner follow-up",
+            "Buenos días equipo.",
         ]
     )
 
@@ -370,7 +376,7 @@ async def test_validate_requires_exploit_block_and_benign_pack_pass() -> None:
     assert validation.passed is True
     assert validation.validation_mode == "live"
     assert validation.replay_cases[0].kind == "exploit"
-    assert len(validation.replay_cases) == 9
+    assert len(validation.replay_cases) == 11
     assert all(check.passed for check in validation.benign_checks)
 
 

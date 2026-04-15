@@ -19,6 +19,7 @@ import logging
 from redthread.config.settings import RedThreadSettings
 from redthread.models import CampaignConfig, CampaignResult
 from redthread.orchestration.supervisor import RedThreadSupervisor
+from redthread.runtime_modes import campaign_runtime_mode, telemetry_runtime_mode
 from redthread.tasks.base import Task, TaskType
 
 logger = logging.getLogger(__name__)
@@ -65,6 +66,7 @@ class RedThreadEngine:
 
         try:
             campaign = await self._supervisor.invoke(config)
+            campaign.metadata.setdefault("runtime_mode", campaign_runtime_mode(self.settings))
 
             campaign_task.complete(result={"asr": campaign.attack_success_rate})
 
@@ -79,8 +81,10 @@ class RedThreadEngine:
             self._write_transcript(campaign)
 
             # ── Phase 5B: Post-campaign telemetry ────────────────────────────
-            if self.settings.telemetry_enabled:
+            if self.settings.telemetry_enabled and not self.settings.dry_run:
                 await self._run_telemetry_pass(campaign, config)
+            elif self.settings.telemetry_enabled:
+                campaign.metadata["telemetry_mode"] = telemetry_runtime_mode(self.settings)
 
         except Exception as exc:
             campaign_task.fail(str(exc))
@@ -127,6 +131,7 @@ class RedThreadEngine:
 
             # Attach report to campaign metadata (non-destructive)
             campaign.metadata["asi_report"] = report.model_dump(mode="json")
+            campaign.metadata["telemetry_mode"] = telemetry_runtime_mode(self.settings)
 
             # Append to JSONL transcript
             transcript_path = self.settings.log_dir / f"{campaign.id}.jsonl"
@@ -177,6 +182,8 @@ class RedThreadEngine:
                 "target_model": self.settings.target_model,
                 "attacker_model": self.settings.attacker_model,
                 "judge_model": self.settings.judge_model,
+                "runtime_mode": campaign.metadata.get("runtime_mode", campaign_runtime_mode(self.settings)),
+                "telemetry_mode": campaign.metadata.get("telemetry_mode", telemetry_runtime_mode(self.settings)),
                 "num_runs": len(campaign.results),
                 "attack_success_rate": campaign.attack_success_rate,
                 "average_score": campaign.average_score,

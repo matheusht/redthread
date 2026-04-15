@@ -24,6 +24,7 @@ from redthread import __version__
 from redthread.config.settings import RedThreadSettings
 from redthread.engine import RedThreadEngine
 from redthread.models import CampaignConfig
+from redthread.runtime_modes import campaign_runtime_mode
 
 console = Console()
 
@@ -227,8 +228,11 @@ def run(
         table.add_row("[dim]Strategy branches[/dim]", str(settings.mcts_strategy_count))
         table.add_row("[dim]Exploration C[/dim]", str(settings.mcts_exploration_constant))
         table.add_row("[dim]Budget (tokens)[/dim]", f"{settings.mcts_max_budget_tokens:,}")
-    if dry_run:
-        table.add_row("[dim]Mode[/dim]", "[yellow]DRY RUN[/yellow]")
+    mode = campaign_runtime_mode(settings)
+    table.add_row(
+        "[dim]Mode[/dim]",
+        "[yellow]SEALED DRY RUN[/yellow]" if mode == "sealed_dry_run" else "[green]LIVE PROVIDER[/green]",
+    )
     console.print(table)
     console.print()
 

@@ -116,7 +116,8 @@ make test-golden  # Golden Dataset evaluation; live judge validation requires ba
 
 - Current PR CI runs the golden dataset in a sealed `REDTHREAD_DRY_RUN=true` mode to catch offline regressions consistently.
 - Live backend validation is still valuable, but it is a separate check from the sealed CI gate.
-- Current `redthread run --dry-run` is not a fully sealed offline campaign path; persona generation and backend initialization can still require model or provider setup.
+- `redthread run --dry-run` now stays on a sealed offline path for campaign execution: persona generation is deterministic, attack workers lazily avoid provider construction, and post-campaign telemetry is skipped with explicit runtime-mode labels in transcripts.
+- The bounded research daemon pauses in `awaiting_review` after proposal emission. It does not auto-accept new proposals; operator Phase 3 review remains the default control boundary.
 
 ---
 

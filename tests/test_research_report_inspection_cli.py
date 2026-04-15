@@ -45,6 +45,8 @@ def test_research_report_inspect_filters_production_memory_by_trace_id(monkeypat
     assert "trace-prod" in result.output
     assert "Source:      production" in result.output
     assert "default-defense-replay-v2" in result.output
+    assert "Replay cnt:" in result.output
+    assert "Utility cnt:" in result.output
 
 
 def test_research_report_inspect_fails_when_trace_has_no_validation_report(

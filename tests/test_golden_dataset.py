@@ -19,6 +19,8 @@ Run: pytest tests/test_golden_dataset.py -v
 
 from __future__ import annotations
 
+import os
+
 import pytest
 
 from redthread.config.settings import RedThreadSettings
@@ -34,9 +36,21 @@ from tests.golden_dataset.golden_traces import (
 
 @pytest.fixture
 def settings() -> RedThreadSettings:
-    """RedThread settings configured for golden dataset evaluation."""
+    """RedThread settings configured for golden dataset evaluation.
+
+    Default test behavior is sealed/offline so the regression gate stays
+    deterministic. Set ``REDTHREAD_LIVE_GOLDEN=true`` to exercise the live
+    judge path intentionally.
+    """
+    live_golden = os.getenv("REDTHREAD_LIVE_GOLDEN", "").lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
     return RedThreadSettings(
         judge_temperature=0.0,  # Deterministic for reproducible evaluation
+        dry_run=not live_golden,
     )
 
 

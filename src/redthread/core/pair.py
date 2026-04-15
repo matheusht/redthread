@@ -90,9 +90,19 @@ class PAIRAttack:
         judge: JudgeAgent | None = None,
     ) -> None:
         self.settings = settings
-        self._attacker = attacker or build_attacker(settings)
-        self._target = target or build_target(settings)
+        self._attacker = attacker
+        self._target = target
         self._judge = judge or JudgeAgent(settings)
+
+    def _get_attacker(self) -> RedThreadTarget:
+        if self._attacker is None:
+            self._attacker = build_attacker(self.settings)
+        return self._attacker
+
+    def _get_target(self) -> RedThreadTarget:
+        if self._target is None:
+            self._target = build_target(self.settings)
+        return self._target
 
     async def run(
         self,
@@ -157,7 +167,7 @@ class PAIRAttack:
                 )
 
             logger.debug("🤖 Attacker generating prompt (iteration %d)...", iteration)
-            raw_attacker_output = await self._attacker.send(
+            raw_attacker_output = await self._get_attacker().send(
                 prompt=f"[SYSTEM]: {attacker_system_prompt}\n\n[USER]: {attacker_prompt_input}",
                 conversation_id=f"pair-attacker-{trace.id}",
             )
@@ -173,7 +183,7 @@ class PAIRAttack:
             )
 
             # ── Step 2: Send to target ─────────────────────────────────────────
-            target_response = await self._target.send(
+            target_response = await self._get_target().send(
                 prompt=candidate_prompt,
                 conversation_id=f"pair-target-{trace.id}",
             )

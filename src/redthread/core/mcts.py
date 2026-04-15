@@ -78,11 +78,26 @@ class MCTSAttack:
         judge: JudgeAgent | None = None,
     ) -> None:
         self.settings = settings
-        self._attacker = attacker or build_attacker(settings)
-        self._rollout_attacker = rollout_attacker or build_rollout_attacker(settings)
-        self._target = target or build_target(settings)
+        self._attacker = attacker
+        self._rollout_attacker = rollout_attacker
+        self._target = target
         self._judge = judge or JudgeAgent(settings)
         self._tokens_consumed: int = 0
+
+    def _get_attacker(self) -> RedThreadTarget:
+        if self._attacker is None:
+            self._attacker = build_attacker(self.settings)
+        return self._attacker
+
+    def _get_rollout_attacker(self) -> RedThreadTarget:
+        if self._rollout_attacker is None:
+            self._rollout_attacker = build_rollout_attacker(self.settings)
+        return self._rollout_attacker
+
+    def _get_target(self) -> RedThreadTarget:
+        if self._target is None:
+            self._target = build_target(self.settings)
+        return self._target
 
     async def run(
         self,
@@ -213,7 +228,7 @@ class MCTSAttack:
                 f"[SYSTEM]: {attacker_system}\n\n[USER]: "
                 + build_expansion_prompt(persona, strategy, history_text, turn_number)
             )
-            attacker_msg, tokens = await self._attacker.send_with_usage(
+            attacker_msg, tokens = await self._get_attacker().send_with_usage(
                 prompt=prompt,
                 conversation_id=f"mcts-expand-{trace.id}-d{turn_number}",
             )
@@ -223,7 +238,7 @@ class MCTSAttack:
             target_input = self._compile_target_prompt(
                 history, attacker_msg, target_system_prompt
             )
-            target_resp, t_tokens = await self._target.send_with_usage(
+            target_resp, t_tokens = await self._get_target().send_with_usage(
                 prompt=target_input,
                 conversation_id=f"mcts-target-{trace.id}-d{turn_number}",
             )
@@ -265,7 +280,7 @@ class MCTSAttack:
             prompt = build_rollout_prompt(
                 persona, history_text, turn_number, self.settings.mcts_max_depth
             )
-            rollout_msg, tokens = await self._rollout_attacker.send_with_usage(
+            rollout_msg, tokens = await self._get_rollout_attacker().send_with_usage(
                 prompt=prompt,
                 conversation_id=f"mcts-rollout-{node.id}-t{turn_number}",
             )
@@ -274,7 +289,7 @@ class MCTSAttack:
             target_input = self._compile_target_prompt(
                 sim_history, rollout_msg.strip(), target_system_prompt
             )
-            target_resp, t_tokens = await self._target.send_with_usage(
+            target_resp, t_tokens = await self._get_target().send_with_usage(
                 prompt=target_input,
                 conversation_id=f"mcts-rollout-tgt-{node.id}-t{turn_number}",
             )

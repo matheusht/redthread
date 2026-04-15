@@ -22,3 +22,25 @@
 - added `docs/WIKI_MAINTENANCE_CHECKLIST.md` for daily wiki operations
 - added entity pages for Prometheus 2 and LangGraph Supervisor
 - added a system page for defense synthesis and validation
+
+## [2026-04-14] focus-pass | added current focus map and hardening tracks
+- added `docs/wiki/systems/subsystem-focus-map.md` for subsystem-by-subsystem priority guidance
+- added `docs/wiki/research/current-hardening-tracks.md` for ordered hardening plans across verification, governance, runtime truth, and defense confidence
+- updated `docs/wiki/index.md` so the new pages are discoverable
+
+## [2026-04-14] verification-pass | restored a green default verification baseline
+- made `tests/test_golden_dataset.py` sealed/offline by default and left live golden evaluation as an explicit opt-in path
+- corrected Phase 6 template drift in `src/redthread/research/defense_source_mutation_registry.py` so bounded defense mutation tests align with the current defense prompt assets
+- verified the repo is currently green with `201 passed`
+
+## [2026-04-14] hardening-pass | completed governance, runtime-truth, and defense-confidence follow-through
+- documented the real governance boundary in `README.md`: the bounded research daemon pauses for manual Phase 3 review instead of auto-accepting new proposals
+- sealed the campaign dry-run path by making persona generation deterministic, switching attack runtimes to lazy provider construction, and skipping telemetry during dry-run
+- added explicit runtime-mode labels to campaign transcripts so operators can distinguish sealed dry-run evidence from live-provider evidence
+- expanded defense replay utility coverage and enriched validation reports with counts and failure reasons for easier promotion inspection
+- verified the repo is currently green with `203 passed`
+
+## [2026-04-14] research-pass | selected the next deep-dive subsystem
+- added `docs/wiki/research/next-deep-dive-subsystem.md` to record the post-hardening recommendation
+- updated `docs/wiki/index.md` so the new research page is discoverable
+- recommended telemetry and monitoring as the next deep investigation because it now has the best leverage-to-ambiguity ratio after the trust hardening tranche

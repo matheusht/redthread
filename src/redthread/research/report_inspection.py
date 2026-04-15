@@ -59,6 +59,10 @@ def render_validation_report(record: DeploymentRecord, source: MemorySource) -> 
     failed_cases = ", ".join(report.failed_case_ids) or "none"
     exploit_cases = ", ".join(report.exploit_case_ids) or "none"
     benign_cases = ", ".join(report.benign_case_ids) or "none"
+    failed_reasons = (
+        "; ".join(f"{case_id}: {reason}" for case_id, reason in sorted(report.failed_case_reasons.items()))
+        or "none"
+    )
 
     return "\n".join(
         [
@@ -73,6 +77,9 @@ def render_validation_report(record: DeploymentRecord, source: MemorySource) -> 
             f"  Exploit:     {exploit_cases}",
             f"  Benign:      {benign_cases}",
             f"  Failed:      {failed_cases}",
+            f"  Failed why:  {failed_reasons}",
+            f"  Replay cnt:  {report.replay_case_count}",
+            f"  Utility cnt: {report.benign_pass_count}/{report.benign_total_count}",
             f"  Attack:      {report.blocked_attack_summary}",
             f"  Utility:     {report.benign_utility_summary}",
             f"  Clause:      {report.guardrail_clause}",

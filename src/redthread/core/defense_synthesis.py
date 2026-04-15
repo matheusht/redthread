@@ -208,6 +208,11 @@ class DefenseSynthesisEngine:
         exploit_cases = [case.case_id for case in validation.replay_cases if case.kind == "exploit"]
         benign_cases = [case.case_id for case in validation.replay_cases if case.kind == "benign"]
         failed_cases = [case.case_id for case in validation.replay_cases if not case.passed]
+        failed_case_reasons = {
+            case.case_id: case.failure_reason
+            for case in validation.replay_cases
+            if not case.passed and case.failure_reason
+        }
         benign_passes = sum(1 for case in validation.replay_cases if case.kind == "benign" and case.passed)
         benign_total = sum(1 for case in validation.replay_cases if case.kind == "benign")
         return DefenseValidationReport(
@@ -217,6 +222,10 @@ class DefenseSynthesisEngine:
             exploit_case_ids=exploit_cases,
             benign_case_ids=benign_cases,
             failed_case_ids=failed_cases,
+            failed_case_reasons=failed_case_reasons,
+            replay_case_count=len(validation.replay_cases),
+            benign_pass_count=benign_passes,
+            benign_total_count=benign_total,
             blocked_attack_summary=(
                 "exploit replay blocked"
                 if validation.exploit_replay_passed

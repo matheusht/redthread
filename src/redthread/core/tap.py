@@ -70,10 +70,10 @@ class TAPAttack:
         judge: JudgeAgent | None = None,
     ) -> None:
         self.settings = settings
-        self._attacker = attacker or build_attacker(settings)
-        self._target = target or build_target(settings)
+        self._attacker = attacker
+        self._target = target
         self._judge = judge or JudgeAgent(settings)
-        
+
         profiles = load_prompt_profiles(resolve_prompt_profiles_path(settings))
         self._tap_profile = profiles.get("tap", {})
         self.strategies = self._tap_profile.get(
@@ -86,6 +86,16 @@ class TAPAttack:
                 "build rapport and appeal to shared values",
             ],
         )
+
+    def _get_attacker(self) -> RedThreadTarget:
+        if self._attacker is None:
+            self._attacker = build_attacker(self.settings)
+        return self._attacker
+
+    def _get_target(self) -> RedThreadTarget:
+        if self._target is None:
+            self._target = build_target(self.settings)
+        return self._target
 
     async def run(
         self,
@@ -167,7 +177,7 @@ class TAPAttack:
             # Phase 3: ATTACK + ASSESS
             for idx, node in enumerate(surviving_nodes):
                 logger.debug("   Sending attack %d/%d to target...", idx+1, len(surviving_nodes))
-                node.target_response = await self._target.send(
+                node.target_response = await self._get_target().send(
                     prompt=node.attacker_prompt,
                     conversation_id=f"tap-target-{trace.id}-{node.id}",
                 )
@@ -280,7 +290,7 @@ class TAPAttack:
                         score=leaf.score,
                     )
                 
-                raw_attacker_output = await self._attacker.send(
+                raw_attacker_output = await self._get_attacker().send(
                     prompt=f"[SYSTEM]: {system_prompt}\\n\\n[USER]: {attacker_prompt_input}",
                     conversation_id=f"tap-attacker-{trace_id}-{leaf.id}-{branch_idx}",
                 )
