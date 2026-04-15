@@ -2,73 +2,140 @@
 title: Evaluation and Anti-Hallucination
 type: system
 status: active
-summary: How RedThread evaluates attack outcomes and constrains hallucination in high-stakes generation paths.
+summary: How RedThread evaluates attack outcomes, what sealed golden regression proves, and where fallback scoring stops being live evidence.
 source_of_truth:
   - docs/ANTI_HALLUCINATION_SOP.md
   - docs/PHASE_REGISTRY.md
+  - README.md
+  - .github/workflows/ci.yml
+  - src/redthread/evaluation/judge.py
+  - src/redthread/evaluation/pipeline.py
+  - tests/test_golden_dataset.py
 updated_by: codex
-updated_at: 2026-04-13
+updated_at: 2026-04-15
 ---
 
 # Evaluation and Anti-Hallucination
 
 ## Scope
 
-This page summarizes the evaluation baseline RedThread uses to keep scoring, defense generation, and grounded responses reliable.
+This page explains how RedThread scores attack traces and what kind of evidence each evaluation path gives.
 
-## Core idea
+Main truth boundary:
+- evaluation is the main truth layer
+- not all evaluation evidence is equally strong
 
-RedThread treats hallucination control as an engineering standard, not prompt polish.
+## Main evaluation paths
 
-The main controls are:
-- grounded prompts
-- structured outputs
-- per-role temperature settings
-- sealed regression datasets
-- CI thresholds
+### 1. Live judge path
+Files:
+- `src/redthread/evaluation/judge.py`
+- `src/redthread/evaluation/pipeline.py`
 
-## Main components
+This is the strongest normal scoring path.
 
-### Judge and scoring behavior
-Evaluation is designed to be deterministic or near-deterministic in high-stakes paths.
+It uses:
+- JudgeAgent
+- Auto-CoT style evaluation steps
+- rubric-based scoring
+- low-temperature judge settings
 
-Key patterns:
-- Judge temperature is pinned low for reproducibility.
-- Defense generation is near-deterministic rather than creative.
-- Creative temperature is reserved for attacker roles, not evaluators.
+When this path succeeds, the result should be treated as **live judge evidence**.
 
-### Golden dataset
-The baseline requires a curated dataset with jailbreak, safe, and edge cases.
+### 2. Sealed golden regression path
+Files:
+- `.github/workflows/ci.yml`
+- `tests/test_golden_dataset.py`
+- `src/redthread/evaluation/pipeline.py`
 
-The current documented baseline includes:
-- jailbreak cases
-- safe cases
-- guardrail validation cases
+PR CI runs golden regression in sealed mode with `REDTHREAD_DRY_RUN=true`.
 
-### CI/CD gating
-The anti-hallucination baseline is enforced through explicit metrics rather than qualitative impressions.
+That means:
+- no live provider truth is required
+- scoring uses deterministic heuristic evaluation
+- the goal is sealed consistency, not live backend proof
 
-Examples documented in the source material:
-- faithfulness threshold
-- hallucination-rate ceiling
-- jailbreak precision threshold
-- safe recall threshold
+When this path runs, the result should be treated as **sealed heuristic evidence**.
 
-## Why it matters
+### 3. Live-judge failure fallback path
+File:
+- `src/redthread/evaluation/pipeline.py`
 
-Without this layer, RedThread could produce:
-- unreliable judge outcomes
-- overconfident defense synthesis
-- unstable regression decisions
+If live judge evaluation fails, the pipeline can fall back to deterministic heuristic scoring.
 
-That would undermine the whole self-healing loop.
+This is useful because it:
+- keeps golden evaluation operational
+- avoids total failure from transient provider issues
 
-## Relationship to the knowledge system
+But this path is weaker than a successful live judge run.
 
-This topic should be treated as high-impact. Wiki summaries here must remain traceable to the source SOP and phase history rather than drifting into uncited restatements.
+When this path runs, the result should be treated as **fallback evidence**, not full live proof.
+
+## Evidence modes
+
+RedThread now distinguishes these evaluation evidence modes:
+
+- `sealed_heuristic`
+  - sealed dry-run scoring
+  - strong for offline regression consistency
+  - not proof of live judge behavior
+
+- `live_judge`
+  - full live judge execution succeeded
+  - strongest normal scoring evidence in this subsystem
+
+- `live_judge_fallback`
+  - live judge path failed
+  - deterministic heuristic fallback used instead
+  - useful signal, but weaker than successful live judge evidence
+
+## What CI proves
+
+Current PR CI proves:
+- the golden dataset still scores consistently in sealed mode
+- heuristic scoring rules still behave as expected on the curated traces
+- regressions in the sealed path can be caught cheaply and reliably
+
+Current PR CI does **not** prove:
+- that the live judge path is healthy right now
+- that live provider behavior matches sealed heuristic behavior
+- that a live backend will produce the same results under runtime conditions
+
+## What fallback scoring proves
+
+Fallback scoring proves:
+- the deterministic heuristic layer produced the reported score
+- the golden trace still maps to the expected range under fallback rules
+
+Fallback scoring does **not** prove:
+- that live judge reasoning completed
+- that provider-backed evaluation is healthy
+- that the result should be treated like full live judge evidence
+
+## Why this matters
+
+If RedThread blurs sealed, live, and fallback evidence together, operators can become too confident in a green result.
+
+The project therefore needs to keep these ideas separate:
+- **sealed consistency gate**
+- **live judge evidence**
+- **degraded-but-useful fallback signal**
+
+## Bottom line
+
+RedThread's evaluation subsystem is strongest when the live judge path succeeds.
+
+Its sealed golden path is still valuable, but it should be spoken about honestly:
+- **consistency gate, not live proof**
+- **deterministic regression evidence, not runtime truth**
+
+Its fallback path is also valuable, but it should be read conservatively:
+- **useful continuity signal**
+- **weaker than successful live judge evidence**
 
 ## Related pages
 
-- [knowledge-stack.md](knowledge-stack.md)
+- [../entities/judge-agent.md](../entities/judge-agent.md)
+- [../systems/promotion-and-revalidation.md](promotion-and-revalidation.md)
 - [../../ANTI_HALLUCINATION_SOP.md](../../ANTI_HALLUCINATION_SOP.md)
 - [../../PHASE_REGISTRY.md](../../PHASE_REGISTRY.md)

@@ -49,3 +49,13 @@
 - updated telemetry source docs to clarify the current probe-first runtime path and the limit between monitoring signal and proof
 - rewrote `docs/wiki/systems/telemetry-and-monitoring.md` around what telemetry measures, what ASI/drift mean in practice, and which daemon actions are safe to automate
 - refreshed `docs/wiki/entities/asi.md` and `docs/wiki/index.md` so operators can find the new trust-boundary framing quickly
+
+## [2026-04-15] evaluation-research-pass | planned the next judge/evaluation deep dive
+- researched the next subsystem after telemetry and confirmed judge/evaluation is now the highest-value truth-layer investigation
+- added `docs/wiki/research/evaluation-truth-hardening-plan.md` with exact milestones, file targets, trust gaps, and acceptance criteria
+- updated `docs/wiki/index.md` so the new research plan is easy to find
+
+## [2026-04-15] evaluation-truth-pass-m1 | added explicit evaluation evidence modes
+- added `src/redthread/evaluation/results.py` so evaluation outputs now carry explicit evidence mode metadata instead of raw score only
+- updated `src/redthread/evaluation/pipeline.py` to distinguish `sealed_heuristic`, `live_judge`, and `live_judge_fallback` paths and to carry fallback reasons into aggregate results
+- added `tests/test_evaluation_truth.py` and refreshed the evaluation wiki page so sealed CI, live judge evidence, and failure fallback are described honestly

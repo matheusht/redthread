@@ -24,7 +24,8 @@ import os
 import pytest
 
 from redthread.config.settings import RedThreadSettings
-from redthread.evaluation.pipeline import EvaluationPipeline, TraceEvalResult
+from redthread.evaluation.pipeline import EvaluationPipeline
+from redthread.evaluation.results import TraceEvalResult
 from tests.golden_dataset.golden_traces import (
     JAILBREAK_TRACES,
     SAFE_TRACES,
