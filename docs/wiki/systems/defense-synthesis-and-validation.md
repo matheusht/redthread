@@ -46,6 +46,20 @@ This matters because these are not equally strong.
 A sealed dry-run replay is useful, but it is not promotable proof.
 A live validation error is a warning about missing evidence, not proof that a defense passed or failed the real replay path cleanly.
 
+## Replay breadth notes
+
+Current default replay suite is `default-defense-replay-v3`.
+It now includes:
+- the isolated exploit replay
+- an `exploit_override_probe` to catch narrow fixes that only block the exact original wording
+- the starter benign pack
+- extra benign utility checks for formatting, translation, scheduling, and short policy explanation tasks
+
+This still does not prove broad production utility.
+It means the replay suite is better at catching two specific trust failures:
+- a defense that blocks the exact exploit text but still complies with a close override variant
+- a defense that over-refuses harmless formatting or explanation prompts
+
 ## Related pages
 
 - [promotion-and-revalidation.md](promotion-and-revalidation.md)

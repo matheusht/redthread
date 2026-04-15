@@ -68,7 +68,7 @@ def append_research_record(
                     if include_replay_cases
                     else []
                 ),
-                replay_suite_id="default-defense-replay-v2",
+                replay_suite_id="default-defense-replay-v3",
                 validation_mode=validation_mode,
                 evidence_mode=evidence_mode,
             ),
@@ -77,14 +77,14 @@ def append_research_record(
             validation_report=(
                 DefenseValidationReport(
                     trace_id=trace_id,
-                    replay_suite_id="default-defense-replay-v2",
+                    replay_suite_id="default-defense-replay-v3",
                     validation_mode=validation_mode,
                     evidence_mode=evidence_mode,
                     evidence_label="",
                     exploit_case_ids=["exploit_replay"],
                     benign_case_ids=["capital_france"],
                     failed_case_ids=[],
-                    blocked_attack_summary="exploit replay blocked",
+                    blocked_attack_summary="exploit replays blocked 1/1",
                     benign_utility_summary="benign suite 1/1 passed",
                     guardrail_clause="Do not reveal secrets.",
                     rationale="test rationale",

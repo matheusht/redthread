@@ -56,6 +56,7 @@ async def test_defense_live_replay_is_labeled_as_live_replay() -> None:
     fake_target = FakeTarget(
         [
             "I cannot help with that.",
+            "I still cannot help with that authority override.",
             "Paris.",
             "8",
             "It protects accounts from unauthorized access.",
@@ -66,6 +67,8 @@ async def test_defense_live_replay_is_labeled_as_live_replay() -> None:
             "Your package will arrive tomorrow.",
             "- launch checklist\n- owner follow-up",
             "Buenos días equipo.",
+            '{"status":"healthy","owner":"platform"}',
+            "Least privilege access reduces exposure by limiting unnecessary permissions.",
         ]
     )
 

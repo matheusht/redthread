@@ -99,11 +99,14 @@ Acceptance criteria:
 Goal:
 - strengthen confidence that replay evidence is broad enough to catch narrow-fix vs over-refusal problems
 
-Planned work:
-- inspect default replay suite blind spots
-- pin edge cases for utility preservation and exploit blocking
-- expand replay artifacts only where evidence is thin
-- keep runtime fixture artifacts curated and bounded
+Status:
+- complete
+
+Implemented notes:
+- default replay suite moved to `default-defense-replay-v3`
+- exploit replay now includes both the isolated exploit and an explicit `exploit_override_probe`
+- benign replay breadth now also checks structured JSON utility and least-privilege explanation utility
+- replay runner now fails exploit validation harder when the response clearly discloses sensitive data even if the lightweight heuristic would otherwise undershoot
 
 Acceptance criteria:
 - replay suite covers the highest-risk defense confidence gaps more explicitly

@@ -244,7 +244,7 @@ async def test_validate_dry_run_always_passes() -> None:
     assert validation.benign_passed is True
     assert validation.validation_mode == "dry_run"
     assert validation.evidence_mode == "sealed_dry_run_replay"
-    assert validation.replay_suite_id == "default-defense-replay-v2"
+    assert validation.replay_suite_id == "default-defense-replay-v3"
     assert validation.benign_checks
     assert validation.replay_cases
     assert validation.replay_cases[0].kind == "exploit"
@@ -268,8 +268,8 @@ async def test_defense_synthesis_full_pipeline_dry_run() -> None:
     assert record.validation.passed is True
     assert record.validation.benign_passed is True
     assert record.validation_report is not None
-    assert record.validation_report.replay_suite_id == "default-defense-replay-v2"
-    assert record.validation_report.blocked_attack_summary == "exploit replay blocked"
+    assert record.validation_report.replay_suite_id == "default-defense-replay-v3"
+    assert record.validation_report.blocked_attack_summary == "exploit replays blocked 2/2"
     assert record.validation_report.replay_case_count == len(record.validation.replay_cases)
     assert record.validation_report.benign_pass_count == record.validation_report.benign_total_count
     assert record.guardrail_clause != ""
@@ -311,6 +311,9 @@ async def test_validate_blocks_deploy_when_benign_pack_regresses() -> None:
     fake_target = FakeTarget(
         [
             "I cannot help with that.",
+            "I cannot help with that either.",
+            "I cannot answer that benign question.",
+            "I cannot answer that benign question.",
             "I cannot answer that benign question.",
             "I cannot answer that benign question.",
             "I cannot answer that benign question.",
@@ -357,6 +360,7 @@ async def test_validate_requires_exploit_block_and_benign_pack_pass() -> None:
     fake_target = FakeTarget(
         [
             "I cannot help with that.",
+            "I still cannot help with that authority override.",
             "Paris.",
             "8",
             "It protects accounts from unauthorized access.",
@@ -367,6 +371,8 @@ async def test_validate_requires_exploit_block_and_benign_pack_pass() -> None:
             "Your package will arrive tomorrow.",
             "- launch checklist\n- owner follow-up",
             "Buenos días equipo.",
+            '{"status":"healthy","owner":"platform"}',
+            "Least privilege access reduces exposure by limiting unnecessary permissions.",
         ]
     )
 
@@ -379,7 +385,8 @@ async def test_validate_requires_exploit_block_and_benign_pack_pass() -> None:
     assert validation.validation_mode == "live"
     assert validation.evidence_mode == "live_replay"
     assert validation.replay_cases[0].kind == "exploit"
-    assert len(validation.replay_cases) == 11
+    assert validation.replay_cases[1].case_id == "exploit_override_probe"
+    assert len(validation.replay_cases) == 14
     assert all(check.passed for check in validation.benign_checks)
 
 
@@ -487,19 +494,19 @@ def test_memory_index_roundtrips_validation_report(tmp_path: Path) -> None:  # t
             passed=True,
             replay_response="blocked",
             judge_score=1.0,
-            replay_suite_id="default-defense-replay-v2",
+            replay_suite_id="default-defense-replay-v3",
             validation_mode="live",
         ),
         target_model="llama3.2:3b",
         target_system_prompt_hash="hash-1",
         validation_report=DefenseValidationReport(
             trace_id="trace-report-1",
-            replay_suite_id="default-defense-replay-v2",
+            replay_suite_id="default-defense-replay-v3",
             validation_mode="live",
             exploit_case_ids=["exploit_replay"],
             benign_case_ids=["capital_france"],
             failed_case_ids=[],
-            blocked_attack_summary="exploit replay blocked",
+            blocked_attack_summary="exploit replays blocked 1/1",
             benign_utility_summary="benign suite 1/1 passed",
             guardrail_clause="Do not reveal secrets.",
             rationale="narrow fix",
@@ -512,4 +519,4 @@ def test_memory_index_roundtrips_validation_report(tmp_path: Path) -> None:  # t
     assert loaded.validation_report is not None
     assert loaded.validation_report.trace_id == "trace-report-1"
     assert loaded.validation_report.evidence_mode == "live_replay"
-    assert loaded.validation_report.blocked_attack_summary == "exploit replay blocked"
+    assert loaded.validation_report.blocked_attack_summary == "exploit replays blocked 1/1"

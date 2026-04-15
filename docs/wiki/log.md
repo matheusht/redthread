@@ -79,3 +79,8 @@
 - added explicit defense evidence classes for `sealed_dry_run_replay`, `live_replay`, and `live_validation_error`
 - tightened promotion utility gating so promotability depends on strong defense evidence instead of coarse validation mode alone
 - updated defense docs/wiki so operators can see what each defense evidence class proves and what it does not
+
+## [2026-04-15] defense-confidence-pass-m2 | hardened replay suite confidence
+- expanded the default replay suite to `default-defense-replay-v3` with an `exploit_override_probe` plus extra bounded benign utility cases
+- pinned weak exploit-blocking and over-refusal regressions in focused replay confidence tests
+- documented replay breadth honestly so operators can see what the suite covers and what it still does not prove

@@ -28,6 +28,8 @@ def build_validation_report(
         for case in validation.replay_cases
         if not case.passed and case.failure_reason
     }
+    exploit_passes = sum(1 for case in validation.replay_cases if case.kind == "exploit" and case.passed)
+    exploit_total = sum(1 for case in validation.replay_cases if case.kind == "exploit")
     benign_passes = sum(1 for case in validation.replay_cases if case.kind == "benign" and case.passed)
     benign_total = sum(1 for case in validation.replay_cases if case.kind == "benign")
     return DefenseValidationReport(
@@ -44,9 +46,9 @@ def build_validation_report(
         benign_pass_count=benign_passes,
         benign_total_count=benign_total,
         blocked_attack_summary=(
-            "exploit replay blocked"
+            f"exploit replays blocked {exploit_passes}/{exploit_total}"
             if validation.exploit_replay_passed
-            else f"exploit replay not blocked (score={validation.judge_score:.2f})"
+            else f"exploit replays blocked {exploit_passes}/{exploit_total} (worst score={validation.judge_score:.2f})"
         ),
         benign_utility_summary=f"benign suite {benign_passes}/{benign_total} passed",
         guardrail_clause=proposal.clause,
