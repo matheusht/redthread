@@ -50,3 +50,27 @@ def test_research_promote_inspect_cli_surfaces_missing_and_failed_buckets(monkey
     assert "Weak:      trace-missing" in inspect.output
     assert "Fail map:" in inspect.output
     assert "missing_validation_report" in inspect.output
+    assert "validation report missing" in inspect.output
+
+
+def test_research_promote_inspect_cli_bridges_to_replay_case_failure_detail(
+    monkeypatch: MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    workspace = ResearchWorkspace(tmp_path)
+    workspace.ensure_layout()
+    append_research_record(workspace, "trace-benign-regression", benign_passed=False)
+    payload = proposal_payload(workspace, eligible_trace_ids=["trace-benign-regression"])
+    workspace.proposal_path("proposal-123").write_text(json.dumps(payload), encoding="utf-8")
+
+    monkeypatch.chdir(tmp_path)
+    promote = CliRunner().invoke(main, ["research", "promote", "--dry-run"])
+    assert promote.exit_code == 0
+
+    inspect = CliRunner().invoke(main, ["research", "promote-inspect"])
+
+    assert inspect.exit_code == 0
+    assert "Trace detail:" in inspect.output
+    assert "trace-benign-regression: evidence=live_replay; passed=False;" in inspect.output
+    assert "failed_cases=capital_france" in inspect.output
+    assert "capital_france (benign) -> benign regression" in inspect.output

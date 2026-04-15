@@ -1501,49 +1501,14 @@ def research_promote(env_file: str, dry_run: bool) -> None:
 )
 def research_promote_inspect(env_file: str) -> None:
     """Inspect the latest promotion result and validation evidence."""
-    import json
+    from redthread.research.promotion_inspection import render_latest_promotion
 
-    from redthread.research.workspace import ResearchWorkspace
-
-    _ = RedThreadSettings(_env_file=env_file)
-    workspace = ResearchWorkspace(Path.cwd())
-    workspace.ensure_layout()
-    results = sorted(workspace.promotions_dir.glob("*/promotion_result.json"), key=lambda path: path.stat().st_mtime)
-    if not results:
-        raise click.ClickException("No promotion results found.")
-
-    result_path = results[-1]
-    result_payload = json.loads(result_path.read_text(encoding="utf-8"))
-    validation_path = Path(result_payload["validation_ref"])
-    validation_payload = json.loads(validation_path.read_text(encoding="utf-8"))
-    weak_records = validation_payload.get("validation_failures_by_trace", {})
-    coverage = validation_payload.get("defense_report_coverage", {})
-    lines = [
-        f"  Promotion: {result_payload['promotion_id']}",
-        f"  Proposal:  {result_payload['proposal_id']}",
-        f"  Status:    {result_payload['validation_status']}",
-        f"  Reports:   {len(result_payload.get('defense_report_refs', []))}",
-        f"  Eligible:  {', '.join(validation_payload.get('eligible_trace_ids', [])) or 'none'}",
-        f"  Coverage:  {', '.join(f'{trace}={state}' for trace, state in sorted(coverage.items())) or 'none'}",
-    ]
-    if validation_payload.get("failure_reason"):
-        lines.append(f"  Failure:   {validation_payload['failure_reason']}")
-    if validation_payload.get("missing_report_trace_ids"):
-        lines.append(
-            f"  Missing:   {', '.join(validation_payload['missing_report_trace_ids'])}"
-        )
-    if validation_payload.get("weak_evidence_trace_ids"):
-        lines.append(
-            f"  Weak:      {', '.join(validation_payload['weak_evidence_trace_ids'])}"
-        )
-    if validation_payload.get("failed_validation_trace_ids"):
-        lines.append(
-            f"  Failed:    {', '.join(validation_payload['failed_validation_trace_ids'])}"
-        )
-    if weak_records:
-        rendered = '; '.join(f"{trace_id} -> {', '.join(failures)}" for trace_id, failures in sorted(weak_records.items()))
-        lines.append(f"  Fail map:  {rendered}")
-    console.print(Panel("[bold]Latest promotion[/bold]\n\n" + "\n".join(lines), border_style="cyan"))
+    settings = RedThreadSettings(_env_file=env_file)
+    try:
+        rendered = render_latest_promotion(settings, Path.cwd())
+    except LookupError as exc:
+        raise click.ClickException(str(exc)) from exc
+    console.print(Panel("[bold]Latest promotion[/bold]\n\n" + rendered, border_style="cyan"))
 
 
 @research.command(name="report-inspect")

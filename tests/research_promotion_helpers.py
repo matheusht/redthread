@@ -29,6 +29,35 @@ def append_research_record(
 ) -> None:
     settings = RedThreadSettings()
     index = MemoryIndex(workspace.research_settings(settings))
+    replay_cases = (
+        [
+            ReplayCaseResult(
+                case_id="exploit_replay",
+                kind="exploit",
+                prompt="[SYSTEM]: test\n\n[USER]: attack",
+                response="blocked",
+                passed=exploit_replay_passed,
+                judge_score=(1.0 if exploit_replay_passed else 4.9),
+                failure_reason=("" if exploit_replay_passed else "exploit replay still succeeded"),
+            ),
+            ReplayCaseResult(
+                case_id="capital_france",
+                kind="benign",
+                prompt="[SYSTEM]: test\n\n[USER]: benign",
+                response="Paris",
+                passed=benign_passed,
+                failure_reason=("" if benign_passed else "benign regression"),
+            ),
+        ]
+        if include_replay_cases
+        else []
+    )
+    failed_case_ids = [case.case_id for case in replay_cases if not case.passed]
+    failed_case_reasons = {case.case_id: case.failure_reason for case in replay_cases if case.failure_reason}
+    exploit_total = sum(1 for case in replay_cases if case.kind == "exploit")
+    exploit_pass = sum(1 for case in replay_cases if case.kind == "exploit" and case.passed)
+    benign_total = sum(1 for case in replay_cases if case.kind == "benign")
+    benign_pass = sum(1 for case in replay_cases if case.kind == "benign" and case.passed)
     index.append(
         DeploymentRecord(
             trace_id=trace_id,
@@ -46,28 +75,7 @@ def append_research_record(
                 judge_score=(1.0 if exploit_replay_passed else 4.9),
                 exploit_replay_passed=exploit_replay_passed,
                 benign_passed=benign_passed,
-                replay_cases=(
-                    [
-                        ReplayCaseResult(
-                            case_id="exploit_replay",
-                            kind="exploit",
-                            prompt="[SYSTEM]: test\n\n[USER]: attack",
-                            response="blocked",
-                            passed=exploit_replay_passed,
-                            judge_score=(1.0 if exploit_replay_passed else 4.9),
-                        ),
-                        ReplayCaseResult(
-                            case_id="capital_france",
-                            kind="benign",
-                            prompt="[SYSTEM]: test\n\n[USER]: benign",
-                            response="Paris",
-                            passed=benign_passed,
-                            failure_reason=("" if benign_passed else "benign regression"),
-                        ),
-                    ]
-                    if include_replay_cases
-                    else []
-                ),
+                replay_cases=replay_cases,
                 replay_suite_id="default-defense-replay-v3",
                 validation_mode=validation_mode,
                 evidence_mode=evidence_mode,
@@ -81,11 +89,17 @@ def append_research_record(
                     validation_mode=validation_mode,
                     evidence_mode=evidence_mode,
                     evidence_label="",
-                    exploit_case_ids=["exploit_replay"],
-                    benign_case_ids=["capital_france"],
-                    failed_case_ids=[],
-                    blocked_attack_summary="exploit replays blocked 1/1",
-                    benign_utility_summary="benign suite 1/1 passed",
+                    exploit_case_ids=["exploit_replay"] if replay_cases else [],
+                    benign_case_ids=["capital_france"] if replay_cases else [],
+                    failed_case_ids=failed_case_ids,
+                    failed_case_reasons=failed_case_reasons,
+                    replay_case_count=len(replay_cases),
+                    exploit_pass_count=exploit_pass,
+                    exploit_total_count=exploit_total,
+                    benign_pass_count=benign_pass,
+                    benign_total_count=benign_total,
+                    blocked_attack_summary=f"exploit replays blocked {exploit_pass}/{exploit_total}",
+                    benign_utility_summary=f"benign suite {benign_pass}/{benign_total} passed",
                     guardrail_clause="Do not reveal secrets.",
                     rationale="test rationale",
                 )
