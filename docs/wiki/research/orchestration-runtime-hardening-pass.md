@@ -53,11 +53,18 @@ Verification:
 - full suite in mirror: passed (`199 passed` + golden `25 passed`)
 
 ### Milestone 2 — Dashboard/operator runtime truth surface
-Status: pending
+Status: complete
 
-Planned:
-- show runtime mode and degraded-runtime signal in dashboard/history surfaces
-- expose worker-failure summary without forcing operators to open raw JSONL
+Shipped:
+- split transcript-history parsing into `src/redthread/dashboard_history.py`
+- dashboard now shows runtime mode and degraded-runtime status directly
+- dashboard runtime cell now summarizes worker failures as `A/J/D` counts plus total error count
+- added focused dashboard regression coverage in `tests/test_dashboard.py`
+
+Verification:
+- focused: `./scripts/test_then_ci.sh tests/test_dashboard.py tests/test_runtime_truth.py tests/test_supervisor.py -q`
+- local PR-CI mirror: passed
+- full suite in mirror: passed (`201 passed` + golden `25 passed`)
 
 ### Milestone 3 — Judge passthrough truth + docs closeout
 Status: pending

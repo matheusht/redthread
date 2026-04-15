@@ -111,15 +111,28 @@ This is important because the runtime is currently **best-effort**, not fail-clo
 - campaign still finalizes
 - defense deployment count can stay below defense input count
 
-## What transcripts prove
+## Operator surfaces
 
-Current transcript summary now proves:
+Current operator-visible runtime surfaces are:
+- transcript summary JSONL line
+- dashboard history table
+- guardrail injection audit JSONL
+
+The dashboard now shows:
+- runtime mode
+- telemetry mode
+- clean vs degraded runtime state
+- compact worker-failure counts as `A/J/D`
+
+## What transcripts and dashboard prove
+
+Current transcript summary and dashboard now prove:
 - whether the campaign was sealed or live
 - whether telemetry ran or was skipped
 - whether runtime degraded due to worker failures
 - compact failure counts across attack, judge, and defense stages
 
-Current transcript summary does **not** prove:
+Current transcript summary and dashboard do **not** prove:
 - that live providers were healthy across every stage unless a live smoke path also succeeded
 - that a green campaign had no runtime degradation unless `degraded_runtime=false`
 - that telemetry is proof of benign utility

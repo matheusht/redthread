@@ -114,3 +114,8 @@
 - added `src/redthread/orchestration/runtime_summary.py` and wired supervisor runtime counts for attack, judge, and defense worker failures
 - updated campaign metadata and transcript summaries so operators can see `degraded_runtime`, `error_count`, and compact runtime-stage counts
 - added new wiki pages for `systems/orchestration-and-engine-runtime.md` and `research/orchestration-runtime-hardening-pass.md`, then linked them from the wiki index
+
+## [2026-04-15] orchestration-runtime-pass-m2 | surfaced runtime truth in dashboard history
+- split transcript parsing into `src/redthread/dashboard_history.py` so the dashboard module stays under the repo size target while the history parser can grow independently
+- updated `src/redthread/dashboard.py` so operators can see mode, clean-vs-degraded runtime state, and compact `A/J/D` worker-failure counts
+- added `tests/test_dashboard.py` to pin runtime parsing and rendered dashboard output for the new operator surface
