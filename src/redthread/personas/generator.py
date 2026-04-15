@@ -13,12 +13,9 @@ import json
 import logging
 
 from redthread.config.settings import RedThreadSettings
-from redthread.models import (
-    MitreAtlasTactic,
-    Persona,
-    PsychologicalTrigger,
-)
+from redthread.models import MitreAtlasTactic, Persona, PsychologicalTrigger
 from redthread.personas.atlas_taxonomy import TECHNIQUES_BY_TACTIC
+from redthread.pyrit_adapters.targets import RedThreadTarget
 
 logger = logging.getLogger(__name__)
 
@@ -63,9 +60,9 @@ class PersonaGenerator:
 
     def __init__(self, settings: RedThreadSettings) -> None:
         self.settings = settings
-        self._attacker = None
+        self._attacker: RedThreadTarget | None = None
 
-    def _get_attacker(self):
+    def _get_attacker(self) -> RedThreadTarget:
         if self._attacker is None:
             from redthread.pyrit_adapters.targets import build_attacker
 

@@ -1,12 +1,18 @@
 """ASI sub-score functions."""
+
 from __future__ import annotations
+
 import logging
 from typing import TYPE_CHECKING
+
 import numpy as np
+
 from redthread.telemetry.drift import DriftDetector
 from redthread.telemetry.models import ArimaForecast
+
 if TYPE_CHECKING:
     from redthread.telemetry.collector import TelemetryCollector
+
 logger = logging.getLogger(__name__)
 
 
@@ -69,6 +75,8 @@ def score_semantic_drift(
         return 100.0, "embedding_dim_mismatch"
     drift_metrics = drift_detector.compute_drift(embeddings)
     avg_distance = float(np.mean([m["distance"] for m in drift_metrics]))
+    if drift_detector._core_distances is None:
+        return 100.0, "no_baseline"
     baseline_avg = float(np.mean(drift_detector._core_distances))
     threshold = 2.0 * baseline_avg if baseline_avg > 0 else 1.0
     score = max(0.0, min(100.0, (1.0 - avg_distance / threshold) * 100.0))

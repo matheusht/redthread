@@ -108,8 +108,10 @@ redthread monitor status
 
 ### Local CI Gate
 ```bash
-make ci   # lint + typecheck + unit tests
+make ci   # fast local gate: lint + typecheck + unit tests
+make ci-pr  # mirror PR CI locally: lint + typecheck + unit tests + sealed golden regression
 make test-golden  # Golden Dataset evaluation; live judge validation requires backend access and OPENAI_API_KEY
+make test-then-ci PYTEST_ARGS="tests/test_evaluation_truth.py -q"  # run focused tests, then local PR CI mirror
 ```
 
 ### Validation Notes

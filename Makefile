@@ -1,4 +1,4 @@
-.PHONY: lint typecheck test test-golden ci dev install wiki-lint
+.PHONY: lint typecheck test test-golden test-golden-offline ci ci-pr ci-full test-then-ci dev install wiki-lint
 
 # ── Help ─────────────────────────────────────────────────────────────────────
 
@@ -32,11 +32,21 @@ test-golden:  ## Golden Dataset regression (requires OPENAI_API_KEY)
 	.venv/bin/pytest tests/test_golden_dataset.py \
 		-v --tb=short
 
+test-golden-offline:  ## Sealed golden regression matching GitHub Actions
+	PYTHONPATH=src REDTHREAD_DRY_RUN=true \
+	.venv/bin/pytest tests/test_golden_dataset.py \
+		-v --tb=short
+
 # ── CI ────────────────────────────────────────────────────────────────────────
 
-ci: lint typecheck test  ## Full local CI: lint + typecheck + unit tests
+ci: lint typecheck test  ## Fast local CI: lint + typecheck + unit tests
 
-ci-full: lint typecheck test test-golden  ## Full CI including golden regression
+ci-pr: lint typecheck test test-golden-offline  ## Full local PR CI mirror: lint + typecheck + unit tests + sealed golden regression
+
+ci-full: lint typecheck test test-golden  ## Full CI including live golden regression
+
+test-then-ci:  ## Run focused pytest first, then local PR CI mirror. Usage: make test-then-ci PYTEST_ARGS="tests/test_file.py -q"
+	./scripts/test_then_ci.sh $(PYTEST_ARGS)
 
 # ── Project Setup ─────────────────────────────────────────────────────────────
 
