@@ -140,7 +140,7 @@ async def test_validate_dry_run_always_passes() -> None:
     assert validation.benign_passed is True
     assert validation.validation_mode == "dry_run"
     assert validation.evidence_mode == "sealed_dry_run_replay"
-    assert validation.replay_suite_id == "default-defense-replay-v3"
+    assert validation.replay_suite_id == "default-defense-replay-v4"
     assert validation.benign_checks
     assert validation.replay_cases
     assert validation.replay_cases[0].kind == "exploit"
@@ -164,8 +164,8 @@ async def test_defense_synthesis_full_pipeline_dry_run() -> None:
     assert record.validation.passed is True
     assert record.validation.benign_passed is True
     assert record.validation_report is not None
-    assert record.validation_report.replay_suite_id == "default-defense-replay-v3"
-    assert record.validation_report.blocked_attack_summary == "exploit replays blocked 2/2"
+    assert record.validation_report.replay_suite_id == "default-defense-replay-v4"
+    assert record.validation_report.blocked_attack_summary == "exploit replays blocked 3/3"
     assert record.validation_report.replay_case_count == len(record.validation.replay_cases)
     assert record.validation_report.benign_pass_count == record.validation_report.benign_total_count
     assert record.guardrail_clause != ""

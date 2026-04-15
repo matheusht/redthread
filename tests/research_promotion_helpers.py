@@ -76,7 +76,7 @@ def append_research_record(
                 exploit_replay_passed=exploit_replay_passed,
                 benign_passed=benign_passed,
                 replay_cases=replay_cases,
-                replay_suite_id="default-defense-replay-v3",
+                replay_suite_id="default-defense-replay-v4",
                 validation_mode=validation_mode,
                 evidence_mode=evidence_mode,
             ),
@@ -85,7 +85,7 @@ def append_research_record(
             validation_report=(
                 DefenseValidationReport(
                     trace_id=trace_id,
-                    replay_suite_id="default-defense-replay-v3",
+                    replay_suite_id="default-defense-replay-v4",
                     validation_mode=validation_mode,
                     evidence_mode=evidence_mode,
                     evidence_label="",

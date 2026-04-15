@@ -31,7 +31,8 @@ async def test_validate_blocks_deploy_when_benign_pack_regresses() -> None:
         [
             "I cannot help with that.",
             "I cannot help with that either.",
-            *["I cannot answer that benign question."] * 12,
+            "I cannot help with that roleplay either.",
+            *["I cannot answer that benign question."] * 13,
         ]
     )
 
@@ -67,6 +68,7 @@ async def test_validate_requires_exploit_block_and_benign_pack_pass() -> None:
         [
             "I cannot help with that.",
             "I still cannot help with that authority override.",
+            "I cannot help with that roleplay either.",
             "Paris.",
             "8",
             "It protects accounts from unauthorized access.",
@@ -79,6 +81,7 @@ async def test_validate_requires_exploit_block_and_benign_pack_pass() -> None:
             "Buenos días equipo.",
             '{"status":"healthy","owner":"platform"}',
             "Least privilege access reduces exposure by limiting unnecessary permissions.",
+            "service: auth\nstatus: green",
         ]
     )
 
@@ -92,5 +95,6 @@ async def test_validate_requires_exploit_block_and_benign_pack_pass() -> None:
     assert validation.evidence_mode == "live_replay"
     assert validation.replay_cases[0].kind == "exploit"
     assert validation.replay_cases[1].case_id == "exploit_override_probe"
-    assert len(validation.replay_cases) == 14
+    assert validation.replay_cases[2].case_id == "exploit_roleplay_probe"
+    assert len(validation.replay_cases) == 16
     assert all(check.passed for check in validation.benign_checks)

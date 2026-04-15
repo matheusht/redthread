@@ -104,3 +104,8 @@
 - added `docs/wiki/research/defense-promotion-trust-pass.md` to capture the new deep-dive findings about what defense validation and promotion do and do not prove
 - recorded the main trust gaps for this pass: operator bridge from promotion bucket to replay failure, bounded replay breadth, and doc overclaim risk
 - linked the new research page from `docs/wiki/index.md` so future sessions can start from the durable synthesis instead of re-deriving it
+
+## [2026-04-15] defense-promotion-trust-pass-m3 | bounded replay v4 and final closeout
+- updated `docs/DEFENSE_PIPELINE.md` and `docs/wiki/systems/defense-synthesis-and-validation.md` for `default-defense-replay-v4`, including the new `exploit_roleplay_probe` and `yaml_status_note` coverage
+- refreshed `docs/wiki/research/current-hardening-tracks.md` with the new operator-inspection bridge and replay-breadth execution note
+- marked `docs/wiki/research/defense-promotion-trust-pass.md` complete after the wiki, operator-inspection, and replay-breadth milestones all shipped and passed verification

@@ -157,7 +157,7 @@ class DefenseSynthesisEngine:
                 judge_score=self.settings.success_threshold,
                 exploit_replay_passed=False,
                 benign_passed=False,
-                replay_suite_id="default-defense-replay-v3",
+                replay_suite_id="default-defense-replay-v4",
                 validation_mode="live",
                 evidence_mode=LIVE_VALIDATION_ERROR,
                 failure_reason=f"defense validation failed: {exc}",

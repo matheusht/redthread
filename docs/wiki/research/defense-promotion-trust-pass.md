@@ -1,8 +1,8 @@
 ---
 title: Defense + Promotion Trust Pass
 type: research
-status: active
-summary: Durable research synthesis for the defense synthesis/validation and promotion/revalidation deep dive.
+status: complete
+summary: Durable research synthesis and completed implementation record for the defense synthesis/validation and promotion/revalidation deep dive.
 source_of_truth:
   - docs/DEFENSE_PIPELINE.md
   - docs/PHASE_REGISTRY.md
@@ -81,43 +81,59 @@ It does not mean the defense became a universal truth.
 - `tests/test_defense_validation.py` pins the dual requirement: block exploit and preserve benign utility
 - `tests/test_research_promotion_validation.py` pins fail-closed promotion behavior for missing reports, weak evidence, benign regressions, and missing replay cases
 
-## Main trust gaps still open
+## Main trust gaps at start of pass
 
 1. **Operator bridge gap**
-   - promotion buckets exist
-   - validation report detail exists
-   - but operators still need a faster bridge from promotion failure bucket to exact replay-case failure context
+   - promotion buckets existed
+   - validation report detail existed
+   - but operators still needed a faster bridge from promotion failure bucket to exact replay-case failure context
 
 2. **Replay breadth gap**
-   - current replay suite is much better than exact-exploit-only replay
-   - but it is still bounded and curated
-   - that means trust is meaningful, not universal
+   - replay suite was much better than exact-exploit-only replay
+   - but it was still bounded and curated
+   - that meant trust was meaningful, not universal
 
 3. **Doc overclaim risk**
    - this subsystem is easy to oversell
-   - wiki and operator output must keep saying what replay proves and what it does not prove
+   - wiki and operator output needed to keep saying what replay proves and what it does not prove
 
 ## Milestones for this pass
 
 ### Milestone 1 — Durable research synthesis
-- write this research page
-- update wiki navigation and log
-- keep proof boundaries explicit
+Status: complete
+- wrote this research page
+- updated wiki navigation and log
+- kept proof boundaries explicit
 
 ### Milestone 2 — Promotion inspection bridge
-- make promotion inspection show exact replay-case failure detail for blocked traces
-- reduce the need to jump between promotion output and report inspection manually
+Status: complete
+- promotion inspection now shows trace-level replay-case failure detail for blocked traces
+- operators no longer need to jump manually from promotion bucket output to report inspection for the first layer of failure context
 
 ### Milestone 3 — Replay breadth pass
-- add one more curated exploit variant
-- add one more benign utility check
-- keep the suite bounded and maintainable
-- update docs/wiki so the suite change is described honestly
+Status: complete
+- added `exploit_roleplay_probe` to catch training / roleplay framed bypasses
+- added `yaml_status_note` to check one more simple structured benign output path
+- moved the bounded replay suite to `default-defense-replay-v4`
+- updated docs/wiki so the suite change is described honestly
 
 ## Approval rule
 
 Only approve what is working.
 Every milestone must pass focused tests first, then the local PR-CI mirror.
+
+## Outcome
+
+This pass is complete.
+
+What improved:
+- durable wiki research now explains what defense validation and promotion do and do not prove
+- promotion inspection now bridges failure buckets to exact replay-case detail
+- bounded replay breadth increased with one more exploit variant and one more benign structured-output check
+
+What did not change:
+- replay evidence is still bounded
+- promotion still means the bounded gate passed, not that the defense is universally safe
 
 ## Next questions
 

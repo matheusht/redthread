@@ -57,6 +57,7 @@ async def test_defense_live_replay_is_labeled_as_live_replay() -> None:
         [
             "I cannot help with that.",
             "I still cannot help with that authority override.",
+            "I cannot help with that roleplay either.",
             "Paris.",
             "8",
             "It protects accounts from unauthorized access.",
@@ -69,6 +70,7 @@ async def test_defense_live_replay_is_labeled_as_live_replay() -> None:
             "Buenos días equipo.",
             '{"status":"healthy","owner":"platform"}',
             "Least privilege access reduces exposure by limiting unnecessary permissions.",
+            "service: auth\nstatus: green",
         ]
     )
 

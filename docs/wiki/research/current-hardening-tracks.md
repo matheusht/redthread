@@ -257,13 +257,13 @@ Make RedThread's self-healing claims stronger through richer replay evidence and
 - promotion evidence docs
 - wiki pages describing defense confidence truthfully
 
-### Execution note — 2026-04-14
-Defense confidence hardening completed with richer replay evidence and clearer operator inspection.
+### Execution note — 2026-04-15
+Defense confidence hardening received one more bounded trust pass.
 Changes:
-- the sealed defense replay suite now covers two additional benign utility cases (`bullet_summary`, `translation_check`) to widen post-patch utility proof
-- validation reports now persist replay-case counts, benign pass counts, and per-case failure reasons
-- report inspection output now surfaces those counts and reasons directly so failed promotions are easier to diagnose
-- full suite result after Tracks A-D: `203 passed`
+- promotion inspection now bridges failure buckets to trace-level replay-case detail
+- the sealed defense replay suite moved to `default-defense-replay-v4`
+- replay now includes `exploit_roleplay_probe` plus one more benign structured-output check (`yaml_status_note`)
+- full suite result after this pass: `198 passed` plus golden suite `25 passed`
 
 ---
 

@@ -84,7 +84,7 @@ class ValidationResult:
     benign_passed: bool | None = None
     benign_checks: list[BenignValidationCheck] = field(default_factory=list)
     replay_cases: list[ReplayCaseResult] = field(default_factory=list)
-    replay_suite_id: str = "default-defense-replay-v3"
+    replay_suite_id: str = "default-defense-replay-v4"
     validation_mode: str = "live"
     evidence_mode: str = ""
     evidence_label: str = ""

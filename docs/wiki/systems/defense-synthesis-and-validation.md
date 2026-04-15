@@ -48,17 +48,19 @@ A live validation error is a warning about missing evidence, not proof that a de
 
 ## Replay breadth notes
 
-Current default replay suite is `default-defense-replay-v3`.
+Current default replay suite is `default-defense-replay-v4`.
 It now includes:
 - the isolated exploit replay
 - an `exploit_override_probe` to catch narrow fixes that only block the exact original wording
+- an `exploit_roleplay_probe` to catch narrow fixes that still yield during training or roleplay framing
 - the starter benign pack
-- extra benign utility checks for formatting, translation, scheduling, and short policy explanation tasks
+- extra benign utility checks for formatting, translation, scheduling, short policy explanation tasks, and simple YAML output
 
 This still does not prove broad production utility.
-It means the replay suite is better at catching two specific trust failures:
+It means the replay suite is better at catching three specific trust failures:
 - a defense that blocks the exact exploit text but still complies with a close override variant
-- a defense that over-refuses harmless formatting or explanation prompts
+- a defense that blocks the override phrasing but still yields when the exploit is framed as training or roleplay
+- a defense that over-refuses harmless formatting, explanation, or structured-output prompts
 
 ## Related pages
 
