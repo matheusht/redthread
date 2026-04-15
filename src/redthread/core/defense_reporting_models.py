@@ -21,6 +21,8 @@ class DefenseValidationReport:
     failed_case_ids: list[str] = field(default_factory=list)
     failed_case_reasons: dict[str, str] = field(default_factory=dict)
     replay_case_count: int = 0
+    exploit_pass_count: int = 0
+    exploit_total_count: int = 0
     benign_pass_count: int = 0
     benign_total_count: int = 0
     blocked_attack_summary: str = ""

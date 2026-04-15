@@ -81,6 +81,7 @@ def render_validation_report(record: DeploymentRecord, source: MemorySource) -> 
             f"  Failed:      {failed_cases}",
             f"  Failed why:  {failed_reasons}",
             f"  Replay cnt:  {report.replay_case_count}",
+            f"  Exploit cnt: {report.exploit_pass_count}/{report.exploit_total_count}",
             f"  Utility cnt: {report.benign_pass_count}/{report.benign_total_count}",
             f"  Attack:      {report.blocked_attack_summary}",
             f"  Utility:     {report.benign_utility_summary}",

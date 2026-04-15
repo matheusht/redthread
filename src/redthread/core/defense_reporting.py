@@ -43,6 +43,8 @@ def build_validation_report(
         failed_case_ids=failed_cases,
         failed_case_reasons=failed_case_reasons,
         replay_case_count=len(validation.replay_cases),
+        exploit_pass_count=exploit_passes,
+        exploit_total_count=exploit_total,
         benign_pass_count=benign_passes,
         benign_total_count=benign_total,
         blocked_attack_summary=(
