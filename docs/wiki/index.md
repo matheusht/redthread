@@ -44,6 +44,7 @@ This is the primary content map for the RedThread wiki.
 - [research/defense-confidence-hardening-plan.md](research/defense-confidence-hardening-plan.md) — Research-backed execution plan for the defense synthesis, validation, and promotion deep dive.
 - [research/defense-promotion-trust-pass.md](research/defense-promotion-trust-pass.md) — Durable deep-dive synthesis for what defense validation and promotion actually prove, what they do not prove, and what to harden next.
 - [research/orchestration-runtime-hardening-pass.md](research/orchestration-runtime-hardening-pass.md) — Execution log for runtime-truth hardening across the engine facade, supervisor flow, and operator surfaces.
+- [research/agentic-security-shift-2025-2026.md](research/agentic-security-shift-2025-2026.md) — Research synthesis on the move from chatbot jailbreaks to tool hijacking, confused deputy chains, token exhaustion, and deterministic defenses.
 
 ## Timelines
 

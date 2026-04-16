@@ -1,5 +1,10 @@
 # Wiki Log
 
+## [2026-04-16] research-pass | added agentic security shift synthesis
+- added `docs/wiki/research/agentic-security-shift-2025-2026.md` covering MCP tool hijacking, confused deputy chains, token exhaustion, and deterministic defenses
+- updated `docs/wiki/index.md` so the new research page is discoverable
+- grounded the page in MemPalace recall plus external sources on OWASP MCP tool poisoning, MAS hijacking, Clawdrain, and OAP-style pre-action authorization
+
 ## [2026-04-13] scaffold | initialized redthread wiki
 - created `docs/WIKI_ARCHITECTURE.md`
 - created `docs/wiki/SCHEMA.md`
