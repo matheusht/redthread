@@ -5,7 +5,6 @@ from __future__ import annotations
 from redthread.orchestration.models import AuthorizationDecisionType
 from redthread.tools.authorization.models import AuthorizationPolicy
 
-
 RISKY_CAPABILITIES = ["shell.exec", "db.export", "db.write", "http.post"]
 
 

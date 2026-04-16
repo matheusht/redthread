@@ -13,7 +13,6 @@ from redthread.orchestration.permission_inheritance import (
 )
 from redthread.tools.authorization.models import AuthorizationPolicy
 
-
 SENSITIVITY_ORDER = {"low": 0, "medium": 1, "high": 2}
 
 

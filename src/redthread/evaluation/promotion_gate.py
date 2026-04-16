@@ -5,7 +5,7 @@ from __future__ import annotations
 from redthread.evaluation.replay_corpus import ReplayBundle
 
 
-class PromotionGateResult(dict):
+class PromotionGateResult(dict[str, object]):
     pass
 
 

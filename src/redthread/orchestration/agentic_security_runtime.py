@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 from redthread.models import CampaignConfig
 from redthread.orchestration.canary_flow import build_canary_report, record_canary_stage
@@ -58,12 +58,15 @@ def run_agentic_security_review(config: CampaignConfig) -> dict[str, Any]:
             poisoned_compliance_fixture(),
             arguments={"tenant": "campaign-runtime", "report_type": "runtime-review"},
         )
-        action = ActionEnvelope.model_validate(tool_case["requested_action"])
+        requested_action = cast(dict[str, Any], tool_case["requested_action"])
+        tool_response = cast(dict[str, Any], tool_case["tool_response"])
+        canary_tags = cast(list[str], tool_response["canary_tags"])
+        action = ActionEnvelope.model_validate(requested_action)
         decision = engine.authorize(action)
         report = build_canary_report(
             [
-                record_canary_stage("tool_return", tool_case["tool_response"]["canary_tags"]),
-                record_canary_stage("shared_state", tool_case["tool_response"]["canary_tags"]),
+                record_canary_stage("tool_return", canary_tags),
+                record_canary_stage("shared_state", canary_tags),
             ]
         )
         reports.append({
@@ -74,13 +77,14 @@ def run_agentic_security_review(config: CampaignConfig) -> dict[str, Any]:
         })
         _count_decision(decision_counts, decision.decision.value)
         action_total += 1
-        canary_event_total += len(tool_case["tool_response"]["canary_tags"])
+        canary_event_total += len(canary_tags)
         untrusted_lineage_action_total += 1 if action.provenance.derived_from_untrusted else 0
         canary_reports.append(report)
 
     if any(keyword in text for keyword in DEPUTY_KEYWORDS):
         deputy_case = run_confused_deputy_scenario()
-        action = ActionEnvelope.model_validate(deputy_case["requested_action"])
+        requested_action = cast(dict[str, Any], deputy_case["requested_action"])
+        action = ActionEnvelope.model_validate(requested_action)
         decision = engine.authorize(action)
         reports.append({
             "scenario_id": "confused_deputy_runtime_review",

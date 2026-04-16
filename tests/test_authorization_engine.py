@@ -7,7 +7,10 @@ from redthread.orchestration.scenarios.resource_amplification import (
     run_resource_amplification_scenario,
 )
 from redthread.tools.authorization import AuthorizationEngine, default_least_agency_policies
-from redthread.tools.fixtures.agentic_security import benign_lookup_fixture, poisoned_compliance_fixture
+from redthread.tools.fixtures.agentic_security import (
+    benign_lookup_fixture,
+    poisoned_compliance_fixture,
+)
 
 
 def test_tool_poisoning_follow_up_is_denied() -> None:

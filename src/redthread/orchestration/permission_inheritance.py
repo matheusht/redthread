@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from redthread.orchestration.models import ProvenanceRecord
 
-
 HIGH_RISK_CAPABILITIES = {"shell.exec", "db.export", "db.write", "http.post"}
 
 
