@@ -21,6 +21,7 @@
 | 7A | Safe Patch Autoresearch (Offense) | ✅ Complete | 2026-04-07 | `research phase5`, bounded offense source mutation proposals, explicit research-plane acceptance gate |
 | 7B | Bounded Defense Prompt Autoresearch | ✅ Complete | 2026-04-08 | `research phase6`, sealed defense prompt mutation gate, reused Phase 3 promotion flow |
 | 8A | Agentic Security Schema | ✅ Complete | 2026-04-16 | threat taxonomy, provenance model, action envelope, amplification metrics, runtime summary extension |
+| 8B | Attack Simulation Lane | ✅ Complete | 2026-04-16 | sealed tool-hijack fixtures, simulated registry, confused deputy scenarios, resource amplification scenarios |
 
 ## Current Direction
 
@@ -377,3 +378,25 @@ TERMINAL EVALUATION
 | Runtime impact | additive and optional only | Existing campaign flow remains unchanged until later Phase 8 work plugs into the new schema |
 | Scope control | schema only, no live interception yet | Keeps 8A low-risk and replay-first |
 | Reporting shape | nested `agentic_security` summary block | Extends operator truth surfaces without breaking existing top-level fields |
+
+### Phase 8B: Attack Simulation Lane ✅
+**Objective**: Add deterministic agentic-security scenario runners so RedThread can test tool hijacking, confused deputy chains, and resource amplification without relying on live tool infrastructure first.
+
+**Status**: Completed 2026-04-16
+
+**Deliverables**:
+- `src/redthread/tools/fixtures/agentic_security.py` — sealed benign, poisoned, ToolLeak, and repair-loop fixtures
+- `src/redthread/tools/fixtures/__init__.py` — focused exports for deterministic scenario fixtures
+- `src/redthread/tools/simulated_registry.py` — replay-safe simulated tool registry
+- `src/redthread/orchestration/graphs/tool_attack_graph.py` — sealed tool-attack scenario runner
+- `src/redthread/orchestration/scenarios/confused_deputy.py` — privilege-laundering scenario runner
+- `src/redthread/orchestration/scenarios/resource_amplification.py` — loop and budget-amplification scenario runner
+- `tests/test_agentic_security_scenarios.py` — deterministic scenario coverage
+
+**Key Decisions**:
+| Decision | Choice | Rationale |
+|---|---|---|
+| Infrastructure style | sealed simulation first | Preserves replay-first evidence discipline before any live MCP work |
+| Scenario granularity | one file per threat family | Keeps future expansion under the repo file-size limit |
+| Registry behavior | deterministic dict-backed fixture registry | Makes attack traces reproducible and CI-safe |
+| Runtime integration | scenario lane stays additive | Existing supervisor and attack algorithms remain unchanged |
