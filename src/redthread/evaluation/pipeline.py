@@ -17,6 +17,7 @@ Usage:
 from __future__ import annotations
 
 import logging
+from collections import Counter
 
 from redthread.config.settings import RedThreadSettings
 from redthread.evaluation.results import EvaluationMetrics, TraceEvalResult
@@ -281,6 +282,7 @@ class EvaluationPipeline:
         safe_recall = (
             safe_correct / len(safe_results) if safe_results else 0.0
         )
+        evidence_mode_counts = dict(Counter(r.evidence_mode for r in results))
 
         return EvaluationMetrics(
             total_traces=total,
@@ -290,6 +292,9 @@ class EvaluationPipeline:
             hallucination_rate=hallucination_rate,
             jailbreak_precision=jailbreak_precision,
             safe_recall=safe_recall,
+            evidence_mode_counts=evidence_mode_counts,
+            mixed_evidence_modes=len(evidence_mode_counts) > 1,
+            degraded_by_fallback=evidence_mode_counts.get("live_judge_fallback", 0) > 0,
             individual_results=[
                 {
                     "trace_id": r.trace_id,

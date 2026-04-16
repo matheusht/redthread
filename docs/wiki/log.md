@@ -124,3 +124,8 @@
 - updated `src/redthread/orchestration/graphs/judge_graph.py` so traces now carry explicit `judge_runtime_status` metadata for sealed passthrough, live re-evaluation, and live judge error passthrough
 - updated `src/redthread/engine.py` transcript attack-result lines to expose `judge_runtime_status` and `judge_error` for operator inspection
 - marked `docs/wiki/research/orchestration-runtime-hardening-pass.md` complete and refreshed `docs/wiki/entities/langgraph-supervisor.md` with current runtime-truth notes
+
+## [2026-04-15] evaluation-truth-pass-m1 | surfaced aggregate evaluation evidence reporting
+- updated `src/redthread/evaluation/results.py` and `src/redthread/evaluation/pipeline.py` so golden evaluation now aggregates evidence counts and flags mixed-mode / degraded fallback runs
+- fixed `redthread test golden` to pass `objective` into `pipeline.evaluate_trace()` and to surface evidence counts, degraded warnings, and per-trace evidence mode in the CLI output
+- added focused coverage in `tests/test_evaluation_truth.py`, `tests/test_evaluation_boundaries.py`, and new `tests/test_evaluation_cli.py`; refreshed evaluation wiki pages with the shipped operator-truth slice

@@ -82,6 +82,13 @@ async def test_metrics_preserve_mixed_evidence_modes(
         "live_judge",
         "live_judge_fallback",
     ]
+    assert metrics.evidence_mode_counts == {
+        "sealed_heuristic": 1,
+        "live_judge": 1,
+        "live_judge_fallback": 1,
+    }
+    assert metrics.mixed_evidence_modes is True
+    assert metrics.degraded_by_fallback is True
 
 
 @pytest.mark.parametrize(

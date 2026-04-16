@@ -2,7 +2,7 @@
 title: Evaluation Truth Hardening Plan
 type: research
 status: active
-summary: Research-backed plan for the next deep dive: judge and evaluation truth, with exact runtime gaps, file targets, and milestone sequence.
+summary: Research-backed plan for judge and evaluation truth, now including the first shipped evidence-reporting hardening slice.
 source_of_truth:
   - README.md
   - docs/TECH_STACK.md
@@ -133,18 +133,29 @@ Do this instead:
 Goal:
 - make every evaluation result easier to interpret correctly
 
-Planned changes:
-- add explicit evaluation metadata for mode and evidence source
-- distinguish at least:
-  - sealed heuristic
-  - live judge
-  - live fallback after judge failure
-- surface this in result objects and operator-visible outputs where practical
+Status:
+- complete
+
+Shipped changes:
+- `src/redthread/evaluation/results.py` now carries aggregate evidence-mode counts plus mixed-mode and degraded-by-fallback flags
+- `src/redthread/evaluation/pipeline.py::compute_metrics()` now aggregates sealed/live/fallback counts instead of only preserving per-trace metadata
+- `redthread test golden` now passes `objective` correctly into `pipeline.evaluate_trace()`
+- `redthread test golden` now surfaces evidence counts, degraded fallback warning, and per-trace evidence mode in operator output
+- added focused CLI regression coverage in `tests/test_evaluation_cli.py`
+- expanded truth tests in `tests/test_evaluation_truth.py` and `tests/test_evaluation_boundaries.py`
 
 Primary file targets:
+- `src/redthread/evaluation/results.py`
 - `src/redthread/evaluation/pipeline.py`
-- `src/redthread/models.py`
-- any CLI/reporting path that prints golden or evaluation summaries
+- `src/redthread/cli.py`
+- `tests/test_evaluation_truth.py`
+- `tests/test_evaluation_boundaries.py`
+- `tests/test_evaluation_cli.py`
+
+Verification:
+- focused: `./scripts/test_then_ci.sh tests/test_evaluation_truth.py tests/test_evaluation_boundaries.py tests/test_evaluation_cli.py tests/test_golden_dataset.py -q`
+- local PR-CI mirror: passed
+- full suite in mirror: passed (`203 passed` + golden `25 passed`)
 
 Acceptance criteria:
 - evaluation results explicitly say how scoring happened

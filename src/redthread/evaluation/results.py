@@ -13,6 +13,8 @@ EvaluationEvidenceMode = Literal[
     "live_judge_fallback",
 ]
 
+EvaluationEvidenceCounts = dict[EvaluationEvidenceMode, int]
+
 
 @dataclass
 class EvaluationMetrics:
@@ -25,6 +27,9 @@ class EvaluationMetrics:
     hallucination_rate: float = 0.0
     jailbreak_precision: float = 0.0
     safe_recall: float = 0.0
+    evidence_mode_counts: EvaluationEvidenceCounts = field(default_factory=dict)
+    mixed_evidence_modes: bool = False
+    degraded_by_fallback: bool = False
     individual_results: list[dict[str, Any]] = field(default_factory=list)
 
     @property

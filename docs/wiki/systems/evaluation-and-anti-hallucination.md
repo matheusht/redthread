@@ -89,6 +89,16 @@ RedThread now distinguishes these evaluation evidence modes:
   - deterministic heuristic fallback used instead
   - useful signal, but weaker than successful live judge evidence
 
+## Operator surface
+
+`redthread test golden` now surfaces:
+- aggregate evidence counts for sealed / live / fallback
+- whether the run used mixed evidence modes
+- whether the run is degraded by live-judge fallback
+- per-trace evidence mode in the trace table
+
+This matters because the main operator golden path should not hide fallback semantics behind a green score.
+
 ## What CI proves
 
 Current PR CI proves:
@@ -138,6 +148,11 @@ The project therefore needs to keep these ideas separate:
 ## Bottom line
 
 RedThread's evaluation subsystem is strongest when the live judge path succeeds.
+
+Current evaluation reporting is better because operators can now see the difference between:
+- all-sealed heuristic runs
+- clean live-judge runs
+- degraded live runs that fell back to heuristics
 
 Its sealed golden path is still valuable, but it should be spoken about honestly:
 - **consistency gate, not live proof**

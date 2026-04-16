@@ -124,5 +124,8 @@ def test_metrics_keep_evidence_mode_metadata(
 
     metrics = pipeline.compute_metrics([result])
 
+    assert metrics.evidence_mode_counts == {"live_judge_fallback": 1}
+    assert metrics.mixed_evidence_modes is False
+    assert metrics.degraded_by_fallback is True
     assert metrics.individual_results[0]["evidence_mode"] == "live_judge_fallback"
     assert metrics.individual_results[0]["fallback_reason"] == "RuntimeError"
