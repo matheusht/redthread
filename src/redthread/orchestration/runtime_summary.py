@@ -10,7 +10,9 @@ def _build_agentic_security_summary(state: dict[str, Any]) -> dict[str, Any]:
         "action_total": state.get("agentic_action_total", 0),
         "authorization_decision_counts": state.get("authorization_decision_counts", {}),
         "canary_event_total": state.get("canary_event_total", 0),
+        "canary_report": state.get("canary_report", {}),
         "amplification_metrics": state.get("amplification_metrics", {}),
+        "budget_stop_triggered": state.get("budget_stop_triggered", False),
         "untrusted_lineage_action_total": state.get("untrusted_lineage_action_total", 0),
     }
 

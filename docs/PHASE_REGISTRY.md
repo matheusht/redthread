@@ -23,6 +23,7 @@
 | 8A | Agentic Security Schema | ✅ Complete | 2026-04-16 | threat taxonomy, provenance model, action envelope, amplification metrics, runtime summary extension |
 | 8B | Attack Simulation Lane | ✅ Complete | 2026-04-16 | sealed tool-hijack fixtures, simulated registry, confused deputy scenarios, resource amplification scenarios |
 | 8C | Deterministic Control Plane | ✅ Complete | 2026-04-16 | authorization engine, permission inheritance, least-agency presets, policy tests |
+| 8D | Canary & Runtime Containment | ✅ Complete | 2026-04-16 | canary helpers, propagation reports, runtime budget evaluation, summary extensions |
 
 ## Current Direction
 
@@ -422,3 +423,23 @@ TERMINAL EVALUATION
 | Inheritance rule | fail closed on derived untrusted lineage for high-risk capabilities | Directly addresses confused-deputy and tool-poisoning chains |
 | Preset style | least-agency role bundles | Gives operators a reusable starting point for policy modeling |
 | Runtime scope | simulation and replay first | Avoids over-claiming live enforcement before later phases wire real interception |
+
+### Phase 8D: Canary & Runtime Containment ✅
+**Objective**: Add propagation-aware tracing and budget containment so RedThread can show where poisoned context spread and where expensive loops should be stopped.
+
+**Status**: Completed 2026-04-16
+
+**Deliverables**:
+- `src/redthread/telemetry/canaries.py` — canary injection and merge helpers
+- `src/redthread/orchestration/canary_flow.py` — stage-by-stage propagation reports
+- `src/redthread/telemetry/runtime_budgets.py` — deterministic runtime budget evaluator
+- `src/redthread/orchestration/runtime_summary.py` — additive canary and budget reporting fields
+- `tests/test_canary_containment.py` — canary flow and budget stop coverage
+
+**Key Decisions**:
+| Decision | Choice | Rationale |
+|---|---|---|
+| Canary reporting | stage list to compact report | Makes spread-path evidence inspectable without overcomplicating runtime state |
+| Budget control | deterministic threshold gate | Keeps amplification containment replay-safe and CI-friendly |
+| Summary impact | additive nested fields | Preserves existing operator truth surfaces while exposing new containment signals |
+| Scope control | sealed reporting only in v1 | Live hook wiring remains deferred to the next phase |
