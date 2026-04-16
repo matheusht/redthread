@@ -24,6 +24,7 @@
 | 8B | Attack Simulation Lane | ✅ Complete | 2026-04-16 | sealed tool-hijack fixtures, simulated registry, confused deputy scenarios, resource amplification scenarios |
 | 8C | Deterministic Control Plane | ✅ Complete | 2026-04-16 | authorization engine, permission inheritance, least-agency presets, policy tests |
 | 8D | Canary & Runtime Containment | ✅ Complete | 2026-04-16 | canary helpers, propagation reports, runtime budget evaluation, summary extensions |
+| 8E | Replay, Promotion, and Controlled Live Adapters | ✅ Complete | 2026-04-16 | replay bundle, promotion gate, controlled live adapter wrapper, promotion tests |
 
 ## Current Direction
 
@@ -443,3 +444,22 @@ TERMINAL EVALUATION
 | Budget control | deterministic threshold gate | Keeps amplification containment replay-safe and CI-friendly |
 | Summary impact | additive nested fields | Preserves existing operator truth surfaces while exposing new containment signals |
 | Scope control | sealed reporting only in v1 | Live hook wiring remains deferred to the next phase |
+
+### Phase 8E: Replay, Promotion, and Controlled Live Adapters ✅
+**Objective**: Add replay-bundle gating and a fail-closed live adapter wrapper so agentic-security controls must pass sealed promotion checks before any live traffic path can open.
+
+**Status**: Completed 2026-04-16
+
+**Deliverables**:
+- `src/redthread/evaluation/replay_corpus.py` — replay trace and bundle models
+- `src/redthread/evaluation/promotion_gate.py` — deterministic replay promotion evaluator
+- `src/redthread/pyrit_adapters/controlled.py` — fail-closed controlled live adapter wrapper
+- `tests/test_agentic_replay_promotion.py` — replay pass/fail and live-adapter lock coverage
+
+**Key Decisions**:
+| Decision | Choice | Rationale |
+|---|---|---|
+| Promotion evidence | sealed replay bundle | Keeps live-path approval tied to reproducible evidence |
+| Live adapter posture | locked unless explicit approval present | Enforces fail-closed behavior by default |
+| Gate semantics | compare actual controls to expected controls | Lets promotion prove containment, not just log it |
+| Integration scope | wrapper added without changing existing target factory | Preserves backward compatibility while creating a safer path forward |
