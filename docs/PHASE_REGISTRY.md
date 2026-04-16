@@ -22,6 +22,7 @@
 | 7B | Bounded Defense Prompt Autoresearch | ✅ Complete | 2026-04-08 | `research phase6`, sealed defense prompt mutation gate, reused Phase 3 promotion flow |
 | 8A | Agentic Security Schema | ✅ Complete | 2026-04-16 | threat taxonomy, provenance model, action envelope, amplification metrics, runtime summary extension |
 | 8B | Attack Simulation Lane | ✅ Complete | 2026-04-16 | sealed tool-hijack fixtures, simulated registry, confused deputy scenarios, resource amplification scenarios |
+| 8C | Deterministic Control Plane | ✅ Complete | 2026-04-16 | authorization engine, permission inheritance, least-agency presets, policy tests |
 
 ## Current Direction
 
@@ -400,3 +401,24 @@ TERMINAL EVALUATION
 | Scenario granularity | one file per threat family | Keeps future expansion under the repo file-size limit |
 | Registry behavior | deterministic dict-backed fixture registry | Makes attack traces reproducible and CI-safe |
 | Runtime integration | scenario lane stays additive | Existing supervisor and attack algorithms remain unchanged |
+
+### Phase 8C: Deterministic Control Plane ✅
+**Objective**: Add rigid pre-action authorization and permission inheritance checks so RedThread can prove whether risky actions would be allowed, denied, or escalated before execution.
+
+**Status**: Completed 2026-04-16
+
+**Deliverables**:
+- `src/redthread/tools/authorization/models.py` — deterministic policy schema
+- `src/redthread/tools/authorization/engine.py` — authorization engine returning structured decisions
+- `src/redthread/tools/authorization/presets.py` — least-agency policy presets
+- `src/redthread/tools/authorization/__init__.py` — additive package exports
+- `src/redthread/orchestration/permission_inheritance.py` — lineage guard for high-risk capabilities
+- `tests/test_authorization_engine.py` — allow/deny/escalate coverage across sealed scenarios
+
+**Key Decisions**:
+| Decision | Choice | Rationale |
+|---|---|---|
+| Policy path | non-LLM and deterministic | Keeps execution controls outside prompt semantics |
+| Inheritance rule | fail closed on derived untrusted lineage for high-risk capabilities | Directly addresses confused-deputy and tool-poisoning chains |
+| Preset style | least-agency role bundles | Gives operators a reusable starting point for policy modeling |
+| Runtime scope | simulation and replay first | Avoids over-claiming live enforcement before later phases wire real interception |
