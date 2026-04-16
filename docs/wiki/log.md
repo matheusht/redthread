@@ -129,3 +129,9 @@
 - updated `src/redthread/evaluation/results.py` and `src/redthread/evaluation/pipeline.py` so golden evaluation now aggregates evidence counts and flags mixed-mode / degraded fallback runs
 - fixed `redthread test golden` to pass `objective` into `pipeline.evaluate_trace()` and to surface evidence counts, degraded warnings, and per-trace evidence mode in the CLI output
 - added focused coverage in `tests/test_evaluation_truth.py`, `tests/test_evaluation_boundaries.py`, and new `tests/test_evaluation_cli.py`; refreshed evaluation wiki pages with the shipped operator-truth slice
+
+## [2026-04-16] research-pass | ingested agentic confused deputy and OAP research
+- added concept page for `concepts/confused-deputy-llm.md` (Reddit)
+- added concept page for `concepts/pre-action-authorization.md` (Arxiv)
+- added entity page for `entities/open-agent-passport.md` (Arxiv)
+- updated wiki index to include new research synthesis

@@ -22,13 +22,17 @@ This is the primary content map for the RedThread wiki.
 - [entities/mempalace.md](entities/mempalace.md) — Memory and retrieval layer used by the repo.
 - [entities/judge-agent.md](entities/judge-agent.md) — Evaluation role responsible for scoring attack traces.
 - [entities/defense-architect.md](entities/defense-architect.md) — Grounded defensive generation role in the self-healing loop.
+- [entities/open-agent-passport.md](entities/open-agent-passport.md) — Open specification for deterministic tool call authorization.
 - [entities/asi.md](entities/asi.md) — Composite Agent Stability Index and what it does versus what it does not prove.
+
 - [entities/prometheus-2.md](entities/prometheus-2.md) — Evaluation model referenced in the grounded judging stack.
 - [entities/langgraph-supervisor.md](entities/langgraph-supervisor.md) — Coordinator role for macro-workflow orchestration.
 
 ## Concepts
 
 - [concepts/README.md](concepts/README.md) — Index rules and scope for concept pages.
+- [concepts/confused-deputy-llm.md](concepts/confused-deputy-llm.md) — Privilege escalation in multi-agent systems via indirect prompt injection.
+- [concepts/pre-action-authorization.md](concepts/pre-action-authorization.md) — Deterministic, policy-based enforcement before LLM tool call execution.
 
 ## Research
 
