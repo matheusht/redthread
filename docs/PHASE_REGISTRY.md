@@ -20,6 +20,7 @@
 | 6A | Crescendo Algorithm | ✅ Complete | 2026-04-04 | `crescendo.py`, client-side history, escalation loop with backtracking |
 | 7A | Safe Patch Autoresearch (Offense) | ✅ Complete | 2026-04-07 | `research phase5`, bounded offense source mutation proposals, explicit research-plane acceptance gate |
 | 7B | Bounded Defense Prompt Autoresearch | ✅ Complete | 2026-04-08 | `research phase6`, sealed defense prompt mutation gate, reused Phase 3 promotion flow |
+| 8A | Agentic Security Schema | ✅ Complete | 2026-04-16 | threat taxonomy, provenance model, action envelope, amplification metrics, runtime summary extension |
 
 ## Current Direction
 
@@ -43,6 +44,7 @@ The next finite steps are now smaller and more operational:
 2. keep operator inspection UX strong for validation and promotion evidence
 3. align historical docs and runtime behavior as the hardened self-healing path evolves
 4. only after sustained validation, consider widening the mutable defense surface beyond prompt/template assets
+5. build the additive Phase 8 agentic-security lane on top of the existing attack, evaluation, defense, and telemetry stack
 
 ---
 
@@ -355,3 +357,23 @@ TERMINAL EVALUATION
 | Validation gate | deterministic pre-apply checks | Rejected candidates must fail closed before entering Phase 3 |
 | Proposal flow | reuse existing Phase 3 / promotion flow | Avoids creating a second promotion plane |
 | Scope control | prompt-contract only in v1 | Conservative first step before richer replay fixtures |
+
+### Phase 8A: Agentic Security Schema ✅
+**Objective**: Add the shared data contracts needed for tool hijacking, confused deputy, deterministic containment, and resource amplification work without changing the existing attack and defense engines.
+
+**Status**: Completed 2026-04-16
+
+**Deliverables**:
+- `src/redthread/orchestration/models/agentic_security.py` — additive schema for agentic-security runtime concepts
+- `src/redthread/orchestration/models/__init__.py` — focused exports for the new orchestration-local models
+- `docs/AGENTIC_SECURITY_THREAT_MODEL.md` — reference vocabulary for the new threat families and trust boundaries
+- `tests/test_agentic_security_models.py` — serialization and runtime-summary coverage for the new schema
+- `src/redthread/orchestration/runtime_summary.py` — additive agentic-security summary shape for future runtime reporting
+
+**Key Decisions**:
+| Decision | Choice | Rationale |
+|---|---|---|
+| Model placement | orchestration-local models module | Avoids bloating `src/redthread/models.py`, which already carries core campaign types |
+| Runtime impact | additive and optional only | Existing campaign flow remains unchanged until later Phase 8 work plugs into the new schema |
+| Scope control | schema only, no live interception yet | Keeps 8A low-risk and replay-first |
+| Reporting shape | nested `agentic_security` summary block | Extends operator truth surfaces without breaking existing top-level fields |

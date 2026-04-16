@@ -5,6 +5,16 @@ from typing import Any
 RuntimeSummary = dict[str, Any]
 
 
+def _build_agentic_security_summary(state: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "action_total": state.get("agentic_action_total", 0),
+        "authorization_decision_counts": state.get("authorization_decision_counts", {}),
+        "canary_event_total": state.get("canary_event_total", 0),
+        "amplification_metrics": state.get("amplification_metrics", {}),
+        "untrusted_lineage_action_total": state.get("untrusted_lineage_action_total", 0),
+    }
+
+
 def build_runtime_summary(state: dict[str, Any]) -> RuntimeSummary:
     """Build a compact operator-facing runtime summary from supervisor state."""
     attack_worker_total = state.get("attack_worker_total", 0)
@@ -36,4 +46,5 @@ def build_runtime_summary(state: dict[str, Any]) -> RuntimeSummary:
         "degraded_runtime": degraded_runtime,
         "error_count": error_count,
         "error_samples": state.get("errors", [])[:3],
+        "agentic_security": _build_agentic_security_summary(state),
     }
