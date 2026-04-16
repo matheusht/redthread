@@ -195,6 +195,7 @@ class RedThreadEngine:
                 "degraded_runtime": campaign.metadata.get("degraded_runtime", False),
                 "error_count": campaign.metadata.get("error_count", 0),
                 "runtime_summary": runtime_summary,
+                "agentic_security_report": campaign.metadata.get("agentic_security_report", {}),
                 "num_runs": len(campaign.results),
                 "attack_success_rate": campaign.attack_success_rate,
                 "average_score": campaign.average_score,

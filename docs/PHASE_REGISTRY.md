@@ -28,12 +28,13 @@
 
 ## Current Direction
 
-RedThread is now in the **Phase 7 autoresearch era**:
+RedThread is now in the **Phase 7 + Phase 8 era**:
 - `phase5` is the bounded offense lane
 - `phase6` is the bounded defense-prompt lane
-- both lanes still require the existing Phase 3 accept/reject boundary and explicit promotion discipline
+- `phase8` is the additive agentic-security lane
+- all three still keep explicit promotion discipline and do not replace the core orchestration stack
 
-This means the project direction after GS-MCTS is no longer “add more jailbreak algorithms first.” The current direction is **safe self-improvement with bounded mutation surfaces**.
+This means the project direction after GS-MCTS is no longer “add more jailbreak algorithms first.” The current direction is **safe self-improvement plus deterministic agentic-security validation**.
 
 ## Next Bounded Steps
 
@@ -44,11 +45,11 @@ The self-healing hardening tranche that followed 7A and 7B is now largely implem
 4. replay/reporting/utility-gate surfaces are now protected from Phase 6 mutation
 
 The next finite steps are now smaller and more operational:
-1. expand replay suites further with curated runtime fixture artifacts as needed
-2. keep operator inspection UX strong for validation and promotion evidence
-3. align historical docs and runtime behavior as the hardened self-healing path evolves
-4. only after sustained validation, consider widening the mutable defense surface beyond prompt/template assets
-5. build the additive Phase 8 agentic-security lane on top of the existing attack, evaluation, defense, and telemetry stack
+1. keep Phase 8 runtime wiring honest as more live interception paths are added
+2. expand replay suites further with curated runtime fixture artifacts as needed
+3. keep operator inspection UX strong for validation and promotion evidence
+4. align historical docs and runtime behavior as the hardened self-healing path evolves
+5. only after sustained validation, consider widening live policy interception beyond the current controlled wrappers
 
 ---
 

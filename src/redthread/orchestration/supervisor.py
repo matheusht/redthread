@@ -28,6 +28,9 @@ from typing_extensions import TypedDict
 
 from redthread.config.settings import RedThreadSettings
 from redthread.models import CampaignConfig, CampaignResult
+from redthread.orchestration.agentic_security_runtime import (
+    run_agentic_security_review,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -60,6 +63,16 @@ class SupervisorState(TypedDict):
     defense_worker_total: int
     defense_worker_failures: int
     defense_deployments: int
+
+    # Agentic-security runtime review
+    agentic_security_report: dict[str, Any]
+    agentic_action_total: int
+    authorization_decision_counts: dict[str, int]
+    canary_event_total: int
+    canary_report: dict[str, Any]
+    amplification_metrics: dict[str, Any]
+    budget_stop_triggered: bool
+    untrusted_lineage_action_total: int
 
     # Final
     campaign_result_dict: dict[str, Any] | None
@@ -171,6 +184,22 @@ async def judge_all_results_node(state: SupervisorState) -> dict[str, Any]:
     }
 
 
+async def analyze_agentic_security_node(state: SupervisorState) -> dict[str, Any]:
+    """Run additive agentic-security runtime review when campaign surface looks relevant."""
+    config = CampaignConfig.model_validate(state["config_dict"])
+    report = run_agentic_security_review(config)
+    return {
+        "agentic_security_report": report,
+        "agentic_action_total": report.get("action_total", 0),
+        "authorization_decision_counts": report.get("authorization_decision_counts", {}),
+        "canary_event_total": report.get("canary_event_total", 0),
+        "canary_report": report.get("canary_report", {}),
+        "amplification_metrics": report.get("amplification_metrics", {}),
+        "budget_stop_triggered": report.get("budget_stop_triggered", False),
+        "untrusted_lineage_action_total": report.get("untrusted_lineage_action_total", 0),
+    }
+
+
 def route_to_defense(state: SupervisorState) -> Literal["defense_synthesis", "finalize"]:
     """Conditional routing — skip defense synthesis if no jailbreaks confirmed."""
     jailbreaks = [
@@ -252,6 +281,7 @@ async def finalize_node(state: SupervisorState) -> dict[str, Any]:
         ended_at=datetime.now(timezone.utc),
         metadata={
             "runtime_summary": runtime_summary,
+            "agentic_security_report": state.get("agentic_security_report", {}),
             "degraded_runtime": runtime_summary["degraded_runtime"],
             "error_count": runtime_summary["error_count"],
         },
@@ -290,6 +320,7 @@ def build_supervisor_graph() -> StateGraph:
     graph.add_node("attack_worker", attack_worker_node)
     graph.add_node("collect_results", collect_results_node)
     graph.add_node("judge_all", judge_all_results_node)
+    graph.add_node("analyze_agentic_security", analyze_agentic_security_node)
     graph.add_node("defense_synthesis", defense_synthesis_node)
     graph.add_node("finalize", finalize_node)
 
@@ -304,10 +335,11 @@ def build_supervisor_graph() -> StateGraph:
     )
     graph.add_edge("attack_worker", "collect_results")
     graph.add_edge("collect_results", "judge_all")
+    graph.add_edge("judge_all", "analyze_agentic_security")
 
-    # Conditional routing after judge
+    # Conditional routing after additive runtime review
     graph.add_conditional_edges(
-        "judge_all",
+        "analyze_agentic_security",
         route_to_defense,
         {
             "defense_synthesis": "defense_synthesis",
@@ -356,6 +388,14 @@ class RedThreadSupervisor:
             "defense_worker_total": 0,
             "defense_worker_failures": 0,
             "defense_deployments": 0,
+            "agentic_security_report": {},
+            "agentic_action_total": 0,
+            "authorization_decision_counts": {},
+            "canary_event_total": 0,
+            "canary_report": {},
+            "amplification_metrics": {},
+            "budget_stop_triggered": False,
+            "untrusted_lineage_action_total": 0,
             "campaign_result_dict": None,
             "errors": [],
         }

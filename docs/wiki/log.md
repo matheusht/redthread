@@ -1,5 +1,10 @@
 # Wiki Log
 
+## [2026-04-16] runtime-pass | wired phase 8 into campaign runtime and documented it
+- added `docs/AGENTIC_SECURITY_RUNTIME.md` as the source doc for the new additive runtime hook
+- added `docs/wiki/systems/agentic-security-runtime.md` to explain where the sealed runtime review runs and what evidence it produces
+- updated `docs/wiki/index.md` so the new runtime page is discoverable
+
 ## [2026-04-16] research-pass | added agentic security shift synthesis
 - added `docs/wiki/research/agentic-security-shift-2025-2026.md` covering MCP tool hijacking, confused deputy chains, token exhaustion, and deterministic defenses
 - updated `docs/wiki/index.md` so the new research page is discoverable

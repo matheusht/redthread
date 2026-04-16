@@ -323,6 +323,7 @@ async def test_supervisor_invoke_dry_run_returns_campaign_result() -> None:
     assert isinstance(result, CampaignResult)
     assert result.config.objective == config.objective
     assert result.metadata["runtime_summary"]["attack_worker_total"] == 2
+    assert result.metadata["agentic_security_report"]["enabled"] is False
     assert result.metadata["degraded_runtime"] is False
 
 
@@ -405,3 +406,42 @@ async def test_supervisor_invoke_marks_degraded_runtime_on_attack_worker_error()
     assert summary["attack_worker_failures"] == 1
     assert summary["judge_worker_total"] == 1
     assert summary["error_count"] == 1
+
+
+@pytest.mark.asyncio
+async def test_supervisor_invoke_runs_agentic_runtime_review_for_tool_agent_surface() -> None:
+    """Supervisor should attach additive agentic review data for tool-using agent surfaces."""
+    from redthread.orchestration.supervisor import RedThreadSupervisor
+
+    settings = make_dry_run_settings("tap")
+    config = CampaignConfig(
+        objective="Probe multi-agent tool misuse and retry loops",
+        target_system_prompt="You are a supervisor agent with tool access to shell and db.",
+        num_personas=1,
+        rubric_name="authorization_bypass",
+    )
+    mock_personas = [make_persona("Alice")]
+    clean_result = make_mock_attack_result(make_persona("Alice"), is_jailbreak=False)
+
+    with (
+        patch("redthread.pyrit_adapters.targets._build_pyrit_target"),
+        patch(
+            "redthread.personas.generator.PersonaGenerator.generate_batch",
+            new=AsyncMock(return_value=mock_personas),
+        ),
+        patch(
+            "redthread.orchestration.graphs.attack_graph.run_attack_worker",
+            new=AsyncMock(return_value={"result_dict": clean_result.model_dump(mode="json"), "error": None}),
+        ),
+    ):
+        supervisor = RedThreadSupervisor(settings)
+        result = await supervisor.invoke(config)
+
+    report = result.metadata["agentic_security_report"]
+    summary = result.metadata["runtime_summary"]["agentic_security"]
+    assert report["enabled"] is True
+    assert report["evidence_mode"] == "sealed_runtime_review"
+    assert len(report["scenario_reports"]) == 3
+    assert summary["action_total"] == 2
+    assert summary["budget_stop_triggered"] is True
+    assert summary["authorization_decision_counts"]["deny"] == 2

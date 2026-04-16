@@ -10,6 +10,7 @@ This is the primary content map for the RedThread wiki.
 - [systems/promotion-and-revalidation.md](systems/promotion-and-revalidation.md) — Promotion discipline, revalidation evidence, and why mutation execution is kept separate from acceptance.
 - [systems/defense-synthesis-and-validation.md](systems/defense-synthesis-and-validation.md) — Self-healing path from confirmed jailbreak to validated defense proposal.
 - [systems/orchestration-and-engine-runtime.md](systems/orchestration-and-engine-runtime.md) — Engine facade, LangGraph supervisor flow, runtime modes, and degraded-runtime truth.
+- [systems/agentic-security-runtime.md](systems/agentic-security-runtime.md) — How Phase 8 agentic-security review now plugs into the normal campaign runtime and operator artifacts.
 - [systems/subsystem-focus-map.md](systems/subsystem-focus-map.md) — Current subsystem-by-subsystem focus map for what to harden now and what to delay.
 
 ## Decisions
