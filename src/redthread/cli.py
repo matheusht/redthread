@@ -21,6 +21,9 @@ from rich.panel import Panel
 from rich.table import Table
 
 from redthread import __version__
+from redthread.cli_doctor import run_doctor
+from redthread.cli_home import render_home_screen
+from redthread.cli_init import run_init
 from redthread.config.settings import RedThreadSettings
 from redthread.engine import RedThreadEngine
 from redthread.models import CampaignConfig
@@ -45,11 +48,14 @@ def _setup_logging(verbose: bool) -> None:
     )
 
 
-@click.group()
+@click.group(invoke_without_command=True)
+@click.pass_context
 @click.version_option(__version__, "-V", "--version")
-def main() -> None:
+def main(ctx: click.Context) -> None:
     """RedThread — Autonomous AI red-teaming engine."""
-    pass
+    if ctx.invoked_subcommand is None:
+        settings = RedThreadSettings(_env_file=".env")
+        render_home_screen(console, settings, ".env")
 
 
 @main.command()
@@ -311,6 +317,22 @@ def run(
 def version() -> None:
     """Print version information."""
     console.print(f"RedThread v{__version__}")
+
+
+@main.command()
+@click.option("--env-file", type=click.Path(exists=False), default=".env")
+@click.option("--force", is_flag=True, default=False, help="Overwrite env file from .env.example")
+def init(env_file: str, force: bool) -> None:
+    """Bootstrap local RedThread files for first use."""
+    sys.exit(run_init(console, env_file, force=force))
+
+
+@main.command()
+@click.option("--env-file", type=click.Path(exists=False), default=".env")
+def doctor(env_file: str) -> None:
+    """Check local setup for the bare `redthread` command path."""
+    settings = RedThreadSettings(_env_file=env_file)
+    sys.exit(run_doctor(console, settings, env_file))
 
 
 @main.group()

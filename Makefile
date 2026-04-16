@@ -1,4 +1,4 @@
-.PHONY: lint typecheck test test-golden test-golden-offline ci ci-pr ci-full test-then-ci dev install wiki-lint
+.PHONY: lint typecheck test test-golden test-golden-offline ci ci-pr ci-full test-then-ci dev install install-tool wiki-lint
 
 # ── Help ─────────────────────────────────────────────────────────────────────
 
@@ -55,6 +55,9 @@ dev:  ## Install with dev dependencies (editable mode)
 
 install:  ## Install in editable mode (no dev extras)
 	pip install -e .
+
+install-tool:  ## Install global `redthread` command with uv and run bootstrap flow
+	bash scripts/install_redthread.sh
 
 # ── Dashboard & Monitoring ────────────────────────────────────────────────────
 

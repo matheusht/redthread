@@ -82,6 +82,17 @@ Autonomous background monitoring that polls model health every 5 minutes and aut
     # Set your REDTHREAD_OPENAI_API_KEY
     ```
 
+### Install the `redthread` command
+```bash
+make install-tool
+
+# or manual path
+uv tool install -e .
+redthread init
+redthread doctor
+redthread
+```
+
 ### Run a Campaign
 ```bash
 redthread run \
