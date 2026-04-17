@@ -131,6 +131,10 @@ It is **not** the same as:
 A tiny opt-in live-proof lane now exists for one controlled local pre-action interception path via `run_live_authorization_smoke()`.
 It proves the callback is not executed when authorization denies or escalates and only runs when the action is allowed.
 
+That proof lane now also connects to a richer adapter boundary in `src/redthread/pyrit_adapters/controlled.py`.
+`ControlledLiveAdapter.send(..., action=...)` can intercept an `ActionEnvelope` before the wrapped live target call runs.
+If authorization is not `allow`, the target send is blocked before execution.
+
 This is still not the same as broad production enforcement.
 It is a narrow proof-of-control hook.
 

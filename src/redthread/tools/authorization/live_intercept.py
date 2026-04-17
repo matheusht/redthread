@@ -6,12 +6,21 @@ import os
 from collections.abc import Callable
 from typing import TypeVar
 
-from redthread.orchestration.models import ActionEnvelope
+from redthread.orchestration.models import ActionEnvelope, AuthorizationDecision
 from redthread.tools.authorization.engine import AuthorizationEngine
 from redthread.tools.authorization.presets import default_least_agency_policies
 
 T = TypeVar("T")
 LIVE_SMOKE_ENV = "REDTHREAD_RUN_LIVE_AUTH_SMOKE"
+
+
+def authorize_live_action(
+    action: ActionEnvelope,
+    *,
+    policies: list | None = None,
+) -> AuthorizationDecision:
+    engine = AuthorizationEngine(policies or default_least_agency_policies())
+    return engine.authorize(action)
 
 
 def run_live_authorization_smoke(
@@ -29,8 +38,7 @@ def run_live_authorization_smoke(
             "result": None,
         }
 
-    engine = AuthorizationEngine(policies or default_least_agency_policies())
-    decision = engine.authorize(action)
+    decision = authorize_live_action(action, policies=policies)
     if decision.decision.value != "allow":
         return {
             "executed": False,

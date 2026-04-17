@@ -2,7 +2,8 @@
 
 ## [2026-04-17] phase8-live-proof-pass | added a tiny opt-in live interception lane
 - added `src/redthread/tools/authorization/live_intercept.py` with `run_live_authorization_smoke()` to prove one real local pre-action authorization boundary
-- added `tests/test_live_authorization_smoke.py` so opt-in skip, deny-no-execute, and allow-executes behavior are pinned
+- connected the same decision path to `src/redthread/pyrit_adapters/controlled.py` so `ControlledLiveAdapter.send(..., action=...)` can block a wrapped live target send before execution
+- added focused tests so opt-in skip, deny-no-execute, allow-executes, and adapter-boundary interception behavior are pinned
 - refreshed `docs/AGENTIC_SECURITY_RUNTIME.md` and `docs/wiki/systems/agentic-security-runtime.md` so the new proof lane is described honestly as narrow proof-of-control, not broad production enforcement
 
 ## [2026-04-17] phase8-trust-core-pass | documented capability taxonomy and trust-core hardening
