@@ -37,37 +37,17 @@ class AuthorizationEngine:
                 matched_rules=["permission_inheritance"],
             )
 
-        for policy in self.policies:
-            if action.actor_role not in policy.actor_roles:
-                continue
-            if policy.allowed_capabilities and action.capability not in policy.allowed_capabilities:
-                continue
-            if policy.denied_capabilities and action.capability in policy.denied_capabilities:
-                trust = action.provenance.trust_level
-                if policy.required_trust_levels and trust not in policy.required_trust_levels:
-                    return AuthorizationDecision(
-                        decision=policy.decision,
-                        policy_id=policy.policy_id,
-                        reason=policy.reason,
-                        matched_rules=[policy.policy_id],
-                        required_escalation=policy.require_human_approval,
-                    )
-            elif policy.allowed_capabilities:
-                if self._exceeds_sensitivity(action.target_sensitivity, policy.max_target_sensitivity):
-                    return AuthorizationDecision(
-                        decision=AuthorizationDecisionType.ESCALATE,
-                        policy_id=policy.policy_id,
-                        reason="target sensitivity exceeds preset allowance",
-                        matched_rules=[policy.policy_id],
-                        required_escalation=True,
-                    )
-                return AuthorizationDecision(
-                    decision=policy.decision,
-                    policy_id=policy.policy_id,
-                    reason=policy.reason,
-                    matched_rules=[policy.policy_id],
-                    required_escalation=policy.require_human_approval,
-                )
+        decision = self._evaluate_deny_policies(action)
+        if decision is not None:
+            return decision
+
+        decision = self._evaluate_escalate_policies(action)
+        if decision is not None:
+            return decision
+
+        decision = self._evaluate_allow_policies(action)
+        if decision is not None:
+            return decision
 
         if action.provenance.trust_level in {TrustLevel.UNTRUSTED, TrustLevel.DERIVED}:
             return AuthorizationDecision(
@@ -92,6 +72,78 @@ class AuthorizationEngine:
             reason="trusted low-risk read action with no conflicting policy",
             matched_rules=["default-trusted-allow"],
         )
+
+    def _evaluate_deny_policies(self, action: ActionEnvelope) -> AuthorizationDecision | None:
+        for policy in self.policies:
+            if policy.decision != AuthorizationDecisionType.DENY:
+                continue
+            if not self._matches_denied_policy(action, policy):
+                continue
+            return AuthorizationDecision(
+                decision=policy.decision,
+                policy_id=policy.policy_id,
+                reason=policy.reason,
+                matched_rules=[policy.policy_id],
+                required_escalation=policy.require_human_approval,
+            )
+        return None
+
+    def _evaluate_escalate_policies(self, action: ActionEnvelope) -> AuthorizationDecision | None:
+        for policy in self.policies:
+            if policy.decision != AuthorizationDecisionType.ESCALATE:
+                continue
+            if not self._matches_allowed_policy(action, policy):
+                continue
+            if self._exceeds_sensitivity(action.target_sensitivity, policy.max_target_sensitivity):
+                return AuthorizationDecision(
+                    decision=AuthorizationDecisionType.ESCALATE,
+                    policy_id=policy.policy_id,
+                    reason="target sensitivity exceeds preset allowance",
+                    matched_rules=[policy.policy_id],
+                    required_escalation=True,
+                )
+            return AuthorizationDecision(
+                decision=policy.decision,
+                policy_id=policy.policy_id,
+                reason=policy.reason,
+                matched_rules=[policy.policy_id],
+                required_escalation=policy.require_human_approval,
+            )
+        return None
+
+    def _evaluate_allow_policies(self, action: ActionEnvelope) -> AuthorizationDecision | None:
+        for policy in self.policies:
+            if policy.decision != AuthorizationDecisionType.ALLOW:
+                continue
+            if not self._matches_allowed_policy(action, policy):
+                continue
+            if self._exceeds_sensitivity(action.target_sensitivity, policy.max_target_sensitivity):
+                return AuthorizationDecision(
+                    decision=AuthorizationDecisionType.ESCALATE,
+                    policy_id=policy.policy_id,
+                    reason="target sensitivity exceeds preset allowance",
+                    matched_rules=[policy.policy_id],
+                    required_escalation=True,
+                )
+            return AuthorizationDecision(
+                decision=policy.decision,
+                policy_id=policy.policy_id,
+                reason=policy.reason,
+                matched_rules=[policy.policy_id],
+                required_escalation=policy.require_human_approval,
+            )
+        return None
+
+    def _matches_denied_policy(self, action: ActionEnvelope, policy: AuthorizationPolicy) -> bool:
+        if action.actor_role not in policy.actor_roles:
+            return False
+        if action.capability not in policy.denied_capabilities:
+            return False
+        trust = action.provenance.trust_level
+        return not policy.required_trust_levels or trust not in policy.required_trust_levels
+
+    def _matches_allowed_policy(self, action: ActionEnvelope, policy: AuthorizationPolicy) -> bool:
+        return action.actor_role in policy.actor_roles and action.capability in policy.allowed_capabilities
 
     def _exceeds_sensitivity(self, actual: str, maximum: str) -> bool:
         return SENSITIVITY_ORDER.get(actual, 2) > SENSITIVITY_ORDER.get(maximum, 2)
