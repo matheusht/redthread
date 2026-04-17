@@ -7,7 +7,11 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
+from redthread.orchestration.models import ActionEnvelope
+from redthread.tools.authorization import authorize_live_action
 from redthread.tools.base import RedThreadTool, ToolContext, ToolResult
+
+ATTACK_ACTION_METADATA_KEY = "authorization_action"
 
 
 class AttackInput(BaseModel):
@@ -22,6 +26,13 @@ class AttackInput(BaseModel):
         default="",
         description="Persona ID for logging and traceability.",
     )
+
+
+def _get_authorization_action(ctx: ToolContext) -> ActionEnvelope | None:
+    raw_action = ctx.metadata.get(ATTACK_ACTION_METADATA_KEY)
+    if raw_action is None:
+        return None
+    return ActionEnvelope.model_validate(raw_action)
 
 
 class AttackTool(RedThreadTool[AttackInput]):
@@ -50,18 +61,32 @@ class AttackTool(RedThreadTool[AttackInput]):
                 persona_id=data.persona_id,
             )
 
-        target = build_target(ctx.settings)
         conversation_id = data.conversation_id or f"attack-tool-{ctx.campaign_id}"
+        action = _get_authorization_action(ctx)
+        decision = authorize_live_action(action) if action is not None else None
+        if decision is not None and decision.decision.value != "allow":
+            return ToolResult.err(
+                error=f"Authorization blocked attack tool: {decision.decision.value}",
+                conversation_id=conversation_id,
+                authorization_decision=decision.model_dump(mode="json"),
+            )
+
+        target = build_target(ctx.settings)
 
         try:
             response = await target.send(
                 prompt=data.prompt,
                 conversation_id=conversation_id,
             )
+            meta = {
+                "conversation_id": conversation_id,
+                "persona_id": data.persona_id,
+            }
+            if decision is not None:
+                meta["authorization_decision"] = decision.model_dump(mode="json")
             return ToolResult.ok(
                 data={"response": response},
-                conversation_id=conversation_id,
-                persona_id=data.persona_id,
+                **meta,
             )
         except Exception as exc:
             return ToolResult.err(

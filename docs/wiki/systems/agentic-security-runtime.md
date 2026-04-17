@@ -119,8 +119,9 @@ It is a controlled local interception hook that proves one real pre-action bound
 - deny or escalate means the callback does not run
 - allow means the callback runs
 
-That same pattern now also reaches `ControlledLiveAdapter`.
+That same pattern now also reaches `ControlledLiveAdapter` and `AttackTool`.
 When `ControlledLiveAdapter.send(..., action=...)` receives an `ActionEnvelope`, it can block the wrapped live target call before execution.
+When `AttackTool` receives an `ActionEnvelope` in tool context metadata, it can block the live target send before execution.
 
 This is useful because it proves the deterministic authorization decision can sit on the execution boundary itself.
 
