@@ -112,10 +112,17 @@ That is not the same as:
 - live tool-execution containment proof
 - universal production safety proof
 
-## Main open gap
+## Live-proof lane
 
-The biggest remaining gap is a tiny opt-in live-proof lane.
-That lane should prove at least one real pre-action interception path end to end without pretending the whole runtime is live-enforced.
+A tiny opt-in live-proof lane now exists through `run_live_authorization_smoke()`.
+It is a controlled local interception hook that proves one real pre-action boundary:
+- deny or escalate means the callback does not run
+- allow means the callback runs
+
+This is useful because it proves the deterministic authorization decision can sit on the execution boundary itself.
+
+It still does not prove broad production enforcement.
+The next gap is connecting the same pattern to richer adapters without overstating coverage.
 
 ## Why this is a good fit for RedThread
 

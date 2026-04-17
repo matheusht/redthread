@@ -128,7 +128,11 @@ It is **not** the same as:
 - full enterprise runtime enforcement
 - universal production safety proof
 
-The next honest gap to close is a tiny opt-in live-proof lane for one real pre-action interception path.
+A tiny opt-in live-proof lane now exists for one controlled local pre-action interception path via `run_live_authorization_smoke()`.
+It proves the callback is not executed when authorization denies or escalates and only runs when the action is allowed.
+
+This is still not the same as broad production enforcement.
+It is a narrow proof-of-control hook.
 
 ---
 
