@@ -4,7 +4,8 @@
 - added `src/redthread/tools/authorization/live_intercept.py` with `run_live_authorization_smoke()` to prove one real local pre-action authorization boundary
 - connected the same decision path to `src/redthread/pyrit_adapters/controlled.py` so `ControlledLiveAdapter.send(..., action=...)` can block a wrapped live target send before execution
 - extended the same pattern to `src/redthread/tools/attack_tool.py` so an optional `ActionEnvelope` in tool context metadata can block the live target send before execution
-- added focused tests so opt-in skip, deny-no-execute, allow-executes, adapter-boundary interception, and attack-tool interception behavior are pinned
+- extended the same pattern to `src/redthread/tools/sandbox_tool.py` so an optional `ActionEnvelope` in tool context metadata can block the replay send before execution
+- added focused tests so opt-in skip, deny-no-execute, allow-executes, adapter-boundary interception, attack-tool interception, and sandbox-tool interception behavior are pinned
 - refreshed `docs/AGENTIC_SECURITY_RUNTIME.md` and `docs/wiki/systems/agentic-security-runtime.md` so the new proof lane is described honestly as narrow proof-of-control, not broad production enforcement
 
 ## [2026-04-17] phase8-trust-core-pass | documented capability taxonomy and trust-core hardening

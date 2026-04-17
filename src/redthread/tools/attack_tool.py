@@ -7,11 +7,14 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
-from redthread.orchestration.models import ActionEnvelope
 from redthread.tools.authorization import authorize_live_action
+from redthread.tools.authorization.tool_context import (
+    AUTHORIZATION_ACTION_METADATA_KEY,
+    get_authorization_action,
+)
 from redthread.tools.base import RedThreadTool, ToolContext, ToolResult
 
-ATTACK_ACTION_METADATA_KEY = "authorization_action"
+ATTACK_ACTION_METADATA_KEY = AUTHORIZATION_ACTION_METADATA_KEY
 
 
 class AttackInput(BaseModel):
@@ -26,13 +29,6 @@ class AttackInput(BaseModel):
         default="",
         description="Persona ID for logging and traceability.",
     )
-
-
-def _get_authorization_action(ctx: ToolContext) -> ActionEnvelope | None:
-    raw_action = ctx.metadata.get(ATTACK_ACTION_METADATA_KEY)
-    if raw_action is None:
-        return None
-    return ActionEnvelope.model_validate(raw_action)
 
 
 class AttackTool(RedThreadTool[AttackInput]):
@@ -62,7 +58,7 @@ class AttackTool(RedThreadTool[AttackInput]):
             )
 
         conversation_id = data.conversation_id or f"attack-tool-{ctx.campaign_id}"
-        action = _get_authorization_action(ctx)
+        action = get_authorization_action(ctx)
         decision = authorize_live_action(action) if action is not None else None
         if decision is not None and decision.decision.value != "allow":
             return ToolResult.err(

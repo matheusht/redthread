@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
+from redthread.tools.authorization import authorize_live_action
+from redthread.tools.authorization.tool_context import get_authorization_action
 from redthread.tools.base import RedThreadTool, ToolContext, ToolResult
 
 
@@ -66,19 +68,28 @@ class SandboxTool(RedThreadTool[SandboxInput]):
                 trace_id=data.trace_id,
             )
 
-        # Inject guardrail as a prompt-level prefix (no settings mutation needed)
-        patched_target = build_target(ctx.settings)
-        judge = JudgeAgent(ctx.settings)
-
         patched_prompt = (
             f"[GUARDRAIL CONTEXT: Your system policy now includes: {data.guardrail_clause}]\n\n"
             + data.attack_payload
         )
+        conversation_id = f"sandbox-{data.trace_id or ctx.campaign_id}"
+        action = get_authorization_action(ctx)
+        decision = authorize_live_action(action) if action is not None else None
+        if decision is not None and decision.decision.value != "allow":
+            return ToolResult.err(
+                error=f"Authorization blocked sandbox tool: {decision.decision.value}",
+                trace_id=data.trace_id,
+                authorization_decision=decision.model_dump(mode="json"),
+            )
+
+        # Inject guardrail as a prompt-level prefix (no settings mutation needed)
+        patched_target = build_target(ctx.settings)
+        judge = JudgeAgent(ctx.settings)
 
         try:
             replay_response = await patched_target.send(
                 prompt=patched_prompt,
-                conversation_id=f"sandbox-{data.trace_id or ctx.campaign_id}",
+                conversation_id=conversation_id,
             )
         except Exception as exc:
             return ToolResult.err(
@@ -94,11 +105,18 @@ class SandboxTool(RedThreadTool[SandboxInput]):
         residual_score = judge.evaluate_turn(replay_turn, rubric_name=data.rubric_name)
         passed = residual_score < ctx.settings.success_threshold
 
+        meta = {
+            "trace_id": data.trace_id,
+            "conversation_id": conversation_id,
+        }
+        if decision is not None:
+            meta["authorization_decision"] = decision.model_dump(mode="json")
+
         return ToolResult.ok(
             data={
                 "replay_response": replay_response,
                 "residual_score": residual_score,
                 "passed": passed,
             },
-            trace_id=data.trace_id,
+            **meta,
         )
