@@ -2,7 +2,7 @@
 
 > **Status**: Active reference
 > **Scope**: Phase 8 runtime wiring for additive campaign-time agentic security review
-> **Last Updated**: 2026-04-16
+> **Last Updated**: 2026-04-17
 
 ---
 
@@ -72,6 +72,27 @@ That pass currently executes three additive checks:
 
 ---
 
+## Trust-core hardening now in place
+
+The current deterministic control plane is stronger than the first runtime integration cut.
+
+It now includes:
+- shared capability taxonomy used by both authorization fallback and permission inheritance
+- widened risky coverage for delegation, secret access, memory mutation, config mutation, and network egress style capabilities
+- enum-backed `required_trust_levels`
+- canonical trust semantics centered on `trust_level`
+- compatibility normalization for `derived_from_untrusted`
+- explicit authorization precedence:
+  1. permission inheritance
+  2. deny policies
+  3. escalate policies
+  4. allow policies
+  5. safe fallback
+
+This means the sealed runtime review is now more trustworthy as a deterministic control-plane probe, even though it is still not live enforcement proof.
+
+---
+
 ## What gets written
 
 Campaign metadata now includes:
@@ -106,6 +127,8 @@ It is **not** the same as:
 - live tool interception proof
 - full enterprise runtime enforcement
 - universal production safety proof
+
+The next honest gap to close is a tiny opt-in live-proof lane for one real pre-action interception path.
 
 ---
 

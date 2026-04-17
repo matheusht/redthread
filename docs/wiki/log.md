@@ -1,5 +1,10 @@
 # Wiki Log
 
+## [2026-04-17] phase8-trust-core-pass | documented capability taxonomy and trust-core hardening
+- refreshed `docs/AGENTIC_SECURITY_RUNTIME.md` with the current trust-core status: shared capability taxonomy, enum-backed trust policies, canonical trust semantics, and explicit authorization precedence
+- updated `docs/wiki/systems/agentic-security-runtime.md` so the durable wiki explains what the new Phase 8 auth/provenance hardening does and what gap remains
+- recorded the next honest milestone as a tiny opt-in live-proof lane instead of overstating sealed runtime review
+
 ## [2026-04-16] runtime-pass | wired phase 8 into campaign runtime and documented it
 - added `docs/AGENTIC_SECURITY_RUNTIME.md` as the source doc for the new additive runtime hook
 - added `docs/wiki/systems/agentic-security-runtime.md` to explain where the sealed runtime review runs and what evidence it produces

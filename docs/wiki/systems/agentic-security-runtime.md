@@ -14,7 +14,7 @@ source_of_truth:
   - tests/test_supervisor.py
   - tests/test_runtime_truth.py
 updated_by: codex
-updated_at: 2026-04-16
+updated_at: 2026-04-17
 ---
 
 # Agentic Security Runtime
@@ -58,9 +58,22 @@ The runtime review uses the shipped Phase 8 control pieces:
 - `ActionEnvelope`
 - provenance and lineage metadata
 - deterministic authorization engine
+- shared capability taxonomy
 - permission inheritance logic
 - canary propagation report
 - runtime budget evaluator
+
+## Trust-core hardening status
+
+Current trust-core hardening now includes:
+- shared capability classification for read-only, write, execution, delegation, exfiltration, config mutation, memory mutation, network egress, and secret access
+- permission inheritance and trusted fallback behavior both using the same capability taxonomy
+- enum-backed `required_trust_levels` instead of raw string checks
+- canonical trust meaning centered on `trust_level`, with `derived_from_untrusted` normalized from it for compatibility
+- explicit authorization precedence: permission inheritance, deny policies, escalate policies, allow policies, then safe fallback
+
+This matters because the biggest Phase 8 risk was not missing more synthetic threats first.
+It was weak trust semantics in the core decision path.
 
 This means a normal campaign can now expose whether the current deterministic controls would:
 - allow
@@ -98,6 +111,11 @@ That is not the same as:
 - live policy interception proof
 - live tool-execution containment proof
 - universal production safety proof
+
+## Main open gap
+
+The biggest remaining gap is a tiny opt-in live-proof lane.
+That lane should prove at least one real pre-action interception path end to end without pretending the whole runtime is live-enforced.
 
 ## Why this is a good fit for RedThread
 
