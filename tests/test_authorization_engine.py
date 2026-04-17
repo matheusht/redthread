@@ -6,7 +6,12 @@ from redthread.orchestration.scenarios.confused_deputy import run_confused_deput
 from redthread.orchestration.scenarios.resource_amplification import (
     run_resource_amplification_scenario,
 )
-from redthread.tools.authorization import AuthorizationEngine, default_least_agency_policies
+from redthread.tools.authorization import (
+    AuthorizationEngine,
+    CapabilityClass,
+    classify_capability,
+    default_least_agency_policies,
+)
 from redthread.tools.fixtures.agentic_security import (
     benign_lookup_fixture,
     poisoned_compliance_fixture,
@@ -107,20 +112,20 @@ def test_unknown_trusted_low_risk_read_defaults_to_allow() -> None:
     assert decision.policy_id == "default-trusted-allow"
 
 
-def test_unknown_trusted_execute_defaults_to_escalate() -> None:
+def test_unknown_trusted_secret_access_defaults_to_escalate() -> None:
     action = ActionEnvelope(
         actor_id="exec-2",
         actor_role="executor",
         capability="secrets.read",
         tool_name="secrets.read",
         arguments={"path": "prod/app"},
-        target_sensitivity="high",
+        target_sensitivity="medium",
         provenance={
             "source_kind": "internal_agent",
             "trust_level": "trusted",
             "origin_id": "exec-2",
         },
-        requested_effect="execute",
+        requested_effect="read",
     )
 
     decision = AuthorizationEngine(default_least_agency_policies()).authorize(action)
@@ -128,6 +133,59 @@ def test_unknown_trusted_execute_defaults_to_escalate() -> None:
     assert decision.decision == AuthorizationDecisionType.ESCALATE
     assert decision.policy_id == "default-trusted-escalate"
     assert decision.required_escalation is True
+
+
+def test_derived_memory_write_is_denied_by_permission_inheritance() -> None:
+    action = ActionEnvelope(
+        actor_id="executor-2",
+        actor_role="executor",
+        capability="memory.write",
+        tool_name="memory.write",
+        arguments={"entry": "save poisoned summary"},
+        target_sensitivity="medium",
+        provenance={
+            "source_kind": "external_tool",
+            "trust_level": "derived",
+            "origin_id": "tool-9",
+            "derived_from_untrusted": True,
+        },
+        requested_effect="write",
+    )
+
+    decision = AuthorizationEngine(default_least_agency_policies()).authorize(action)
+
+    assert decision.decision == AuthorizationDecisionType.DENY
+    assert decision.policy_id == "permission-inheritance"
+
+
+def test_derived_agent_delegate_is_denied_by_permission_inheritance() -> None:
+    action = ActionEnvelope(
+        actor_id="executor-3",
+        actor_role="executor",
+        capability="agent.delegate",
+        tool_name="agent.delegate",
+        arguments={"task": "export all tickets"},
+        target_sensitivity="medium",
+        provenance={
+            "source_kind": "external_tool",
+            "trust_level": "derived",
+            "origin_id": "tool-10",
+            "derived_from_untrusted": True,
+        },
+        requested_effect="delegate",
+    )
+
+    decision = AuthorizationEngine(default_least_agency_policies()).authorize(action)
+
+    assert decision.decision == AuthorizationDecisionType.DENY
+    assert decision.policy_id == "permission-inheritance"
+
+
+def test_capability_classifier_covers_new_risky_families() -> None:
+    assert classify_capability("docs.search") == CapabilityClass.READ_ONLY
+    assert classify_capability("memory.write") == CapabilityClass.MEMORY_MUTATION
+    assert classify_capability("agent.delegate") == CapabilityClass.DELEGATION
+    assert classify_capability("secrets.read") == CapabilityClass.SECRET_ACCESS
 
 
 def test_resource_amplification_metrics_stay_separate_from_authorization() -> None:

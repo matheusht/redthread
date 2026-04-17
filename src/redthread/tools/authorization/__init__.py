@@ -1,5 +1,6 @@
 """Deterministic authorization helpers for agentic-security phases."""
 
+from redthread.tools.authorization.capabilities import CapabilityClass, classify_capability
 from redthread.tools.authorization.engine import AuthorizationEngine
 from redthread.tools.authorization.models import AuthorizationPolicy
 from redthread.tools.authorization.presets import default_least_agency_policies
@@ -7,5 +8,7 @@ from redthread.tools.authorization.presets import default_least_agency_policies
 __all__ = [
     "AuthorizationEngine",
     "AuthorizationPolicy",
+    "CapabilityClass",
+    "classify_capability",
     "default_least_agency_policies",
 ]

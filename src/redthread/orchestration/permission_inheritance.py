@@ -3,12 +3,11 @@
 from __future__ import annotations
 
 from redthread.orchestration.models import ProvenanceRecord
-
-HIGH_RISK_CAPABILITIES = {"shell.exec", "db.export", "db.write", "http.post"}
+from redthread.tools.authorization.capabilities import is_high_risk_capability
 
 
 def violates_permission_inheritance(
     provenance: ProvenanceRecord,
     capability: str,
 ) -> bool:
-    return provenance.derived_from_untrusted and capability in HIGH_RISK_CAPABILITIES
+    return provenance.derived_from_untrusted and is_high_risk_capability(capability)

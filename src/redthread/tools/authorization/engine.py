@@ -12,17 +12,10 @@ from redthread.orchestration.models import (
 from redthread.orchestration.permission_inheritance import (
     violates_permission_inheritance,
 )
+from redthread.tools.authorization.capabilities import is_high_risk_capability
 from redthread.tools.authorization.models import AuthorizationPolicy
 
 SENSITIVITY_ORDER = {"low": 0, "medium": 1, "high": 2}
-RISKY_CAPABILITY_PREFIXES = (
-    "shell.",
-    "db.",
-    "http.",
-    "prompt.",
-    "agent.",
-    "memory.",
-)
 HIGH_IMPACT_EFFECTS = {
     ActionEffect.WRITE,
     ActionEffect.EXECUTE,
@@ -108,4 +101,4 @@ class AuthorizationEngine:
             return True
         if self._exceeds_sensitivity(action.target_sensitivity, "medium"):
             return True
-        return action.capability.startswith(RISKY_CAPABILITY_PREFIXES)
+        return is_high_risk_capability(action.capability)
