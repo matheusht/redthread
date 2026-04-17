@@ -147,7 +147,6 @@ def test_derived_memory_write_is_denied_by_permission_inheritance() -> None:
             "source_kind": "external_tool",
             "trust_level": "derived",
             "origin_id": "tool-9",
-            "derived_from_untrusted": True,
         },
         requested_effect="write",
     )
@@ -170,7 +169,6 @@ def test_derived_agent_delegate_is_denied_by_permission_inheritance() -> None:
             "source_kind": "external_tool",
             "trust_level": "derived",
             "origin_id": "tool-10",
-            "derived_from_untrusted": True,
         },
         requested_effect="delegate",
     )

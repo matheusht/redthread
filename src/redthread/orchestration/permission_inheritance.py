@@ -10,4 +10,4 @@ def violates_permission_inheritance(
     provenance: ProvenanceRecord,
     capability: str,
 ) -> bool:
-    return provenance.derived_from_untrusted and is_high_risk_capability(capability)
+    return provenance.has_untrusted_lineage and is_high_risk_capability(capability)

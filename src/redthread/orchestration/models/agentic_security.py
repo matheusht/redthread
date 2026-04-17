@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from uuid import uuid4
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class AgenticSecurityThreat(str, Enum):
@@ -75,9 +75,24 @@ class ProvenanceRecord(BaseModel):
     canary_tags: list[str] = Field(default_factory=list)
     derived_from_untrusted: bool = False
 
+    @model_validator(mode="after")
+    def normalize_lineage_flags(self) -> "ProvenanceRecord":
+        if self.trust_level == TrustLevel.TRUSTED:
+            if self.derived_from_untrusted:
+                msg = "trusted provenance cannot also be marked derived_from_untrusted"
+                raise ValueError(msg)
+            self.derived_from_untrusted = False
+            return self
+        self.derived_from_untrusted = True
+        return self
+
     @property
     def crossed_boundary_count(self) -> int:
         return len(self.boundary_crossings)
+
+    @property
+    def has_untrusted_lineage(self) -> bool:
+        return self.trust_level in {TrustLevel.DERIVED, TrustLevel.UNTRUSTED}
 
 
 class AuthorizationDecision(BaseModel):

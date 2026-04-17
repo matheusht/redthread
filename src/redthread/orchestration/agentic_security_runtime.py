@@ -78,7 +78,7 @@ def run_agentic_security_review(config: CampaignConfig) -> dict[str, Any]:
         _count_decision(decision_counts, decision.decision.value)
         action_total += 1
         canary_event_total += len(canary_tags)
-        untrusted_lineage_action_total += 1 if action.provenance.derived_from_untrusted else 0
+        untrusted_lineage_action_total += 1 if action.provenance.has_untrusted_lineage else 0
         canary_reports.append(report)
 
     if any(keyword in text for keyword in DEPUTY_KEYWORDS):
@@ -94,7 +94,7 @@ def run_agentic_security_review(config: CampaignConfig) -> dict[str, Any]:
         })
         _count_decision(decision_counts, decision.decision.value)
         action_total += 1
-        untrusted_lineage_action_total += 1 if action.provenance.derived_from_untrusted else 0
+        untrusted_lineage_action_total += 1 if action.provenance.has_untrusted_lineage else 0
 
     if any(keyword in text for keyword in AMPLIFICATION_KEYWORDS):
         amplification = run_resource_amplification_scenario(repair_loops=4)

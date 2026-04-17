@@ -13,6 +13,8 @@ from redthread.orchestration.models import (
     ProvenanceSourceKind,
     TrustLevel,
 )
+import pytest
+
 from redthread.orchestration.runtime_summary import build_runtime_summary
 
 
@@ -65,6 +67,29 @@ def test_action_envelope_serializes_provenance_and_authorization() -> None:
     assert dumped["requested_effect"] == "execute"
     assert dumped["canary_tags"] == ["CANARY_EXT_TOOL_01"]
     assert envelope.provenance.crossed_boundary_count == 2
+    assert envelope.provenance.has_untrusted_lineage is True
+
+
+def test_provenance_normalizes_derived_flag_from_trust_level() -> None:
+    provenance = ProvenanceRecord(
+        source_kind=ProvenanceSourceKind.EXTERNAL_DOCUMENT,
+        trust_level=TrustLevel.DERIVED,
+        origin_id="doc-1",
+        derived_from_untrusted=False,
+    )
+
+    assert provenance.derived_from_untrusted is True
+    assert provenance.has_untrusted_lineage is True
+
+
+def test_provenance_rejects_trusted_contradiction() -> None:
+    with pytest.raises(ValueError, match="trusted provenance cannot also be marked"):
+        ProvenanceRecord(
+            source_kind=ProvenanceSourceKind.INTERNAL_AGENT,
+            trust_level=TrustLevel.TRUSTED,
+            origin_id="agent-1",
+            derived_from_untrusted=True,
+        )
 
 
 def test_amplification_metrics_default_to_safe_baseline() -> None:
