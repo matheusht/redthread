@@ -135,6 +135,7 @@ That proof lane now also connects to richer execution seams.
 In `src/redthread/pyrit_adapters/controlled.py`, `ControlledLiveAdapter.send(..., action=...)` can intercept an `ActionEnvelope` before the wrapped live target call runs.
 In `src/redthread/tools/attack_tool.py`, `AttackTool` can optionally read an `ActionEnvelope` from tool context metadata and block the live target send before execution.
 In `src/redthread/tools/sandbox_tool.py`, `SandboxTool` can do the same before replaying a patched prompt through the live target path.
+In `src/redthread/core/defense_replay_runner.py`, live defense replay now authorizes each replay case before the patched target send and records that decision on the replay case evidence itself.
 If authorization is not `allow`, the target send is blocked before execution.
 
 This is still not the same as broad production enforcement.

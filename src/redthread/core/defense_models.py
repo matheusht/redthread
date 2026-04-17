@@ -71,6 +71,8 @@ class ReplayCaseResult:
     missing_keywords: list[str] = field(default_factory=list)
     refusal_detected: bool = False
     failure_reason: str = ""
+    blocked_by_authorization: bool = False
+    authorization_decision: dict[str, Any] | None = None
 
 
 @dataclass

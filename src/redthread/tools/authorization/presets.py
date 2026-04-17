@@ -16,6 +16,13 @@ def default_least_agency_policies() -> list[AuthorizationPolicy]:
             reason="read-only retrieval is allowed",
         ),
         AuthorizationPolicy(
+            policy_id="defense-validator-replay",
+            actor_roles=["defense_validator"],
+            allowed_capabilities=["target.replay"],
+            max_target_sensitivity="medium",
+            reason="trusted defense replay validation is allowed on controlled target paths",
+        ),
+        AuthorizationPolicy(
             policy_id="deny-risky-derived-actions",
             actor_roles=["tool_executor", "privileged_executor", "executor"],
             denied_capabilities=sorted(HIGH_RISK_CAPABILITIES),
