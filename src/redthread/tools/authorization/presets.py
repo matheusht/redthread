@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from redthread.orchestration.models import AuthorizationDecisionType
+from redthread.orchestration.models import AuthorizationDecisionType, TrustLevel
 from redthread.tools.authorization.models import AuthorizationPolicy
 
 RISKY_CAPABILITIES = ["shell.exec", "db.export", "db.write", "http.post"]
@@ -20,7 +20,7 @@ def default_least_agency_policies() -> list[AuthorizationPolicy]:
             policy_id="deny-risky-derived-actions",
             actor_roles=["tool_executor", "privileged_executor", "executor"],
             denied_capabilities=RISKY_CAPABILITIES,
-            required_trust_levels=["trusted"],
+            required_trust_levels=[TrustLevel.TRUSTED],
             decision=AuthorizationDecisionType.DENY,
             reason="derived or untrusted lineage cannot trigger risky execution",
         ),

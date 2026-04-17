@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from redthread.orchestration.graphs.tool_attack_graph import run_tool_attack_scenario
-from redthread.orchestration.models import ActionEnvelope
+from redthread.orchestration.models import ActionEnvelope, AuthorizationDecisionType
 from redthread.orchestration.scenarios.confused_deputy import run_confused_deputy_scenario
 from redthread.orchestration.scenarios.resource_amplification import (
     run_resource_amplification_scenario,
@@ -82,6 +82,51 @@ def test_high_sensitivity_write_escalates() -> None:
     decision = AuthorizationEngine(default_least_agency_policies()).authorize(action)
 
     assert decision.decision.value == "escalate"
+    assert decision.required_escalation is True
+
+
+def test_unknown_trusted_low_risk_read_defaults_to_allow() -> None:
+    action = ActionEnvelope(
+        actor_id="reader-1",
+        actor_role="analyst",
+        capability="docs.search",
+        tool_name="docs.search",
+        arguments={"query": "phase 8"},
+        target_sensitivity="low",
+        provenance={
+            "source_kind": "internal_agent",
+            "trust_level": "trusted",
+            "origin_id": "reader-1",
+        },
+        requested_effect="read",
+    )
+
+    decision = AuthorizationEngine(default_least_agency_policies()).authorize(action)
+
+    assert decision.decision == AuthorizationDecisionType.ALLOW
+    assert decision.policy_id == "default-trusted-allow"
+
+
+def test_unknown_trusted_execute_defaults_to_escalate() -> None:
+    action = ActionEnvelope(
+        actor_id="exec-2",
+        actor_role="executor",
+        capability="secrets.read",
+        tool_name="secrets.read",
+        arguments={"path": "prod/app"},
+        target_sensitivity="high",
+        provenance={
+            "source_kind": "internal_agent",
+            "trust_level": "trusted",
+            "origin_id": "exec-2",
+        },
+        requested_effect="execute",
+    )
+
+    decision = AuthorizationEngine(default_least_agency_policies()).authorize(action)
+
+    assert decision.decision == AuthorizationDecisionType.ESCALATE
+    assert decision.policy_id == "default-trusted-escalate"
     assert decision.required_escalation is True
 
 

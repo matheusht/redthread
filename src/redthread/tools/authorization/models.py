@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
-from redthread.orchestration.models import AuthorizationDecisionType
+from redthread.orchestration.models import AuthorizationDecisionType, TrustLevel
 
 
 class AuthorizationPolicy(BaseModel):
@@ -12,7 +12,7 @@ class AuthorizationPolicy(BaseModel):
     actor_roles: list[str] = Field(default_factory=list)
     allowed_capabilities: list[str] = Field(default_factory=list)
     denied_capabilities: list[str] = Field(default_factory=list)
-    required_trust_levels: list[str] = Field(default_factory=list)
+    required_trust_levels: list[TrustLevel] = Field(default_factory=list)
     max_target_sensitivity: str = "high"
     decision: AuthorizationDecisionType = AuthorizationDecisionType.ALLOW
     reason: str = ""

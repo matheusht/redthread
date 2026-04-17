@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from redthread.orchestration.models import (
+    ActionEffect,
     ActionEnvelope,
     AuthorizationDecision,
     AuthorizationDecisionType,
@@ -14,6 +15,20 @@ from redthread.orchestration.permission_inheritance import (
 from redthread.tools.authorization.models import AuthorizationPolicy
 
 SENSITIVITY_ORDER = {"low": 0, "medium": 1, "high": 2}
+RISKY_CAPABILITY_PREFIXES = (
+    "shell.",
+    "db.",
+    "http.",
+    "prompt.",
+    "agent.",
+    "memory.",
+)
+HIGH_IMPACT_EFFECTS = {
+    ActionEffect.WRITE,
+    ActionEffect.EXECUTE,
+    ActionEffect.EXFILTRATE,
+    ActionEffect.DELEGATE,
+}
 
 
 class AuthorizationEngine:
@@ -35,7 +50,7 @@ class AuthorizationEngine:
             if policy.allowed_capabilities and action.capability not in policy.allowed_capabilities:
                 continue
             if policy.denied_capabilities and action.capability in policy.denied_capabilities:
-                trust = action.provenance.trust_level.value
+                trust = action.provenance.trust_level
                 if policy.required_trust_levels and trust not in policy.required_trust_levels:
                     return AuthorizationDecision(
                         decision=policy.decision,
@@ -69,12 +84,28 @@ class AuthorizationEngine:
                 matched_rules=["default-derived-deny"],
             )
 
+        if self._requires_trusted_fallback_escalation(action):
+            return AuthorizationDecision(
+                decision=AuthorizationDecisionType.ESCALATE,
+                policy_id="default-trusted-escalate",
+                reason="trusted action is unknown and high-impact; explicit approval required",
+                matched_rules=["default-trusted-escalate"],
+                required_escalation=True,
+            )
+
         return AuthorizationDecision(
             decision=AuthorizationDecisionType.ALLOW,
             policy_id="default-trusted-allow",
-            reason="trusted action with no conflicting policy",
+            reason="trusted low-risk read action with no conflicting policy",
             matched_rules=["default-trusted-allow"],
         )
 
     def _exceeds_sensitivity(self, actual: str, maximum: str) -> bool:
         return SENSITIVITY_ORDER.get(actual, 2) > SENSITIVITY_ORDER.get(maximum, 2)
+
+    def _requires_trusted_fallback_escalation(self, action: ActionEnvelope) -> bool:
+        if action.requested_effect in HIGH_IMPACT_EFFECTS:
+            return True
+        if self._exceeds_sensitivity(action.target_sensitivity, "medium"):
+            return True
+        return action.capability.startswith(RISKY_CAPABILITY_PREFIXES)
