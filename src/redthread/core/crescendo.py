@@ -27,6 +27,7 @@ import time
 from datetime import datetime, timezone
 
 from redthread.config.settings import RedThreadSettings
+from redthread.core.attack_execution import attack_execution_metadata
 from redthread.evaluation.judge import JudgeAgent
 from redthread.models import (
     AttackOutcome,
@@ -36,7 +37,12 @@ from redthread.models import (
     CrescendoTurn,
     Persona,
 )
-from redthread.pyrit_adapters.targets import RedThreadTarget, build_attacker, build_target
+from redthread.pyrit_adapters.targets import (
+    RedThreadTarget,
+    build_attacker,
+    build_target,
+    send_with_execution_metadata,
+)
 from redthread.research.prompt_profiles import load_prompt_profiles, resolve_prompt_profiles_path
 
 logger = logging.getLogger(__name__)
@@ -175,17 +181,31 @@ class CrescendoAttack:
                     )
 
                 logger.debug("🤖 Attacker generating turn %d (attempt %d)…", turn_num, attempt)
-                attacker_msg = await self._get_attacker().send(
+                attacker_msg = await send_with_execution_metadata(
+                    self._get_attacker(),
                     prompt=f"[SYSTEM]: {attacker_system}\n\n[USER]: {prompt_input}",
                     conversation_id=f"cres-attacker-{trace.id}",
+                    execution_metadata=attack_execution_metadata(
+                        algorithm="crescendo",
+                        lane="attacker",
+                        trace_id=trace.id,
+                        metadata={"turn": turn_num, "attempt": attempt},
+                    ),
                 )
                 attacker_msg = attacker_msg.strip()
 
                 # Build full prompt for target (stateless: inject full history)
                 target_prompt = self._compile_target_prompt(history, attacker_msg)
-                target_response = await self._get_target().send(
+                target_response = await send_with_execution_metadata(
+                    self._get_target(),
                     prompt=target_prompt,
                     conversation_id=f"cres-target-{trace.id}-t{turn_num}",
+                    execution_metadata=attack_execution_metadata(
+                        algorithm="crescendo",
+                        lane="target",
+                        trace_id=trace.id,
+                        metadata={"turn": turn_num, "attempt": attempt},
+                    ),
                 )
 
                 score = self._judge.evaluate_turn_raw(attacker_msg, target_response, rubric_name)

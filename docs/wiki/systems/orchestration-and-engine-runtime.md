@@ -152,12 +152,14 @@ Current transcript summary and dashboard do **not** prove:
 - that a green campaign had no runtime degradation unless `degraded_runtime=false`
 - that telemetry is proof of benign utility
 
+As of 2026-04-18, the common send boundary can also run an opt-in pre-send interception hook before provider execution. The first mainstream path wired into that boundary is persona generation, and the runtime now also labels PAIR, TAP, Crescendo, and MCTS attack lanes in execution-truth artifacts.
+
 ## Open trust gaps
 
-Still open:
-- small opt-in live smoke path for real provider workflow
-- stronger operator surfaces beyond raw transcript summary
-- more explicit judge-failure passthrough labeling per trace
+Current remaining gaps are smaller now:
+- the opt-in live smoke path exists, but it is still intentionally tiny and explicit
+- operator surfaces beyond transcript summary may still grow later
+- not every possible provider caller in the repo is equally rich in metadata yet, even though the core planned seams are now covered
 
 ## Bottom line
 

@@ -24,6 +24,7 @@ import time
 from datetime import datetime, timezone
 
 from redthread.config.settings import RedThreadSettings
+from redthread.core.attack_execution import attack_execution_metadata
 from redthread.core.mcts_helpers import (
     MCTSTree,
     build_expansion_prompt,
@@ -45,6 +46,7 @@ from redthread.pyrit_adapters.targets import (
     build_attacker,
     build_rollout_attacker,
     build_target,
+    send_with_usage_and_execution_metadata,
 )
 from redthread.research.prompt_profiles import load_prompt_profiles, resolve_prompt_profiles_path
 
@@ -228,9 +230,16 @@ class MCTSAttack:
                 f"[SYSTEM]: {attacker_system}\n\n[USER]: "
                 + build_expansion_prompt(persona, strategy, history_text, turn_number)
             )
-            attacker_msg, tokens = await self._get_attacker().send_with_usage(
+            attacker_msg, tokens = await send_with_usage_and_execution_metadata(
+                self._get_attacker(),
                 prompt=prompt,
                 conversation_id=f"mcts-expand-{trace.id}-d{turn_number}",
+                execution_metadata=attack_execution_metadata(
+                    algorithm="mcts",
+                    lane="attacker",
+                    trace_id=trace.id,
+                    metadata={"depth": turn_number, "strategy": strategy},
+                ),
             )
             self._tokens_consumed += tokens
             attacker_msg = attacker_msg.strip()
@@ -238,9 +247,16 @@ class MCTSAttack:
             target_input = self._compile_target_prompt(
                 history, attacker_msg, target_system_prompt
             )
-            target_resp, t_tokens = await self._get_target().send_with_usage(
+            target_resp, t_tokens = await send_with_usage_and_execution_metadata(
+                self._get_target(),
                 prompt=target_input,
                 conversation_id=f"mcts-target-{trace.id}-d{turn_number}",
+                execution_metadata=attack_execution_metadata(
+                    algorithm="mcts",
+                    lane="target",
+                    trace_id=trace.id,
+                    metadata={"depth": turn_number, "strategy": strategy},
+                ),
             )
             self._tokens_consumed += t_tokens
 
@@ -280,18 +296,32 @@ class MCTSAttack:
             prompt = build_rollout_prompt(
                 persona, history_text, turn_number, self.settings.mcts_max_depth
             )
-            rollout_msg, tokens = await self._get_rollout_attacker().send_with_usage(
+            rollout_msg, tokens = await send_with_usage_and_execution_metadata(
+                self._get_rollout_attacker(),
                 prompt=prompt,
                 conversation_id=f"mcts-rollout-{node.id}-t{turn_number}",
+                execution_metadata=attack_execution_metadata(
+                    algorithm="mcts",
+                    lane="rollout_attacker",
+                    trace_id=node.id,
+                    metadata={"depth": turn_number, "strategy": node.strategy},
+                ),
             )
             self._tokens_consumed += tokens
 
             target_input = self._compile_target_prompt(
                 sim_history, rollout_msg.strip(), target_system_prompt
             )
-            target_resp, t_tokens = await self._get_target().send_with_usage(
+            target_resp, t_tokens = await send_with_usage_and_execution_metadata(
+                self._get_target(),
                 prompt=target_input,
                 conversation_id=f"mcts-rollout-tgt-{node.id}-t{turn_number}",
+                execution_metadata=attack_execution_metadata(
+                    algorithm="mcts",
+                    lane="target",
+                    trace_id=node.id,
+                    metadata={"rollout": True, "depth": turn_number, "strategy": node.strategy},
+                ),
             )
             self._tokens_consumed += t_tokens
 

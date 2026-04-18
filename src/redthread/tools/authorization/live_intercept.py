@@ -7,6 +7,9 @@ from collections.abc import Callable
 from typing import TypeVar
 
 from redthread.orchestration.models import ActionEnvelope, AuthorizationDecision
+from redthread.pyrit_adapters.interceptors import LiveExecutionInterceptionError
+from redthread.pyrit_adapters.targets import ExecutionMetadata
+from redthread.tools.authorization.tool_context import AUTHORIZATION_ACTION_METADATA_KEY
 from redthread.tools.authorization.engine import AuthorizationEngine
 from redthread.tools.authorization.presets import default_least_agency_policies
 
@@ -21,6 +24,33 @@ def authorize_live_action(
 ) -> AuthorizationDecision:
     engine = AuthorizationEngine(policies or default_least_agency_policies())
     return engine.authorize(action)
+
+
+def authorize_execution_metadata(
+    execution_metadata: ExecutionMetadata,
+    *,
+    policies: list | None = None,
+) -> AuthorizationDecision | None:
+    action = execution_metadata.metadata.get(AUTHORIZATION_ACTION_METADATA_KEY)
+    if not isinstance(action, ActionEnvelope):
+        return None
+    return authorize_live_action(action, policies=policies)
+
+
+def build_execution_authorization_interceptor(
+    *,
+    policies: list | None = None,
+):
+    def interceptor(execution_metadata: ExecutionMetadata) -> None:
+        decision = authorize_execution_metadata(execution_metadata, policies=policies)
+        if decision is None:
+            return
+        if decision.decision.value != "allow":
+            raise LiveExecutionInterceptionError(
+                f"Execution blocked at common boundary: {decision.decision.value}"
+            )
+
+    return interceptor
 
 
 def run_live_authorization_smoke(

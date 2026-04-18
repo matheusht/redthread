@@ -1,7 +1,7 @@
 ---
 title: Live Execution Truth Deep Dive
 type: research
-status: active
+status: complete
 summary: Seam map, risk map, evidence map, and exact hardening slices for the live execution truth boundary across targets, judging, orchestration, and operator reporting.
 source_of_truth:
   - README.md
@@ -87,9 +87,15 @@ Completed so far:
 
 What changed in the recommendation:
 - Slice 1 is complete
-- Slice 2 is now complete for judge, persona, defense generation/replay, and telemetry seams
-- Slice 3 is now complete for campaign-level aggregation and transcript surfacing
-- next remaining work is broader common-boundary interception, algorithm-path expansion, and the opt-in smoke suite
+- Slice 2 is complete for judge, persona, defense generation/replay, and telemetry seams
+- Slice 3 is complete for campaign-level aggregation and transcript surfacing
+- Slice 4 is complete with a common-boundary interception hook that can block persona generation before provider send
+- Slice 5 is complete with seam labeling across PAIR, TAP, Crescendo, and MCTS attack lanes
+- Slice 6 is complete with an opt-in live smoke suite scaffold in `tests/test_live_execution_truth_smoke.py`
+
+Implementation status now:
+- the planned execution-truth pass is complete
+- the repo now has a shared execution-record spine, seam-level labels across the highest-value runtime paths, operator-facing aggregation, common-boundary interception, algorithm-lane instrumentation, and an opt-in smoke suite
 
 ## Seam map
 

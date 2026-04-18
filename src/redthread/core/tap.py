@@ -12,6 +12,7 @@ import time
 from datetime import datetime, timezone
 
 from redthread.config.settings import RedThreadSettings
+from redthread.core.attack_execution import attack_execution_metadata
 from redthread.evaluation.judge import JudgeAgent
 from redthread.models import (
     AttackNode,
@@ -20,7 +21,12 @@ from redthread.models import (
     AttackTrace,
     Persona,
 )
-from redthread.pyrit_adapters.targets import RedThreadTarget, build_attacker, build_target
+from redthread.pyrit_adapters.targets import (
+    RedThreadTarget,
+    build_attacker,
+    build_target,
+    send_with_execution_metadata,
+)
 from redthread.research.prompt_profiles import load_prompt_profiles, resolve_prompt_profiles_path
 
 logger = logging.getLogger(__name__)
@@ -177,9 +183,16 @@ class TAPAttack:
             # Phase 3: ATTACK + ASSESS
             for idx, node in enumerate(surviving_nodes):
                 logger.debug("   Sending attack %d/%d to target...", idx+1, len(surviving_nodes))
-                node.target_response = await self._get_target().send(
+                node.target_response = await send_with_execution_metadata(
+                    self._get_target(),
                     prompt=node.attacker_prompt,
                     conversation_id=f"tap-target-{trace.id}-{node.id}",
+                    execution_metadata=attack_execution_metadata(
+                        algorithm="tap",
+                        lane="target",
+                        trace_id=trace.id,
+                        metadata={"depth": depth, "node_id": node.id},
+                    ),
                 )
                 
                 # Fast inline score via target check
@@ -290,9 +303,16 @@ class TAPAttack:
                         score=leaf.score,
                     )
                 
-                raw_attacker_output = await self._get_attacker().send(
+                raw_attacker_output = await send_with_execution_metadata(
+                    self._get_attacker(),
                     prompt=f"[SYSTEM]: {system_prompt}\\n\\n[USER]: {attacker_prompt_input}",
                     conversation_id=f"tap-attacker-{trace_id}-{leaf.id}-{branch_idx}",
+                    execution_metadata=attack_execution_metadata(
+                        algorithm="tap",
+                        lane="attacker",
+                        trace_id=trace_id,
+                        metadata={"depth": depth, "parent_id": leaf.id, "branch": branch_idx},
+                    ),
                 )
 
                 candidate_prompt = self._extract_prompt(raw_attacker_output)

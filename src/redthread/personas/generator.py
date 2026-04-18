@@ -104,7 +104,9 @@ class PersonaGenerator:
         technique_name: str,
     ) -> Persona:
         from redthread.core.mcts_helpers import derive_strategies
+        from redthread.personas.live_authorization import build_persona_generation_action
 
+        action = build_persona_generation_action(tactic=tactic, technique_id=technique_id)
         for attempt in range(3):
             raw_response = await send_with_execution_metadata(
                 self._get_attacker(),
@@ -113,7 +115,11 @@ class PersonaGenerator:
                     seam="persona.generate",
                     role="attacker",
                     evidence_class="live_generation",
-                    metadata={"tactic": tactic.value, "technique_id": technique_id},
+                    metadata={
+                        "tactic": tactic.value,
+                        "technique_id": technique_id,
+                        "authorization_action": action,
+                    },
                 ),
             )
             try:

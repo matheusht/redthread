@@ -1,5 +1,12 @@
 # Wiki Log
 
+## [2026-04-18] live-execution-truth-pass-m4 | finished interception, attack-lane labeling, and smoke coverage
+- added a common-boundary interception hook under `src/redthread/pyrit_adapters/interceptors.py` so instrumented live sends can be blocked before provider execution
+- wired the first mainstream blocked path through persona generation using shared authorization metadata and a new interception test
+- added attack-lane seam labels across PAIR, TAP, Crescendo, and MCTS so the execution-truth summary now sees core offensive runtime traffic too
+- added `tests/test_live_execution_truth_smoke.py` as the tiny opt-in smoke-suite scaffold for live persona, target, judge, telemetry, and blocked-send proof
+- updated the live execution truth research page and orchestration runtime system page to mark the planned pass complete
+
 ## [2026-04-18] live-execution-truth-pass-m3 | added campaign-level execution truth aggregation
 - added a context-scoped execution recorder so instrumented live sends can be collected across one campaign without threading recorder state through every worker boundary
 - added execution-truth aggregation in campaign metadata and transcript summary via `execution_truth_summary` and `execution_records_sample`

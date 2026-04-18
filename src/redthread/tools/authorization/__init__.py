@@ -3,7 +3,9 @@
 from redthread.tools.authorization.capabilities import CapabilityClass, classify_capability
 from redthread.tools.authorization.engine import AuthorizationEngine
 from redthread.tools.authorization.live_intercept import (
+    authorize_execution_metadata,
     authorize_live_action,
+    build_execution_authorization_interceptor,
     run_live_authorization_smoke,
 )
 from redthread.tools.authorization.models import AuthorizationPolicy
@@ -15,6 +17,8 @@ __all__ = [
     "CapabilityClass",
     "classify_capability",
     "default_least_agency_policies",
+    "authorize_execution_metadata",
     "authorize_live_action",
+    "build_execution_authorization_interceptor",
     "run_live_authorization_smoke",
 ]

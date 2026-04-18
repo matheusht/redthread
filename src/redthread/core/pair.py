@@ -27,6 +27,7 @@ import time
 from datetime import datetime, timezone
 
 from redthread.config.settings import RedThreadSettings
+from redthread.core.attack_execution import attack_execution_metadata
 from redthread.evaluation.judge import JudgeAgent
 from redthread.models import (
     AttackOutcome,
@@ -35,7 +36,12 @@ from redthread.models import (
     ConversationTurn,
     Persona,
 )
-from redthread.pyrit_adapters.targets import RedThreadTarget, build_attacker, build_target
+from redthread.pyrit_adapters.targets import (
+    RedThreadTarget,
+    build_attacker,
+    build_target,
+    send_with_execution_metadata,
+)
 from redthread.research.prompt_profiles import load_prompt_profiles, resolve_prompt_profiles_path
 
 logger = logging.getLogger(__name__)
@@ -167,9 +173,16 @@ class PAIRAttack:
                 )
 
             logger.debug("🤖 Attacker generating prompt (iteration %d)...", iteration)
-            raw_attacker_output = await self._get_attacker().send(
+            raw_attacker_output = await send_with_execution_metadata(
+                self._get_attacker(),
                 prompt=f"[SYSTEM]: {attacker_system_prompt}\n\n[USER]: {attacker_prompt_input}",
                 conversation_id=f"pair-attacker-{trace.id}",
+                execution_metadata=attack_execution_metadata(
+                    algorithm="pair",
+                    lane="attacker",
+                    trace_id=trace.id,
+                    metadata={"iteration": iteration},
+                ),
             )
 
             # Extract the actual prompt from attacker output
@@ -183,9 +196,16 @@ class PAIRAttack:
             )
 
             # ── Step 2: Send to target ─────────────────────────────────────────
-            target_response = await self._get_target().send(
+            target_response = await send_with_execution_metadata(
+                self._get_target(),
                 prompt=candidate_prompt,
                 conversation_id=f"pair-target-{trace.id}",
+                execution_metadata=attack_execution_metadata(
+                    algorithm="pair",
+                    lane="target",
+                    trace_id=trace.id,
+                    metadata={"iteration": iteration},
+                ),
             )
 
             logger.debug(
