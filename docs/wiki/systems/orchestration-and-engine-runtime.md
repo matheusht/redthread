@@ -17,7 +17,7 @@ source_of_truth:
   - tests/test_runtime_truth.py
   - tests/test_supervisor.py
 updated_by: codex
-updated_at: 2026-04-15
+updated_at: 2026-04-18
 ---
 
 # Orchestration and Engine Runtime
@@ -91,6 +91,18 @@ The runtime now records a compact summary for operators:
 - `degraded_runtime`
 - `error_count`
 - `error_samples`
+
+As of 2026-04-18, campaign metadata and transcript summary lines also carry live execution truth aggregation:
+- `execution_truth_summary`
+- `execution_records_sample`
+
+Current execution-truth summary includes:
+- total live execution records seen
+- success vs failure counts
+- counts by seam
+- counts by evidence class
+- the list of live seams seen during the run
+- a small record sample for operator inspection
 
 This is important because the runtime is currently **best-effort**, not fail-closed.
 

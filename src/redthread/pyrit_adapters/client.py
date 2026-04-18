@@ -5,6 +5,7 @@ from typing import Any
 from uuid import uuid4
 
 from redthread.config.settings import RedThreadSettings, TargetBackend
+from redthread.pyrit_adapters.execution_context import get_execution_recorder
 from redthread.pyrit_adapters.execution_records import (
     ExecutionMetadata,
     ExecutionRecorder,
@@ -103,9 +104,10 @@ class RedThreadTarget:
         success: bool,
         error: str | None = None,
     ) -> None:
-        if not self._execution_recorder or execution_metadata is None:
+        recorder = self._execution_recorder or get_execution_recorder()
+        if recorder is None or execution_metadata is None:
             return
-        self._execution_recorder(
+        recorder(
             build_execution_record(
                 model_name=self.model_name,
                 conversation_id=conversation_id,

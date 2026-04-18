@@ -88,7 +88,8 @@ Completed so far:
 What changed in the recommendation:
 - Slice 1 is complete
 - Slice 2 is now complete for judge, persona, defense generation/replay, and telemetry seams
-- next remaining work is runtime aggregation, broader common-boundary interception, algorithm-path expansion, and the opt-in smoke suite
+- Slice 3 is now complete for campaign-level aggregation and transcript surfacing
+- next remaining work is broader common-boundary interception, algorithm-path expansion, and the opt-in smoke suite
 
 ## Seam map
 

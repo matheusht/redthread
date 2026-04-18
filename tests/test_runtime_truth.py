@@ -60,6 +60,8 @@ async def test_engine_dry_run_stays_offline_and_labels_runtime_mode(tmp_path: Pa
     assert result.metadata["degraded_runtime"] is False
     assert result.metadata["runtime_summary"]["attack_worker_failures"] == 0
     assert result.metadata["runtime_summary"]["judge_worker_failures"] == 0
+    assert result.metadata["execution_truth_summary"]["execution_record_total"] == 0
+    assert result.metadata["execution_records_sample"] == []
     transcript = settings.log_dir / f"{result.id}.jsonl"
     lines = transcript.read_text(encoding="utf-8").splitlines()
     summary = json.loads(lines[0])
@@ -69,6 +71,8 @@ async def test_engine_dry_run_stays_offline_and_labels_runtime_mode(tmp_path: Pa
     assert summary["degraded_runtime"] is False
     assert summary["runtime_summary"]["attack_worker_total"] == 2
     assert summary["runtime_summary"]["attack_worker_failures"] == 0
+    assert summary["execution_truth_summary"]["execution_record_total"] == 0
+    assert summary["execution_records_sample"] == []
     assert summary["agentic_security_report"]["enabled"] is False
     assert first_result["judge_runtime_status"] == "sealed_passthrough"
     assert first_result["judge_error"] is None

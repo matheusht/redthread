@@ -1,5 +1,12 @@
 # Wiki Log
 
+## [2026-04-18] live-execution-truth-pass-m3 | added campaign-level execution truth aggregation
+- added a context-scoped execution recorder so instrumented live sends can be collected across one campaign without threading recorder state through every worker boundary
+- added execution-truth aggregation in campaign metadata and transcript summary via `execution_truth_summary` and `execution_records_sample`
+- split the oversized engine facade into smaller helper modules while preserving `RedThreadEngine` behavior
+- added focused regression coverage in `tests/test_execution_truth_summary.py` and extended `tests/test_runtime_truth.py` to pin the new transcript/runtime fields
+- refreshed the live execution truth research page and orchestration runtime system page so the new operator-facing evidence surface is documented
+
 ## [2026-04-18] live-execution-truth-pass-m2 | instrumented persona, defense, and telemetry seams
 - added shared seam labeling for `persona.generate`, `defense.architect`, `defense.replay`, `telemetry.canary`, and `telemetry.warmup`
 - preserved compatibility with non-instrumented targets and test doubles by adding `send_with_execution_metadata(...)`
