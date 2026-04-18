@@ -1,5 +1,12 @@
 # Wiki Log
 
+## [2026-04-18] live-execution-truth-pass-m2 | instrumented persona, defense, and telemetry seams
+- added shared seam labeling for `persona.generate`, `defense.architect`, `defense.replay`, `telemetry.canary`, and `telemetry.warmup`
+- preserved compatibility with non-instrumented targets and test doubles by adding `send_with_execution_metadata(...)`
+- split `src/redthread/personas/generator.py` and `src/redthread/core/defense_synthesis.py` support code so the new behavior stayed under the repo file-cap rule
+- added focused regression coverage in `tests/test_persona_execution_records.py`, `tests/test_defense_execution_records.py`, and `tests/test_telemetry_execution_records.py`
+- refreshed the live execution truth research page plus defense and telemetry system pages so the shipped seam coverage and remaining gaps stay explicit
+
 ## [2026-04-18] live-execution-truth-pass-m1 | landed shared execution records and judge seam labels
 - extracted the oversized PyRIT adapter wrapper into smaller modules under `src/redthread/pyrit_adapters/` to stay inside the repo file-cap guidance
 - added `src/redthread/pyrit_adapters/execution_records.py` so `RedThreadTarget.send(...)` can emit normalized execution records without breaking its old return type

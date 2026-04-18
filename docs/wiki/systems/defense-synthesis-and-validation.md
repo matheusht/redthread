@@ -7,7 +7,7 @@ source_of_truth:
   - docs/DEFENSE_PIPELINE.md
   - docs/PHASE_REGISTRY.md
 updated_by: codex
-updated_at: 2026-04-15
+updated_at: 2026-04-18
 ---
 
 # Defense Synthesis and Validation
@@ -45,6 +45,12 @@ Defense validation should now be read in three classes:
 This matters because these are not equally strong.
 A sealed dry-run replay is useful, but it is not promotable proof.
 A live validation error is a warning about missing evidence, not proof that a defense passed or failed the real replay path cleanly.
+
+As of 2026-04-18, the live execution truth pass also labels two real defense-generation seams at the shared provider boundary:
+- `defense.architect` for live guardrail generation
+- `defense.replay` for live exploit and benign replay sends
+
+That means defense evidence is now better tied to actual send boundaries instead of only higher-level replay outcomes.
 
 ## Replay breadth notes
 

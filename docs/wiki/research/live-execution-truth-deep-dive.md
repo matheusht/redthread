@@ -65,17 +65,30 @@ The next subsystem pass should therefore focus on the real boundary where code c
 Completed so far:
 - extracted the shared PyRIT wrapper into smaller modules under `src/redthread/pyrit_adapters/`
 - added `src/redthread/pyrit_adapters/execution_records.py` with normalized `ExecutionMetadata` and `ExecutionRecord`
+- added `send_with_execution_metadata(...)` so seam instrumentation stays backward compatible with test doubles and non-instrumented targets
 - extended `RedThreadTarget.send(...)` with optional `execution_metadata` while preserving the old return type and call shape
 - added focused regression coverage in `tests/test_target_execution_records.py`
 - instrumented `JudgeAgent` so live Auto-CoT and live scoring sends emit seam labels:
   - `judge.autocot`
   - `judge.score`
-- added focused judge seam coverage in `tests/test_judge_execution_records.py`
+- instrumented persona generation:
+  - `persona.generate`
+- instrumented defense generation and replay:
+  - `defense.architect`
+  - `defense.replay`
+- instrumented telemetry probe seams:
+  - `telemetry.canary`
+  - `telemetry.warmup`
+- added focused seam coverage in:
+  - `tests/test_judge_execution_records.py`
+  - `tests/test_persona_execution_records.py`
+  - `tests/test_defense_execution_records.py`
+  - `tests/test_telemetry_execution_records.py`
 
 What changed in the recommendation:
-- Slice 1 is now complete
-- the judge portion of Slice 2 is now complete
-- next remaining work is persona, defense, telemetry, runtime aggregation, broader interception, algorithm-path expansion, and the opt-in smoke suite
+- Slice 1 is complete
+- Slice 2 is now complete for judge, persona, defense generation/replay, and telemetry seams
+- next remaining work is runtime aggregation, broader common-boundary interception, algorithm-path expansion, and the opt-in smoke suite
 
 ## Seam map
 

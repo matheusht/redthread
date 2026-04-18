@@ -8,7 +8,7 @@ source_of_truth:
   - docs/DEFENSE_PIPELINE.md
   - docs/PHASE_REGISTRY.md
 updated_by: codex
-updated_at: 2026-04-15
+updated_at: 2026-04-18
 ---
 
 # Telemetry and Monitoring
@@ -51,6 +51,12 @@ The daemon can:
 Important:
 - daemon alerts are for **investigation**
 - daemon alerts do not by themselves prove safety failure or benign-utility regression
+
+As of 2026-04-18, telemetry probes also emit shared execution-truth seam labels at the provider boundary:
+- `telemetry.canary`
+- `telemetry.warmup`
+
+These labels help operators separate telemetry signal traffic from judge, persona, defense, or attack traffic.
 
 ## What telemetry really measures
 

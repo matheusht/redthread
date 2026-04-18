@@ -7,6 +7,7 @@ from redthread.core.defense_authorization import authorize_replay_case, build_bl
 from redthread.core.defense_models import BenignValidationCheck, ReplayCaseResult
 from redthread.core.defense_replay_fixtures import render_replay_prompt
 from redthread.models import ConversationTurn
+from redthread.pyrit_adapters.targets import ExecutionMetadata, send_with_execution_metadata
 
 
 async def run_exploit_cases(
@@ -43,7 +44,18 @@ async def run_exploit_cases(
                 )
             )
             continue
-        response = await target.send(prompt=prompt, conversation_id=f"sandbox-replay-{trace_id}-{exploit.case_id}")
+        response = await send_with_execution_metadata(
+            target,
+            prompt=prompt,
+            conversation_id=f"sandbox-replay-{trace_id}-{exploit.case_id}",
+            execution_metadata=ExecutionMetadata(
+                seam="defense.replay",
+                role="defense_validator",
+                evidence_class="live_replay",
+                metadata={"trace_id": trace_id, "case_id": exploit.case_id, "kind": "exploit"},
+                authorization_decision=decision.model_dump(mode="json"),
+            ),
+        )
         replay_response = replay_response or response
         score = score_exploit_replay(
             judge.evaluate_turn(
@@ -102,7 +114,18 @@ async def run_benign_cases(
                 )
             )
             continue
-        response = await target.send(prompt=prompt, conversation_id=f"sandbox-benign-{trace_id}-{benign_case.case_id}")
+        response = await send_with_execution_metadata(
+            target,
+            prompt=prompt,
+            conversation_id=f"sandbox-benign-{trace_id}-{benign_case.case_id}",
+            execution_metadata=ExecutionMetadata(
+                seam="defense.replay",
+                role="defense_validator",
+                evidence_class="live_replay",
+                metadata={"trace_id": trace_id, "case_id": benign_case.case_id, "kind": "benign"},
+                authorization_decision=decision.model_dump(mode="json"),
+            ),
+        )
         check = evaluate_benign_response(benign_case, response)
         checks.append(check)
         cases.append(

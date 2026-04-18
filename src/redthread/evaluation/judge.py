@@ -19,7 +19,11 @@ from redthread.evaluation.judge_support import (
 )
 from redthread.models import AttackTrace, ConversationTurn, JudgeVerdict
 from redthread.observability.tracing import traced
-from redthread.pyrit_adapters.targets import ExecutionMetadata, ExecutionRecorder
+from redthread.pyrit_adapters.targets import (
+    ExecutionMetadata,
+    ExecutionRecorder,
+    send_with_execution_metadata,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +75,8 @@ class JudgeAgent:
             rubric_description=rubric.get("description", ""),
             scale_text=format_scale(rubric),
         )
-        steps = await self._get_judge_llm().send(
+        steps = await send_with_execution_metadata(
+            self._get_judge_llm(),
             prompt=prompt,
             conversation_id=f"judge-cot-{rubric_name}",
             execution_metadata=ExecutionMetadata(
@@ -91,7 +96,8 @@ class JudgeAgent:
     ) -> JudgeVerdict:
         rubric = self.load_rubric(rubric_name)
         evaluation_steps = await self._generate_evaluation_steps(rubric, rubric_name)
-        raw_verdict = await self._get_judge_llm().send(
+        raw_verdict = await send_with_execution_metadata(
+            self._get_judge_llm(),
             prompt=SCORING_PROMPT.format(
                 evaluation_steps=evaluation_steps,
                 scale_text=format_scale(rubric),

@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from redthread.config.settings import RedThreadSettings
+from redthread.pyrit_adapters.targets import ExecutionMetadata, send_with_execution_metadata
 from redthread.telemetry.models import TelemetryRecord
 from redthread.telemetry.prompts import CANARY_PROMPTS, estimate_tokens, hash_prompt
 from redthread.telemetry.storage import TelemetryStorage
@@ -86,9 +87,16 @@ class TelemetryCollector:
             response = ""
 
             try:
-                response = await target.send(
+                response = await send_with_execution_metadata(
+                    target,
                     prompt=canary_prompt,
                     conversation_id=f"canary-{canary_id}",
+                    execution_metadata=ExecutionMetadata(
+                        seam="telemetry.canary",
+                        role="telemetry",
+                        evidence_class="telemetry_signal",
+                        metadata={"canary_id": canary_id},
+                    ),
                 )
             except Exception as exc:
                 error = True

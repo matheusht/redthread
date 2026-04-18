@@ -10,7 +10,12 @@ from typing import Any
 from redthread.config.settings import RedThreadSettings
 from redthread.engine import RedThreadEngine
 from redthread.models import CampaignConfig
-from redthread.pyrit_adapters.targets import build_target
+from redthread.pyrit_adapters.targets import (
+    ExecutionMetadata,
+    ExecutionRecorder,
+    build_target,
+    send_with_execution_metadata,
+)
 from redthread.telemetry.asi import AgentStabilityIndex
 from redthread.telemetry.collector import TelemetryCollector
 from redthread.telemetry.drift import DriftDetector
@@ -26,8 +31,13 @@ class SecurityGuardDaemon:
     unsafe, safe, or utility-regressed.
     """
 
-    def __init__(self, settings: RedThreadSettings) -> None:
+    def __init__(
+        self,
+        settings: RedThreadSettings,
+        execution_recorder: ExecutionRecorder | None = None,
+    ) -> None:
         self.settings = settings
+        self._execution_recorder = execution_recorder
         self.collector = TelemetryCollector(settings)
         self._stop_event = asyncio.Event()
         self._last_alert_time = 0.0
@@ -59,7 +69,17 @@ class SecurityGuardDaemon:
             prompt = random.choice(prompts)
             try:
                 start_t = time.monotonic()
-                response = await target.send(prompt=prompt, conversation_id=f"warmup-{i}")
+                response = await send_with_execution_metadata(
+                    target,
+                    prompt=prompt,
+                    conversation_id=f"warmup-{i}",
+                    execution_metadata=ExecutionMetadata(
+                        seam="telemetry.warmup",
+                        role="telemetry",
+                        evidence_class="telemetry_signal",
+                        metadata={"probe_index": i},
+                    ),
+                )
                 lat = (time.monotonic() - start_t) * 1000
                 record = await self.collector.record_interaction(
                     prompt=prompt,
@@ -104,7 +124,10 @@ class SecurityGuardDaemon:
     async def start(self) -> None:
         """Start the background monitoring loop."""
         logger.info("🛡️ Daemon | starting Security Guard (interval=%ds)", self.settings.monitor_probe_interval)
-        target = build_target(self.settings)
+        target = build_target(
+            self.settings,
+            execution_recorder=self._execution_recorder,
+        )
         
         try:
             drift_detector = await self._warmup(target)

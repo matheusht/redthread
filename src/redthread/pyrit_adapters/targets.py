@@ -15,6 +15,7 @@ from redthread.pyrit_adapters.factories import (
     build_target,
 )
 from redthread.pyrit_adapters.runtime import _build_pyrit_target, ensure_pyrit_memory_initialized
+from redthread.pyrit_adapters.send_helpers import send_with_execution_metadata
 
 __all__ = [
     "ExecutionMetadata",
@@ -28,5 +29,6 @@ __all__ = [
     "build_rollout_attacker",
     "build_target",
     "ensure_pyrit_memory_initialized",
+    "send_with_execution_metadata",
     "_build_pyrit_target",
 ]

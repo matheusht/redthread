@@ -3,11 +3,10 @@
 from __future__ import annotations
 
 from redthread.config.settings import RedThreadSettings
-from redthread.core.defense_assets import (
-    DEFENSE_ARCHITECT_SYSTEM_PROMPT,
-    DEFENSE_ARCHITECT_USER_TEMPLATE,
+from redthread.core.defense_live_runtime import (
+    generate_live_guardrail,
+    run_live_defense_validation,
 )
-from redthread.core.defense_evidence import LIVE_VALIDATION_ERROR
 from redthread.core.defense_models import (
     DeploymentRecord,
     GuardrailProposal,
@@ -20,13 +19,19 @@ from redthread.core.defense_replay_runner import DefenseReplayRunner
 from redthread.core.defense_reporting import build_deployment_record
 from redthread.models import AttackResult, AttackTrace, JudgeVerdict
 from redthread.observability.tracing import traced
+from redthread.pyrit_adapters.targets import ExecutionRecorder
 
 
 class DefenseSynthesisEngine:
     """Converts a confirmed jailbreak AttackResult into a guardrail patch."""
 
-    def __init__(self, settings: RedThreadSettings) -> None:
+    def __init__(
+        self,
+        settings: RedThreadSettings,
+        execution_recorder: ExecutionRecorder | None = None,
+    ) -> None:
         self.settings = settings
+        self._execution_recorder = execution_recorder
 
     @traced
     async def run(self, result: AttackResult) -> DeploymentRecord:
@@ -100,23 +105,12 @@ class DefenseSynthesisEngine:
                 "trust to session initialization rather than dynamic claims."
             )
         else:
-            from redthread.pyrit_adapters.targets import build_defense_architect
-
-            architect_llm = build_defense_architect(self.settings)
-            user_msg = DEFENSE_ARCHITECT_USER_TEMPLATE.format(
-                tactic=segment.persona_tactic,
-                payload=segment.attack_payload,
-                response=segment.target_response,
-                score=segment.score,
-                reasoning=verdict.reasoning,
+            raw_output = await generate_live_guardrail(
+                self.settings,
+                segment=segment,
+                verdict=verdict,
+                execution_recorder=self._execution_recorder,
             )
-            try:
-                raw_output = await architect_llm.send(
-                    prompt=f"[SYSTEM]: {DEFENSE_ARCHITECT_SYSTEM_PROMPT}\n\n[USER]: {user_msg}",
-                    conversation_id=f"defense-architect-{segment.trace_id}",
-                )
-            finally:
-                architect_llm.close()
 
         classification, clause, rationale = parse_architect_output(raw_output)
         return GuardrailProposal(
@@ -135,36 +129,13 @@ class DefenseSynthesisEngine:
         runner = DefenseReplayRunner(self.settings.success_threshold)
         if self.settings.dry_run:
             return await runner.run_dry(segment.attack_payload, proposal.clause)
-
-        from redthread.evaluation.judge import JudgeAgent
-        from redthread.pyrit_adapters.targets import build_target
-
-        patched_target = None
-        try:
-            patched_target = build_target(self.settings)
-            judge = JudgeAgent(self.settings)
-            return await runner.run_live(
-                target=patched_target,
-                judge=judge,
-                attack_payload=segment.attack_payload,
-                guardrail_clause=proposal.clause,
-                trace_id=trace.id,
-            )
-        except Exception as exc:
-            return ValidationResult(
-                passed=False,
-                replay_response="",
-                judge_score=self.settings.success_threshold,
-                exploit_replay_passed=False,
-                benign_passed=False,
-                replay_suite_id="default-defense-replay-v4",
-                validation_mode="live",
-                evidence_mode=LIVE_VALIDATION_ERROR,
-                failure_reason=f"defense validation failed: {exc}",
-            )
-        finally:
-            if patched_target is not None:
-                patched_target.close()
+        return await run_live_defense_validation(
+            self.settings,
+            segment=segment,
+            proposal=proposal,
+            trace=trace,
+            execution_recorder=self._execution_recorder,
+        )
 
     def _deploy(
         self,
