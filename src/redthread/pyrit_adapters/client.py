@@ -11,6 +11,7 @@ from redthread.pyrit_adapters.execution_records import (
     ExecutionRecorder,
     build_execution_record,
 )
+from redthread.pyrit_adapters.interceptors import maybe_intercept_live_execution
 from redthread.pyrit_adapters.runtime import PromptChatTarget, PyritMessage, _build_pyrit_target, import_pyrit_runtime
 
 
@@ -54,14 +55,15 @@ class RedThreadTarget:
         if not conversation_id:
             conversation_id = str(uuid4())
 
-        message_cls, message_piece_cls, _ = import_pyrit_runtime()
-        piece = message_piece_cls(
-            role="user",
-            original_value=prompt,
-            conversation_id=conversation_id,
-        )
-        message = message_cls(message_pieces=[piece])
         try:
+            maybe_intercept_live_execution(execution_metadata)
+            message_cls, message_piece_cls, _ = import_pyrit_runtime()
+            piece = message_piece_cls(
+                role="user",
+                original_value=prompt,
+                conversation_id=conversation_id,
+            )
+            message = message_cls(message_pieces=[piece])
             response_messages = await self._target.send_prompt_async(message=message)
             response = _extract_response_text(response_messages)
         except Exception as exc:
