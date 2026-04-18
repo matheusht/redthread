@@ -1,5 +1,17 @@
 # Wiki Log
 
+## [2026-04-18] live-execution-truth-pass-m1 | landed shared execution records and judge seam labels
+- extracted the oversized PyRIT adapter wrapper into smaller modules under `src/redthread/pyrit_adapters/` to stay inside the repo file-cap guidance
+- added `src/redthread/pyrit_adapters/execution_records.py` so `RedThreadTarget.send(...)` can emit normalized execution records without breaking its old return type
+- instrumented `src/redthread/evaluation/judge.py` so `judge.autocot` and `judge.score` now pass seam labels through the common target boundary
+- added focused regression coverage in `tests/test_target_execution_records.py` and `tests/test_judge_execution_records.py`
+- refreshed the live execution truth research page and evaluation system page so the shipped slice and remaining gaps are documented honestly
+
+## [2026-04-17] live-execution-truth-pass | mapped the real provider/runtime boundary
+- added `docs/wiki/research/live-execution-truth-deep-dive.md` with a seam map, risk map, evidence map, exact implementation slices, and recommended order of attack for the live execution truth subsystem
+- grounded the page in source docs plus the current runtime, evaluation, judge, telemetry, persona, defense replay, and target-factory code paths
+- recorded the main next move as building a shared execution-truth spine at `src/redthread/pyrit_adapters/targets.py` before widening interception or claiming broader live proof
+
 ## [2026-04-17] phase8-live-proof-pass | added a tiny opt-in live interception lane
 - added `src/redthread/tools/authorization/live_intercept.py` with `run_live_authorization_smoke()` to prove one real local pre-action authorization boundary
 - connected the same decision path to `src/redthread/pyrit_adapters/controlled.py` so `ControlledLiveAdapter.send(..., action=...)` can block a wrapped live target send before execution

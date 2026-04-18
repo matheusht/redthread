@@ -12,7 +12,7 @@ source_of_truth:
   - src/redthread/evaluation/pipeline.py
   - tests/test_golden_dataset.py
 updated_by: codex
-updated_at: 2026-04-15
+updated_at: 2026-04-18
 ---
 
 # Evaluation and Anti-Hallucination
@@ -41,6 +41,12 @@ It uses:
 - low-temperature judge settings
 
 When this path succeeds, the result should be treated as **live judge evidence**.
+
+As of 2026-04-18, the live judge path also emits shared execution-truth seam labels at the provider boundary:
+- `judge.autocot`
+- `judge.score`
+
+This is not full repo-wide execution truth yet, but it is the first instrumented high-trust seam on the common target wrapper.
 
 ### 2. Sealed golden regression path
 Files:
