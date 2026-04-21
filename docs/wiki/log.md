@@ -1,5 +1,10 @@
 # Wiki Log
 
+## [2026-04-20] adopt-bridge-runtime-and-noui-pass | recorded runtime handoff seam and NoUI intake
+- updated `docs/wiki/research/redthread-adoptai-strategy.md` to capture the new bridge state: `adopt-redthread` now supports HAR-derived ZAPI intake, first NoUI MCP server intake, RedThread replay-bundle export, promotion-gate evaluation, and dry-run campaign-case execution
+- kept the architecture split explicit: Adopt tools provide app-specific discovery/runtime surfaces, `adopt-redthread` adapts those artifacts, and RedThread remains the attack/replay/validation/hardening engine
+- updated `docs/wiki/index.md` so future sessions can find the strategy page using the stronger runtime-handoff + NoUI framing
+
 ## [2026-04-20] adopt-bridge-har-pass | recorded real HAR intake without RedThread core drift
 - updated `docs/wiki/research/redthread-adoptai-strategy.md` with the new bridge milestone: `adopt-redthread` now supports a HAR-derived ZAPI intake lane that filters noisy browser traffic into RedThread-friendly fixtures
 - kept the architecture boundary explicit: Adopt tools improve discovery and app-specific surface generation, `adopt-redthread` adapts artifacts, and RedThread remains the attack/replay/validation/hardening engine

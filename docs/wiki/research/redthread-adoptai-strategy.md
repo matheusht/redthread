@@ -175,25 +175,37 @@ That means:
 
 ## Current bridge milestone
 
-As of 2026-04-20, the bridge repo now has a **real HAR-derived intake lane** in addition to the earlier sample catalog lane.
+As of 2026-04-20, the bridge repo now has three meaningful intake/handoff lanes:
+
+1. sample catalog-style ZAPI intake
+2. real HAR-derived ZAPI intake
+3. first NoUI MCP server intake (`manifest.json` + `tools.json`)
+
+It also now reaches two real RedThread seams:
+- **ReplayBundle export + promotion-gate evaluation**
+- **dry-run campaign-case export + RedThread engine execution**
 
 What this means:
 - `adopt-redthread` can ingest a HAR-shaped ZAPI capture
-- it can filter noisy browser traffic down to app-like API calls
-- it can normalize those calls into the same RedThread-friendly fixture shape already used by replay-pack and gate scripts
+- it can ingest a NoUI MCP server output
+- it can normalize those artifacts into the same RedThread-friendly fixture model
+- it can export those fixtures into RedThread replay payloads and dry-run campaign seeds
+- it can evaluate the replay payload with RedThread's real promotion-gate code
+- it can run one generated case through RedThread's real dry-run engine path
 
 What this does **not** mean:
 - RedThread has become a browser automation product
 - RedThread core now depends on ZAPI, NoUI, or Tabby runtime code
 - the bridge is now a full live production integration
+- generated campaign prompts are production-truth target prompts
 
 This milestone keeps the original split intact:
 - **Adopt tools improve discovery and app-specific surface generation**
-- **Adopt RedThread adapts those artifacts into fixtures**
+- **Adopt RedThread adapts those artifacts into fixtures and runtime handoff payloads**
 - **RedThread remains the attack, replay, validation, and hardening engine**
 
 The practical value is personalization without identity drift.
-The target app can now shape the fixtures more realistically, while RedThread still owns the security assurance layer.
+The target app can now shape the fixtures more realistically, and the bridge can hand them into actual RedThread replay/dry-run seams, while RedThread still owns the security assurance layer.
 
 ---
 
