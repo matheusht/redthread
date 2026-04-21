@@ -1,5 +1,10 @@
 # Wiki Log
 
+## [2026-04-21] adopt-bridge-live-runner-pass | recorded one-command live bridge workflow
+- updated `docs/wiki/research/redthread-adoptai-strategy.md` to capture the new bridge state: `adopt-redthread` now has a one-command artifact pipeline, a one-command live ZAPI capture runner, replay-plan/gate generation from the same normalized fixture contract, and the same RedThread replay/dry-run handoff seams
+- kept the architecture split explicit: Adopt tools still provide app-specific discovery/runtime surfaces, `adopt-redthread` still adapts those artifacts, and RedThread still remains the attack/replay/validation/hardening engine
+- updated `docs/wiki/index.md` so future sessions can find the strategy page using the stronger live-runner + workflow-automation framing
+
 ## [2026-04-20] adopt-bridge-runtime-and-noui-pass | recorded runtime handoff seam and NoUI intake
 - updated `docs/wiki/research/redthread-adoptai-strategy.md` to capture the new bridge state: `adopt-redthread` now supports HAR-derived ZAPI intake, first NoUI MCP server intake, RedThread replay-bundle export, promotion-gate evaluation, and dry-run campaign-case execution
 - kept the architecture split explicit: Adopt tools provide app-specific discovery/runtime surfaces, `adopt-redthread` adapts those artifacts, and RedThread remains the attack/replay/validation/hardening engine
