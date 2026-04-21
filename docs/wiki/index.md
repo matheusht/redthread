@@ -47,6 +47,7 @@ This is the primary content map for the RedThread wiki.
 - [research/orchestration-runtime-hardening-pass.md](research/orchestration-runtime-hardening-pass.md) — Execution log for runtime-truth hardening across the engine facade, supervisor flow, and operator surfaces.
 - [research/live-execution-truth-deep-dive.md](research/live-execution-truth-deep-dive.md) — Seam map, risk map, evidence map, and exact hardening slices for the real provider/runtime truth boundary.
 - [research/agentic-security-shift-2025-2026.md](research/agentic-security-shift-2025-2026.md) — Research synthesis on the move from chatbot jailbreaks to tool hijacking, confused deputy chains, token exhaustion, and deterministic defenses.
+- [research/redthread-adoptai-strategy.md](research/redthread-adoptai-strategy.md) — Strategy page for keeping RedThread standalone while using Adopt AI in a separate integration repo, including the new HAR-derived bridge lane for app-specific intake.
 
 ## Timelines
 

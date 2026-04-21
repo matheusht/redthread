@@ -1,5 +1,16 @@
 # Wiki Log
 
+## [2026-04-20] adopt-bridge-har-pass | recorded real HAR intake without RedThread core drift
+- updated `docs/wiki/research/redthread-adoptai-strategy.md` with the new bridge milestone: `adopt-redthread` now supports a HAR-derived ZAPI intake lane that filters noisy browser traffic into RedThread-friendly fixtures
+- kept the architecture boundary explicit: Adopt tools improve discovery and app-specific surface generation, `adopt-redthread` adapts artifacts, and RedThread remains the attack/replay/validation/hardening engine
+- updated `docs/wiki/index.md` so future sessions can find the strategy page with the new HAR-intake framing quickly
+
+## [2026-04-20] adopt-strategy-pass | added standalone-vs-integration strategy page
+- added `docs/wiki/research/redthread-adoptai-strategy.md` to capture the recommended split: keep RedThread standalone and move Adopt AI integration work into a separate repo
+- recorded role boundaries for Adopt AI as the builder plane and RedThread as the security assurance plane
+- documented phased ZAPI workflow levels from discovery-only intake through pre-publish certification
+- updated `docs/wiki/index.md` so the new strategy page is discoverable
+
 ## [2026-04-18] live-execution-truth-pass-m4 | finished interception, attack-lane labeling, and smoke coverage
 - added a common-boundary interception hook under `src/redthread/pyrit_adapters/interceptors.py` so instrumented live sends can be blocked before provider execution
 - wired the first mainstream blocked path through persona generation using shared authorization metadata and a new interception test
