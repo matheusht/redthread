@@ -190,6 +190,7 @@ It also now has a bounded live-control ladder on top of those lanes:
 - **bounded reviewed staging-write replay**
 - **bounded grouped workflow replay**
 - **evidence-aware replay gate**
+- **session-aware workflow context packs**
 
 And it still reaches two real RedThread seams:
 - **ReplayBundle export + promotion-gate evaluation**
@@ -202,6 +203,18 @@ What this means now:
 - it can generate `live_attack_plan.json` and `live_workflow_plan.json`
 - it can execute bounded live lanes when policy and approval context allow them
 - it can now carry **bounded workflow evidence** forward across grouped sequential steps
+- it can now declare bounded `workflow_context_requirements` and `session_context_requirements` in workflow plan artifacts
+- it can validate whether approved auth/write context is actually present before a workflow starts
+- it now carries richer bounded workflow contracts like same-target-env continuity, required header-family hints, and explicit predecessor-step dependency contracts
+- it now emits a machine-readable `workflow_requirement_summary` so operators and gate logic can see workflow-class counts and context-contract failure counts without pretending full session orchestration exists
+- it now pushes that bounded contract summary up into top-level bridge summary artifacts and plain-text gate notes so humans do not need to inspect nested replay JSON first
+- it now supports bounded declared response bindings so a prior workflow step can feed an explicit scalar value from response JSON or response headers into a later request URL placeholder
+- the bridge can now also emit a first small class of those bindings automatically by preserving full captured request URLs and turning id-like query parameters in later workflow steps into declared placeholders sourced from the previous step response JSON
+- inferred bindings now carry explicit review metadata like `inferred`, `confidence`, `inference_reason`, and `review_status`, and replay now blocks them with `binding_review_required` until an operator approves or replaces them
+- the bridge pipeline can now accept a binding override file so operators can approve inferred bindings, reject them, or replace them with explicit reviewed bindings
+- it records extracted and applied response bindings in workflow evidence and tracks declared/applied binding counts plus inferred/approved/pending-review counts in workflow summaries
+- it can now target a bounded `request_body_json` field for reviewed writes when the write approval explicitly allows the bound body to be used
+- it can distinguish review/context supply gaps from workflow context mismatch more clearly in gate-facing reasons, including bounded `auth_header_family_mismatch`, `response_binding_missing`, and `response_binding_target_missing` failures when runtime contract expectations do not match
 - it can emit structured workflow evidence like:
   - `final_state`
   - per-step `workflow_evidence.state_before`
@@ -221,6 +234,7 @@ What this still does **not** mean:
 - the bridge is now a full live production integration
 - generated campaign prompts are production-truth target prompts
 - workflow replay has become real browser/session-state orchestration
+- the bridge can create, refresh, or repair browser/session state automatically
 - later requests are dynamically rewritten from prior response bodies
 - RedThread is already doing rich autonomous live attack execution immediately after discovery
 
@@ -497,7 +511,11 @@ Current bridge truth:
 - the bridge now has a **bounded version** of this layer
 - grouped workflow replay exists
 - it carries bounded workflow evidence forward in output artifacts
-- it emits structured failure reasons for gate mapping
+- it declares bounded workflow/session context requirements before replay
+- it now includes richer bounded contracts like same-target-env continuity, required header-family hints, and explicit predecessor-step dependencies
+- it can fail early with structured reasons like missing approved auth context, auth-header-family mismatch, host continuity mismatch, target-env mismatch, or declared response-binding mismatch
+- it can summarize workflow classes, binding counts, and context-contract failures in machine-readable replay output, top-level bridge summary artifacts, and operator-facing gate notes
+- but automatic binding emission is still intentionally narrow today: only a small query-parameter heuristic exists, not full body/path inference
 - but it is still not full browser/session-state orchestration
 
 ## Level 4 — Auth/session-aware live replay

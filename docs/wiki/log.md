@@ -1,5 +1,35 @@
 # Wiki Log
 
+## [2026-04-22] adopt-bridge-binding-review-pass | recorded reviewed binding inference pack
+- updated `docs/wiki/research/redthread-adoptai-strategy.md` to capture Phase 9.2: inferred workflow bindings now carry explicit review metadata, replay blocks pending-review inferred bindings with `binding_review_required`, the bridge pipeline can accept a binding override file, and reviewed write flows can use bounded `request_body_json` binding when write approval explicitly opts in
+- kept the architecture split explicit: this is still bounded reviewed binding control inside the Adopt bridge, not browser orchestration, session repair, or freeform mutation inside RedThread core
+- updated `docs/wiki/index.md` so future sessions can find the reviewed binding override seam quickly
+
+## [2026-04-22] adopt-bridge-auto-binding-hint-pass | recorded first bridge-emitted binding hints
+- updated `docs/wiki/research/redthread-adoptai-strategy.md` to capture the next bounded bridge step: `adopt-redthread` now preserves full captured request URLs and can automatically emit a narrow class of response bindings for later id-like query parameters in workflow steps, instead of requiring hand-edited workflow JSON for every binding case
+- kept the architecture split explicit: this is still a narrow bridge heuristic and not full body/path inference, browser orchestration, or session repair
+- updated `docs/wiki/index.md` so future sessions can find the first auto-binding seam quickly
+
+## [2026-04-22] adopt-bridge-response-binding-pass | recorded bounded response-derived carry-forward
+- updated `docs/wiki/research/redthread-adoptai-strategy.md` to capture the next bounded bridge step: `adopt-redthread` now supports declared response bindings from prior step JSON/headers into later request URL placeholders, emits extracted/applied binding evidence, and surfaces binding counts plus binding-mismatch reasons in workflow summaries and gate-facing output
+- kept the architecture split explicit: this is still bounded declared value carry-forward in the Adopt bridge, not browser orchestration, session repair, or freeform request mutation inside RedThread core
+- updated `docs/wiki/index.md` so future sessions can find the new bounded response-binding seam quickly
+
+## [2026-04-22] adopt-bridge-workflow-operator-summary-pass | recorded operator-visible workflow contract summaries
+- updated `docs/wiki/research/redthread-adoptai-strategy.md` to capture the next bounded bridge step: `adopt-redthread` now surfaces workflow requirement summaries in top bridge artifacts and gate notes, and now detects bounded `auth_header_family_mismatch` failures when approved auth context does not match captured auth header requirements
+- kept the architecture split explicit: this is still bounded contract validation and evidence surfacing, not browser orchestration or session repair
+- updated `docs/wiki/index.md` so future sessions can find the operator-visible workflow summary change quickly
+
+## [2026-04-22] adopt-bridge-workflow-context-summary-pass | recorded richer bounded workflow contracts and summaries
+- updated `docs/wiki/research/redthread-adoptai-strategy.md` to capture the Phase 8.1 bridge state: `adopt-redthread` now adds same-target-env continuity, required header-family hints, explicit predecessor-step dependency contracts, and machine-readable workflow requirement summaries on top of the earlier bounded workflow-context layer
+- kept the architecture split explicit: Adopt tools still provide discovery/runtime realism, `adopt-redthread` still adapts artifacts and bounded live workflow controls, and RedThread still remains the attack/replay/validation/hardening engine rather than a browser automation runtime
+- updated `docs/wiki/index.md` so future sessions can find the stronger workflow-contract + summary framing quickly
+
+## [2026-04-22] adopt-bridge-workflow-context-pass | recorded bounded session-aware workflow context packs
+- updated `docs/wiki/research/redthread-adoptai-strategy.md` to capture the new bridge state: `adopt-redthread` now declares bounded workflow/session context requirements, validates approved auth or write context before workflow replay, and surfaces clearer gate-facing reasons for review gaps versus context mismatch
+- kept the architecture split explicit: Adopt tools still provide discovery/runtime realism, `adopt-redthread` still adapts artifacts and bounded live workflow controls, and RedThread still remains the attack/replay/validation/hardening engine rather than a browser automation runtime
+- updated `docs/wiki/index.md` so future sessions can find the stronger session-aware workflow-context framing quickly
+
 ## [2026-04-22] adopt-bridge-workflow-evidence-pass | recorded bounded workflow evidence and gate mapping
 - updated `docs/wiki/research/redthread-adoptai-strategy.md` to capture the new bridge state: `adopt-redthread` now carries bounded workflow evidence forward across grouped live workflow replay, emits structured workflow failure reasons, and feeds those results into the evidence-aware replay gate
 - kept the architecture split explicit: Adopt tools still provide discovery/runtime realism, `adopt-redthread` still adapts artifacts and bounded live evidence, and RedThread still remains the attack/replay/validation/hardening engine rather than a browser automation runtime
