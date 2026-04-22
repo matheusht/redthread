@@ -1,5 +1,10 @@
 # Wiki Log
 
+## [2026-04-22] adopt-bridge-review-manifest-pass | recorded unified workflow review manifest
+- updated `docs/wiki/research/redthread-adoptai-strategy.md` to capture the next bounded bridge step: `adopt-redthread` now writes a unified `workflow_review_manifest.json` that combines workflow/session context requirements, response-binding review decisions, replay status, and failure summaries for operator review
+- kept the boundary honest: this is a review/export convenience artifact only, not browser orchestration, session repair, or new live execution power inside RedThread core
+- updated `docs/wiki/index.md` so future sessions can find the operator review manifest seam quickly
+
 ## [2026-04-22] adopt-bridge-workflow-summary-pass | recorded richer operator workflow contract summaries
 - updated `docs/wiki/research/redthread-adoptai-strategy.md` to capture the bounded Phase 9.5 follow-through: `adopt-redthread` now surfaces explicit same-auth/same-write workflow contract fields plus workflow failure-class summaries in replay, bridge summary, and gate-visible notes
 - kept the boundary honest: this is operator-facing contract visibility only, not browser orchestration, session repair, or a broader live automation claim inside RedThread core
