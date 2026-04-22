@@ -61,9 +61,45 @@ The engine executed the workflow linearly. Here is the step-by-step breakdown fr
 
 ### Takeaway & Next Steps
 
-The bridge pipeline performed exactly as designed:
+The bridge pipeline performed exactly as designed initially:
 1. **Secure Halting**: It carries session state forward but stops immediately (`live_workflow_aborted_count: 1`) when a step fails, preventing aggressive/spammy behavior when contracts break.
 2. **Contract Mismatch Identification**: The 400 Bad Request clearly highlights a stateful dependency between steps. 
 
-**How to fix the workflow**:
-To make the entire workflow succeed, the `POST /api/chat` payload requires the real `chatId` created in Step 2. This proves the necessity of **Binding Overrides** in the `adopt-redthread` architecture. The operator must instruct the engine to pipe `response.chat.id` from `post_api_chats` into the `chatId` field of `post_api_chat`.
+---
+
+## Phase 3: Stateful Execution & Core Engine Upgrades (`runs/atp_tennis_01_live_bound`)
+
+To resolve the 400 Bad Request, we needed to dynamically pass the `chat.id` into the `POST /api/chat` payload. However, we discovered several deep structural challenges that required upgrading the RedThread engine itself.
+
+### Challenge 1: HAR Ingestion Stripping (Fallback Body)
+ZAPI HAR ingestors intentionally strip request bodies for privacy. This meant the engine lacked a structural JSON blueprint to apply bindings to.
+**Solution**: We modified the engine (`adapters/live_replay/workflow_bindings.py` and `adapters/live_replay/workflow_executor.py`) to inject the `approved_write_context.json` body as a fallback blueprint when `use_bound_body_json: true` is set.
+
+### Challenge 2: Dual ID Validation (404 Not Found)
+After binding `chatId`, the server returned a `404 Not Found`. We discovered the Vercel AI SDK expects both `chatId` AND `id` in the JSON payload to match the backend chat ID.
+**Solution**: We expanded `binding_overrides_atp.json` to map `chat.id` into both `request_body_json.chatId` and `request_body_json.id`.
+
+### Challenge 3: Session Cookie Rotation (404 Not Found)
+Even with correct IDs, the server returned `404 Not Found`. We discovered that `POST /api/chats` issues a brand new session cookie (`tennisbot_session`) in its response. Because the engine was using the hardcoded cookie from `approved_write_context.json`, the server created the chat in one session, but we attempted to append messages to it from a different session!
+**Solution: Request Header Bindings**
+We implemented native `request_header` binding support into the RedThread engine:
+1. Expanded `SUPPORTED_BINDING_TARGETS` in `workflow_bindings.py`.
+2. Passed `approved_write_headers` through the workflow executor to establish placeholder baselines.
+3. Updated `_approved_write_request` to merge bound headers.
+4. Added a binding to map `chat.sessionId` from the `POST /api/chats` response into the `cookie` header of `POST /api/chat`, replacing a `{{SESSION_ID}}` placeholder.
+
+### Final Execution Result
+With all three engine upgrades in place, we ran the pipeline with `binding_overrides_atp.json`.
+
+- **Result**: `live_workflow_aborted_count: 0`
+- **Result**: `applied_response_binding_count: 3` (chatId, id, cookie)
+- **Result**: The engine cleanly handled the Vercel AI SDK streaming chunked response (gracefully logging a `timeout` when the socket hit 10s waiting for LLM generation chunks without crashing the engine).
+
+### Final Takeaway
+The Adopt-RedThread bridge now supports **one stronger bounded class** of stateful workflows. This includes:
+- dynamic body-field mutation
+- reviewed fallback body templates
+- reviewed header/session injection
+- multi-step replay with evidence carry-forward
+
+While a major milestone, this is not a generally solved problem. Broader real-world statefulness (e.g., chunked stream aware response handling, CSRF refresh patterns, broader cookie jar lifecycle, complex branching, or retry logic) remains out of scope for the current engine layer.

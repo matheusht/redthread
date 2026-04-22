@@ -1,5 +1,12 @@
 # Wiki Log
 
+## [2026-04-22] atp-tennis-bot-live-test | achieved stateful live workflow replay with native header bindings
+- updated `docs/wiki/research/atp-tennis-live-workflow-test.md` to document the final successful pipeline run against the ATP Tennis Bot
+- upgraded `adopt-redthread` core engine to support `request_header` binding targets natively in `adapters/live_replay/workflow_bindings.py`
+- implemented dynamic fallback body injection for HAR ingestors that strip request bodies for privacy
+- proved the engine can dynamically map session cookies and payload IDs between steps, resolving Vercel AI SDK 404/400 validation errors
+- successfully caught and documented streaming LLM inference timeouts (`TimeoutError`) as valid execution artifacts without crashing the engine
+
 ## [2026-04-22] atp-tennis-bot-live-test | executed live workflow replay with auth and write context
 - documented the ATP Tennis Bot testing results in `docs/wiki/research/atp-tennis-live-workflow-test.md`
 - confirmed that the pipeline securely halts at the review gate when auth/write context is missing
