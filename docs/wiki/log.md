@@ -1,5 +1,10 @@
 # Wiki Log
 
+## [2026-04-22] stateful-workflow-replay-phase-e1 | implemented binding outcome history recording
+- updated `docs/wiki/research/stateful-workflow-replay-roadmap.md` to mark Phase E1 as shipped in `adopt-redthread`
+- updated `docs/wiki/research/redthread-adoptai-strategy.md` to record the new append-only `binding_history.jsonl` artifact for successful applied bindings
+- updated `docs/wiki/index.md` so future sessions can find the E1 history-recording seam quickly
+
 ## [2026-04-22] stateful-workflow-replay-phase-d | implemented Phase D streaming endpoint awareness
 - updated `docs/wiki/research/stateful-workflow-replay-roadmap.md` to mark Phase D1 and D2 as shipped in `adopt-redthread`
 - updated `docs/wiki/research/redthread-adoptai-strategy.md` to record the new bounded streaming behavior: first-chunk evidence, `stream_open_partial_read`, and configurable `stream_max_bytes`

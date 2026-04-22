@@ -173,11 +173,15 @@ Replay now accepts `stream_max_bytes` (default: `512`) on the bounded live repla
 
 ### E1 — Per-Run Binding Outcome Recording
 
+**Status (2026-04-22): shipped in `adopt-redthread`.**
+
 After each successful workflow replay, record which bindings were applied to a `binding_history.jsonl` append log:
 
 ```json
 {"source_field": "chat.id", "target_field": "chatId", "target_type": "body", "outcome": "success", "app_host": "atp-tennis-bot.vercel.app"}
 ```
+
+The current bounded implementation records one append-only JSONL row per successful applied binding outcome, including the workflow id, source case id, source metadata, target metadata, and app host. It does not promote patterns yet.
 
 ### E2 — Pattern Promotion
 
