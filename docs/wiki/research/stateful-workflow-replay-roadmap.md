@@ -147,6 +147,8 @@ This should go into both the `live_workflow_replay.json` per-step evidence and a
 
 ### D1 — First-Chunk Evidence
 
+**Status (2026-04-22): shipped in `adopt-redthread`.**
+
 When the server sends a chunked streaming response, the engine:
 
 1. Reads the **first chunk only** (or up to 512 bytes).
@@ -159,7 +161,9 @@ This allows the operator to distinguish:
 
 ### D2 — Configurable Stream Read Budget
 
-Add `stream_max_bytes` to the replay config (default: `512`). Let the operator increase it when they need more response evidence for security evaluation.
+**Status (2026-04-22): shipped in `adopt-redthread`.**
+
+Replay now accepts `stream_max_bytes` (default: `512`) on the bounded live replay entrypoints. Operators can raise it when they need slightly more stream evidence for review without turning the engine into a full stream client.
 
 ---
 

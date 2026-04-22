@@ -96,7 +96,16 @@ With all three engine upgrades in place, we ran the pipeline with `binding_overr
 
 - **Result**: `live_workflow_aborted_count: 0`
 - **Result**: `applied_response_binding_count: 3` (chatId, id, cookie)
-- **Result**: The engine cleanly handled the Vercel AI SDK streaming chunked response (gracefully logging a `timeout` when the socket hit 10s waiting for LLM generation chunks without crashing the engine).
+- **Result**: At the time of this test, the engine handled the Vercel AI SDK streaming chunked response by logging a bounded `timeout` instead of crashing.
+
+### Follow-up after this test
+
+This ATP run exposed the next honest gap clearly: we still could not tell the difference between "the stream opened" and "no useful bytes ever arrived." That gap drove Phase D of the roadmap.
+
+As of 2026-04-22, `adopt-redthread` now has the bounded follow-up:
+- first-chunk / first-byte stream evidence (`stream_opened`, `first_chunk_bytes`, `first_chunk_preview`)
+- `stream_open_partial_read` classification instead of flattening every streaming case into `timeout`
+- configurable `stream_max_bytes` budget for small operator-tunable evidence capture
 
 ### Final Takeaway
 The Adopt-RedThread bridge now supports **one stronger bounded class** of stateful workflows. This includes:

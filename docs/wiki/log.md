@@ -1,5 +1,11 @@
 # Wiki Log
 
+## [2026-04-22] stateful-workflow-replay-phase-d | implemented Phase D streaming endpoint awareness
+- updated `docs/wiki/research/stateful-workflow-replay-roadmap.md` to mark Phase D1 and D2 as shipped in `adopt-redthread`
+- updated `docs/wiki/research/redthread-adoptai-strategy.md` to record the new bounded streaming behavior: first-chunk evidence, `stream_open_partial_read`, and configurable `stream_max_bytes`
+- updated `docs/wiki/research/atp-tennis-live-workflow-test.md` with the follow-up note that the ATP timeout result was the precursor to the new bounded streaming lane
+- updated `docs/wiki/index.md` so future sessions can find the Phase D streaming-awareness state quickly
+
 ## [2026-04-22] stateful-workflow-replay-phase-c | implemented Phase C operator manifest-first flow
 - strengthened `workflow_review_manifest.json` in `adopt-redthread` so it now surfaces top-level and per-workflow `required_contexts`, `body_template_gaps`, and `open_questions` for pre-run operator review
 - bridge workflow now writes the manifest before live workflow replay and refreshes it after replay with enriched candidate/body/path/header review data when live results exist
