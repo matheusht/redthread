@@ -1,5 +1,10 @@
 # Wiki Log
 
+## [2026-04-22] adopt-bridge-body-inference-pass | recorded narrow reviewed body-field inference
+- updated `docs/wiki/research/redthread-adoptai-strategy.md` to capture Phase 9.4: `adopt-redthread` now emits a narrow automatic body-field inference class for id-like JSON body fields using the immediately previous step response JSON by exact field name, while still requiring pending-review approval and explicit reviewed-write opt-in before live execution
+- kept the architecture split explicit: this is still bounded reviewed binding control inside the Adopt bridge, not broad schema inference, browser orchestration, session repair, or freeform mutation inside RedThread core
+- updated `docs/wiki/index.md` so future sessions can find the narrow body-inference seam quickly
+
 ## [2026-04-22] adopt-bridge-path-binding-pass | recorded bounded path binding and review artifacts
 - updated `docs/wiki/research/redthread-adoptai-strategy.md` to capture Phase 9.3: `adopt-redthread` now supports bounded `request_path` binding targets, surfaces inferred/approved/pending/rejected/replaced binding counts, and emits per-workflow binding review artifacts so operators can inspect review decisions directly in replay output
 - kept the architecture split explicit: this is still bounded reviewed binding control inside the Adopt bridge, not broad path/body inference, browser orchestration, session repair, or freeform mutation inside RedThread core

@@ -215,6 +215,7 @@ What this means now:
 - it records extracted and applied response bindings in workflow evidence and tracks declared/applied binding counts plus inferred/approved/pending-review/rejected/replaced counts in workflow summaries
 - workflow replay now emits per-workflow binding review artifacts so operators can see which inferred bindings stayed pending, got approved, or were replaced before execution
 - it can now target a bounded `request_path` field for reviewed path placeholder replacement and a bounded `request_body_json` field for reviewed writes when the write approval explicitly allows the bound body to be used
+- the bridge now also emits one narrow automatic body-field inference class: id-like JSON body fields in a later step can bind from the immediately previous step response JSON by exact field name, but they still default to pending review and still need explicit reviewed-write approval to go live
 - it can distinguish review/context supply gaps from workflow context mismatch more clearly in gate-facing reasons, including bounded `auth_header_family_mismatch`, `response_binding_missing`, and `response_binding_target_missing` failures when runtime contract expectations do not match
 - it can emit structured workflow evidence like:
   - `final_state`
