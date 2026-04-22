@@ -76,7 +76,7 @@ class ProvenanceRecord(BaseModel):
     derived_from_untrusted: bool = False
 
     @model_validator(mode="after")
-    def normalize_lineage_flags(self) -> "ProvenanceRecord":
+    def normalize_lineage_flags(self) -> ProvenanceRecord:
         if self.trust_level == TrustLevel.TRUSTED:
             if self.derived_from_untrusted:
                 msg = "trusted provenance cannot also be marked derived_from_untrusted"

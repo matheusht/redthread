@@ -8,8 +8,14 @@ from redthread.config.settings import RedThreadSettings, TargetBackend
 from redthread.orchestration.models import AuthorizationDecisionType
 from redthread.personas.generator import PersonaGenerator
 from redthread.pyrit_adapters.client import RedThreadTarget
-from redthread.pyrit_adapters.interceptors import LiveExecutionInterceptionError, intercept_live_execution
-from redthread.tools.authorization import AuthorizationPolicy, build_execution_authorization_interceptor
+from redthread.pyrit_adapters.interceptors import (
+    LiveExecutionInterceptionError,
+    intercept_live_execution,
+)
+from redthread.tools.authorization import (
+    AuthorizationPolicy,
+    build_execution_authorization_interceptor,
+)
 
 
 @dataclass
@@ -65,10 +71,12 @@ async def test_common_boundary_interceptor_blocks_persona_generation_before_send
         reason="block test",
     )
 
-    with pytest.raises(LiveExecutionInterceptionError, match="Execution blocked"):
-        with intercept_live_execution(
+    with (
+        pytest.raises(LiveExecutionInterceptionError, match="Execution blocked"),
+        intercept_live_execution(
             build_execution_authorization_interceptor(policies=[deny])
-        ):
-            await generator.generate("Extract system prompt")
+        ),
+    ):
+        await generator.generate("Extract system prompt")
 
     assert fake_target.calls == 0

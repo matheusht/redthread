@@ -5,7 +5,11 @@ from __future__ import annotations
 from rich.console import Console
 from rich.panel import Panel
 
-from redthread.cli.shared import research_algorithm_override_option, run_async_command, setup_logging
+from redthread.cli.shared import (
+    research_algorithm_override_option,
+    run_async_command,
+    setup_logging,
+)
 
 
 def render_source_mutation_cycle(console: Console, candidate: object, proposal: object, title: str) -> None:

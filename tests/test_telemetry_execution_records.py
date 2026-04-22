@@ -101,7 +101,7 @@ async def test_daemon_warmup_emits_execution_record(
     assert all(record.evidence_class == "telemetry_signal" for record in records)
 
 
-async def _stub_record_interaction(**kwargs):  # type: ignore[no-untyped-def]
+async def _stub_record_interaction(**kwargs: object) -> SimpleNamespace:
     return SimpleNamespace(response_embedding=[0.1])
 
 

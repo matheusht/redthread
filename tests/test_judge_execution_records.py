@@ -7,7 +7,13 @@ import pytest
 
 from redthread.config.settings import RedThreadSettings, TargetBackend
 from redthread.evaluation.judge import JudgeAgent
-from redthread.models import AttackTrace, ConversationTurn, MitreAtlasTactic, Persona, PsychologicalTrigger
+from redthread.models import (
+    AttackTrace,
+    ConversationTurn,
+    MitreAtlasTactic,
+    Persona,
+    PsychologicalTrigger,
+)
 from redthread.pyrit_adapters.client import RedThreadTarget
 
 

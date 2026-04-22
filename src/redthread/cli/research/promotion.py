@@ -57,7 +57,10 @@ def register_research_promotion_commands(research: click.Group, console: Console
     @click.option("--memory-source", type=click.Choice(["research", "production"], case_sensitive=False), default="research", show_default=True, help="Which memory plane to inspect for deployment validation reports.")
     @click.option("--trace-id", default=None, help="Optional trace_id filter for one deployment validation report.")
     def research_report_inspect(env_file: str, memory_source: str, trace_id: str | None) -> None:
-        from redthread.research.report_inspection import load_validation_reports, render_validation_report
+        from redthread.research.report_inspection import (
+            load_validation_reports,
+            render_validation_report,
+        )
 
         try:
             records = load_validation_reports(RedThreadSettings(_env_file=env_file), Path.cwd(), memory_source.lower(), trace_id)

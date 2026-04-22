@@ -8,7 +8,6 @@ from redthread.orchestration.models import (
 from redthread.tools.authorization import AuthorizationEngine
 from redthread.tools.authorization.models import AuthorizationPolicy
 
-
 TRUSTED_PROVENANCE = {
     "source_kind": "internal_agent",
     "trust_level": "trusted",

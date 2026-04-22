@@ -11,14 +11,20 @@ from redthread.config.settings import RedThreadSettings, TargetBackend
 from redthread.core.attack_execution import attack_execution_metadata
 from redthread.evaluation.judge import JudgeAgent
 from redthread.models import ConversationTurn
+from redthread.orchestration.models import AuthorizationDecisionType
 from redthread.personas.generator import PersonaGenerator
 from redthread.pyrit_adapters.client import RedThreadTarget
 from redthread.pyrit_adapters.execution_context import capture_execution_records
-from redthread.pyrit_adapters.interceptors import LiveExecutionInterceptionError, intercept_live_execution
+from redthread.pyrit_adapters.interceptors import (
+    LiveExecutionInterceptionError,
+    intercept_live_execution,
+)
 from redthread.pyrit_adapters.targets import build_target, send_with_execution_metadata
 from redthread.telemetry.collector import TelemetryCollector
-from redthread.tools.authorization import AuthorizationPolicy, build_execution_authorization_interceptor
-from redthread.orchestration.models import AuthorizationDecisionType
+from redthread.tools.authorization import (
+    AuthorizationPolicy,
+    build_execution_authorization_interceptor,
+)
 
 LIVE_EXECUTION_SMOKE_ENV = "REDTHREAD_RUN_LIVE_EXECUTION_SMOKE"
 
@@ -130,9 +136,11 @@ async def test_live_execution_truth_smoke(
             decision=AuthorizationDecisionType.DENY,
             reason="block smoke",
         )
-        with pytest.raises(LiveExecutionInterceptionError):
-            with intercept_live_execution(build_execution_authorization_interceptor(policies=[deny])):
-                await blocked_generator.generate("Return a short benign greeting.")
+        with (
+            pytest.raises(LiveExecutionInterceptionError),
+            intercept_live_execution(build_execution_authorization_interceptor(policies=[deny])),
+        ):
+            await blocked_generator.generate("Return a short benign greeting.")
         assert fake_target.calls == 0
 
     seams = {record.seam for record in records}
@@ -144,5 +152,5 @@ async def test_live_execution_truth_smoke(
     assert any(not record.success for record in records)
 
 
-async def _stub_record_interaction(**kwargs):  # type: ignore[no-untyped-def]
+async def _stub_record_interaction(**kwargs: object) -> SimpleNamespace:
     return SimpleNamespace(response_embedding=[])

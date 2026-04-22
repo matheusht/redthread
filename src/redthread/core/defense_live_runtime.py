@@ -64,7 +64,6 @@ async def run_live_defense_validation(
     patched_target = None
     try:
         from redthread.evaluation.judge import JudgeAgent
-
         from redthread.pyrit_adapters import targets as target_builders
 
         patched_target = target_builders.build_target(

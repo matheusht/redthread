@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import Any
 from uuid import uuid4
 
 from redthread.config.settings import RedThreadSettings, TargetBackend
@@ -12,7 +11,12 @@ from redthread.pyrit_adapters.execution_records import (
     build_execution_record,
 )
 from redthread.pyrit_adapters.interceptors import maybe_intercept_live_execution
-from redthread.pyrit_adapters.runtime import PromptChatTarget, PyritMessage, _build_pyrit_target, import_pyrit_runtime
+from redthread.pyrit_adapters.runtime import (
+    PromptChatTarget,
+    PyritMessage,
+    _build_pyrit_target,
+    import_pyrit_runtime,
+)
 
 
 class RedThreadTarget:

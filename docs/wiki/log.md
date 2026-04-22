@@ -1,5 +1,10 @@
 # Wiki Log
 
+## [2026-04-22] atp-tennis-bot-live-test | executed live workflow replay with auth and write context
+- documented the ATP Tennis Bot testing results in `docs/wiki/research/atp-tennis-live-workflow-test.md`
+- confirmed that the pipeline securely halts at the review gate when auth/write context is missing
+- proved that live workflow replay successfully carries session state forward and aborts gracefully on HTTP 400 errors (contract mismatches)
+- highlighted the necessity of Binding Overrides for dynamic IDs (like `chatId`) across grouped workflow steps
 ## [2026-04-22] adopt-bridge-review-manifest-pass | recorded unified workflow review manifest
 - updated `docs/wiki/research/redthread-adoptai-strategy.md` to capture the next bounded bridge step: `adopt-redthread` now writes a unified `workflow_review_manifest.json` that combines workflow/session context requirements, response-binding review decisions, replay status, and failure summaries for operator review
 - kept the boundary honest: this is a review/export convenience artifact only, not browser orchestration, session repair, or new live execution power inside RedThread core

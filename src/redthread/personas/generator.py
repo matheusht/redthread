@@ -6,7 +6,7 @@ import logging
 
 from redthread.config.settings import RedThreadSettings
 from redthread.models import MitreAtlasTactic, Persona, PsychologicalTrigger
-from redthread.personas.atlas_taxonomy import TECHNIQUES_BY_TACTIC
+from redthread.personas.atlas_taxonomy import TECHNIQUES_BY_TACTIC, AtlasTechnique
 from redthread.personas.generation_support import (
     PERSONA_GENERATION_PROMPT,
     normalize_persona_data,
@@ -160,7 +160,7 @@ def _default_trigger_sets() -> list[list[PsychologicalTrigger]]:
     ]
 
 
-def _get_primary_technique(tactic: MitreAtlasTactic):
+def _get_primary_technique(tactic: MitreAtlasTactic) -> AtlasTechnique:
     techniques = TECHNIQUES_BY_TACTIC.get(tactic, [])
     if not techniques:
         raise ValueError(f"No techniques found for tactic: {tactic}")

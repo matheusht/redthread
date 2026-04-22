@@ -68,6 +68,7 @@ ignore = [
     "UP017",    # deprecated-datetime-timezone-utc — pre-existing
     "UP042",    # str-enum-inheritance — pre-existing pattern
     "UP046",    # generic-not-last — intentional Generic[T] base class pattern
+    "UP047",    # type-alias-uses-typevar — intentional TypeVar usage with future annotations
     "SIM105",   # suppress-exception — contextlib.suppress is more complex in async
     "SIM102",   # collapsible-if — readability preference, not a bug
 ]
@@ -88,13 +89,24 @@ module = [
     "redthread.telemetry.arima",
     "redthread.telemetry.asi",
     "redthread.personas.generator",
+    "redthread.personas.generation_support",
     "redthread.evaluation.judge",
+    "redthread.evaluation.judge_support",
     "redthread.core.tap",
+    "redthread.core.defense_replay_cases",
+    "redthread.core.defense_replay_runner",
+    "redthread.core.defense_authorization",
     "redthread.orchestration.graphs.attack_graph",
-    "redthread.memory.consolidation",
     "redthread.orchestration.supervisor",
+    "redthread.memory.consolidation",
     "redthread.engine",
-    "redthread.cli",
+    "redthread.engine_transcript",
+    "redthread.cli.*",
+    "redthread.pyrit_adapters.client",
+    "redthread.pyrit_adapters.send_helpers",
+    "redthread.tools.attack_tool",
+    "redthread.tools.sandbox_tool",
+    "redthread.tools.authorization.live_intercept",
 ]
 ignore_errors = true
 

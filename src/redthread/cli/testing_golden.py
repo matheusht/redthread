@@ -18,6 +18,7 @@ _EVIDENCE_MODE_DISPLAY = {
 
 def run_golden_evaluation(console: Console, model: str | None, env_file: str, verbose: bool) -> None:
     from tests.golden_dataset.golden_traces import ALL_GOLDEN_TRACES
+
     from redthread.evaluation.pipeline import EvaluationPipeline
 
     setup_logging(console, verbose)

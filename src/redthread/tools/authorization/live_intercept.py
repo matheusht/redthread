@@ -9,9 +9,9 @@ from typing import TypeVar
 from redthread.orchestration.models import ActionEnvelope, AuthorizationDecision
 from redthread.pyrit_adapters.interceptors import LiveExecutionInterceptionError
 from redthread.pyrit_adapters.targets import ExecutionMetadata
-from redthread.tools.authorization.tool_context import AUTHORIZATION_ACTION_METADATA_KEY
 from redthread.tools.authorization.engine import AuthorizationEngine
 from redthread.tools.authorization.presets import default_least_agency_policies
+from redthread.tools.authorization.tool_context import AUTHORIZATION_ACTION_METADATA_KEY
 
 T = TypeVar("T")
 LIVE_SMOKE_ENV = "REDTHREAD_RUN_LIVE_AUTH_SMOKE"
@@ -40,7 +40,7 @@ def authorize_execution_metadata(
 def build_execution_authorization_interceptor(
     *,
     policies: list | None = None,
-):
+) -> Callable[[ExecutionMetadata], None]:
     def interceptor(execution_metadata: ExecutionMetadata) -> None:
         decision = authorize_execution_metadata(execution_metadata, policies=policies)
         if decision is None:

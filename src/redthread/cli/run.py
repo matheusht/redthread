@@ -7,12 +7,11 @@ import sys
 import click
 from rich.console import Console
 
+from redthread.cli.run_render import render_campaign_header, render_campaign_results
+from redthread.cli.shared import run_async_command, setup_logging
 from redthread.config.settings import AlgorithmType, RedThreadSettings
 from redthread.engine import RedThreadEngine
 from redthread.models import CampaignConfig
-
-from redthread.cli.run_render import render_campaign_header, render_campaign_results
-from redthread.cli.shared import run_async_command, setup_logging
 
 
 def _apply_run_overrides(

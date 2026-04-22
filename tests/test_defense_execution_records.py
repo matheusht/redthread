@@ -7,8 +7,8 @@ import pytest
 
 from redthread.config.settings import RedThreadSettings, TargetBackend
 from redthread.core.defense_live_runtime import generate_live_guardrail
-from redthread.core.defense_replay_cases import run_exploit_cases
 from redthread.core.defense_models import IsolatedSegment
+from redthread.core.defense_replay_cases import run_exploit_cases
 from redthread.models import JudgeVerdict
 from redthread.pyrit_adapters.client import RedThreadTarget
 

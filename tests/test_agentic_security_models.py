@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from redthread.orchestration.models import (
     ActionEffect,
     ActionEnvelope,
@@ -13,8 +15,6 @@ from redthread.orchestration.models import (
     ProvenanceSourceKind,
     TrustLevel,
 )
-import pytest
-
 from redthread.orchestration.runtime_summary import build_runtime_summary
 
 
