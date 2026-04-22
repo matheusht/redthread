@@ -216,6 +216,8 @@ What this means now:
 - workflow replay now emits per-workflow binding review artifacts so operators can see which inferred bindings stayed pending, got approved, or were replaced before execution
 - it can now target a bounded `request_path` field for reviewed path placeholder replacement and a bounded `request_body_json` field for reviewed writes when the write approval explicitly allows the bound body to be used
 - the bridge now also emits one narrow automatic body-field inference class: id-like JSON body fields in a later step can bind from the immediately previous step response JSON by exact field name, but they still default to pending review and still need explicit reviewed-write approval to go live
+- workflow/session contract metadata is now surfaced more explicitly for operators with fields like `same_auth_context_required`, `same_write_context_required`, `approved_auth_context_required`, `approved_write_context_required`, and required auth-header name sets
+- workflow replay and bridge summaries now also emit a bounded `workflow_failure_class_summary` so operators and gates can quickly separate review gaps, context-contract failures, and runtime failures without pretending the system has broader live-session intelligence
 - it can distinguish review/context supply gaps from workflow context mismatch more clearly in gate-facing reasons, including bounded `auth_header_family_mismatch`, `response_binding_missing`, and `response_binding_target_missing` failures when runtime contract expectations do not match
 - it can emit structured workflow evidence like:
   - `final_state`

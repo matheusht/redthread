@@ -1,5 +1,10 @@
 # Wiki Log
 
+## [2026-04-22] adopt-bridge-workflow-summary-pass | recorded richer operator workflow contract summaries
+- updated `docs/wiki/research/redthread-adoptai-strategy.md` to capture the bounded Phase 9.5 follow-through: `adopt-redthread` now surfaces explicit same-auth/same-write workflow contract fields plus workflow failure-class summaries in replay, bridge summary, and gate-visible notes
+- kept the boundary honest: this is operator-facing contract visibility only, not browser orchestration, session repair, or a broader live automation claim inside RedThread core
+- updated `docs/wiki/index.md` so future sessions can find the workflow-summary seam quickly
+
 ## [2026-04-22] adopt-bridge-body-inference-pass | recorded narrow reviewed body-field inference
 - updated `docs/wiki/research/redthread-adoptai-strategy.md` to capture Phase 9.4: `adopt-redthread` now emits a narrow automatic body-field inference class for id-like JSON body fields using the immediately previous step response JSON by exact field name, while still requiring pending-review approval and explicit reviewed-write opt-in before live execution
 - kept the architecture split explicit: this is still bounded reviewed binding control inside the Adopt bridge, not broad schema inference, browser orchestration, session repair, or freeform mutation inside RedThread core
