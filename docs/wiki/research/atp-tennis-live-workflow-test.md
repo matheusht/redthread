@@ -3,6 +3,9 @@ title: ATP Tennis Bot Live Workflow Test Results
 type: research
 status: active
 summary: Results and interpretation of the live workflow replay pipeline against the ATP Tennis Bot using ZAPI HAR ingestion.
+source_of_truth:
+  - ../WIKI_QUERY_TO_PAGE_WORKFLOW.md
+  - /Users/matheusvsky/Documents/personal/adopt-redthread/docs/live-attack-implementation-plan.md
 updated_by: codex
 updated_at: 2026-04-22
 ---
@@ -101,5 +104,10 @@ The Adopt-RedThread bridge now supports **one stronger bounded class** of statef
 - reviewed fallback body templates
 - reviewed header/session injection
 - multi-step replay with evidence carry-forward
+
+The next operator-facing layer is now in place too:
+- the workflow review manifest is written before live workflow replay
+- it now surfaces `required_contexts`, `body_template_gaps`, and `open_questions`
+- replay now adds plain-English failure narratives instead of leaving operators with reason codes alone
 
 While a major milestone, this is not a generally solved problem. Broader real-world statefulness (e.g., chunked stream aware response handling, CSRF refresh patterns, broader cookie jar lifecycle, complex branching, or retry logic) remains out of scope for the current engine layer.

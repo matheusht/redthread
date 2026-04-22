@@ -1,5 +1,17 @@
 # Wiki Log
 
+## [2026-04-22] stateful-workflow-replay-phase-c | implemented Phase C operator manifest-first flow
+- strengthened `workflow_review_manifest.json` in `adopt-redthread` so it now surfaces top-level and per-workflow `required_contexts`, `body_template_gaps`, and `open_questions` for pre-run operator review
+- bridge workflow now writes the manifest before live workflow replay and refreshes it after replay with enriched candidate/body/path/header review data when live results exist
+- added plain-English workflow failure narratives in replay output: per-workflow `failure_narrative`, top-level `workflow_failure_narratives`, and per-step `workflow_evidence.result_narrative`
+- split manifest support into smaller helper modules to stay inside repo file-size guidance and added focused Phase C tests; Phase A/B regression tests still pass
+
+## [2026-04-22] stateful-workflow-replay-phase-b | implemented Phase B session continuity detection
+- created `adapters/bridge/session_continuity.py` (Phase B1+B2): `parse_set_cookie_names()` / `parse_all_set_cookie_names()` parse Set-Cookie headers; `detect_candidate_header_bindings()` walks ordered workflow steps, matches set-cookie response → downstream cookie request header, emits `exact_name_match` candidates or `unmatched` when no downstream user; `session_continuity_note()` formats human-readable B2 contract string
+- extended `adapters/bridge/workflow_review_manifest.py`: manifest workflows now carry `candidate_header_binding_pairs` (empty at plan time, populated after enrich) and `session_continuity_note`; `_discover_header_binding_pairs()` provides structural skeleton; `enrich_manifest_candidates()` now accepts optional `cases` dict and runs B1 detection with real response headers post-replay; `_candidate_summary` counts all candidate types (body + path + header)
+- added `tests/test_session_continuity.py`: 29 tests covering cookie parsing, B1 detection (matched/unmatched/multi-cookie/header_names), B2 note formatting, manifest integration at plan-time and post-replay, the no-mutation invariant, and the safety invariant (header candidates never in response_bindings)
+- all 29 new tests pass; 38 Phase A tests still pass; zero regressions to 46 pre-existing green tests (113 total)
+
 ## [2026-04-22] stateful-workflow-replay-phase-a | implemented Phase A candidate dependency discovery
 - created `adapters/bridge/binding_alias_table.py` with the curated alias table (Phase A2): 12 manually-seeded source→target mappings, `alias_lookup()` returning (target_path, tier) tuples with exact_name_match → alias_match → heuristic_match priority
 - added `discover_candidate_bindings()` to `adapters/bridge/workflow_binding_inference.py` (Phase A1): walks response JSON scalar paths from step N, runs alias_lookup on each, emits tiered candidate bindings for step N+1 body/URL — proposals only, never applied

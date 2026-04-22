@@ -3,6 +3,9 @@ title: Stateful Workflow Replay — Next-Phase Roadmap
 type: research
 status: active
 summary: Concrete near-term roadmap for evolving bounded stateful workflow replay into a more assisted, partially-autonomous system. Derived from lessons learned during the ATP Tennis Bot live workflow test.
+source_of_truth:
+  - ../WIKI_QUERY_TO_PAGE_WORKFLOW.md
+  - /Users/matheusvsky/Documents/personal/adopt-redthread/docs/live-attack-implementation-plan.md
 updated_by: codex
 updated_at: 2026-04-22
 ---
