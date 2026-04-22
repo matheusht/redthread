@@ -1,6 +1,23 @@
 # Wiki Log
 
-## [2026-04-22] atp-tennis-bot-live-test | achieved stateful live workflow replay with native header bindings
+## [2026-04-22] stateful-workflow-replay-phase-a | implemented Phase A candidate dependency discovery
+- created `adapters/bridge/binding_alias_table.py` with the curated alias table (Phase A2): 12 manually-seeded source→target mappings, `alias_lookup()` returning (target_path, tier) tuples with exact_name_match → alias_match → heuristic_match priority
+- added `discover_candidate_bindings()` to `adapters/bridge/workflow_binding_inference.py` (Phase A1): walks response JSON scalar paths from step N, runs alias_lookup on each, emits tiered candidate bindings for step N+1 body/URL — proposals only, never applied
+- added `discover_candidate_path_bindings()` to `adapters/bridge/workflow_binding_inference.py` (Phase A3): extracts {placeholder} slots from URL templates at step N+1, matches via alias table, emits unmatched entries when no live response JSON is available (plan-time structural discovery)
+- added `_flatten_json_paths()` helper: recursively flattens response JSON to dot-path scalar tuples, skips lists
+- updated `adapters/bridge/workflow_review_manifest.py`: manifest now carries `candidate_binding_summary` (tier counts), `candidate_binding_pairs` per workflow (A1+A3 pairs per step pair), and `enrich_manifest_candidates()` for post-replay enrichment with real response JSON
+- added `tests/test_candidate_binding_discovery.py`: 38 tests covering alias table round-trips, A1 exact/alias/heuristic matching, A3 path slot extraction and unmatched handling, manifest integration, enrichment correctness, and the invariant that candidates never appear in response_bindings
+- all 38 new tests pass; zero regressions to the 46 pre-existing green tests
+
+## [2026-04-22] stateful-workflow-replay-roadmap | written next-phase roadmap from ATP Tennis Bot lessons
+
+- created `docs/wiki/research/stateful-workflow-replay-roadmap.md` to translate the ATP test into a concrete, ordered 5-phase roadmap
+- phases cover: candidate dependency discovery, session continuity detection, manifest-first operator flow, streaming endpoint awareness, and bounded pattern learning
+- each phase has explicit human vs machine responsibility boundaries to prevent autonomy creep
+- explicitly documents what stays out of scope: CSRF, full cookie jar, branching workflows, nested schema inference, auto-retry
+- registered in `docs/wiki/index.md`
+
+
 - updated `docs/wiki/research/atp-tennis-live-workflow-test.md` to document the final successful pipeline run against the ATP Tennis Bot
 - upgraded `adopt-redthread` core engine to support `request_header` binding targets natively in `adapters/live_replay/workflow_bindings.py`
 - implemented dynamic fallback body injection for HAR ingestors that strip request bodies for privacy
