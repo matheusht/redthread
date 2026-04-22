@@ -1,5 +1,10 @@
 # Wiki Log
 
+## [2026-04-22] adopt-bridge-workflow-evidence-pass | recorded bounded workflow evidence and gate mapping
+- updated `docs/wiki/research/redthread-adoptai-strategy.md` to capture the new bridge state: `adopt-redthread` now carries bounded workflow evidence forward across grouped live workflow replay, emits structured workflow failure reasons, and feeds those results into the evidence-aware replay gate
+- kept the architecture split explicit: Adopt tools still provide discovery/runtime realism, `adopt-redthread` still adapts artifacts and bounded live evidence, and RedThread still remains the attack/replay/validation/hardening engine rather than a browser automation runtime
+- updated `docs/wiki/index.md` so future sessions can find the stronger bounded workflow-evidence + gate-mapping framing quickly
+
 ## [2026-04-21] adopt-bridge-live-runner-pass | recorded one-command live bridge workflow
 - updated `docs/wiki/research/redthread-adoptai-strategy.md` to capture the new bridge state: `adopt-redthread` now has a one-command artifact pipeline, a one-command live ZAPI capture runner, replay-plan/gate generation from the same normalized fixture contract, and the same RedThread replay/dry-run handoff seams
 - kept the architecture split explicit: Adopt tools still provide app-specific discovery/runtime surfaces, `adopt-redthread` still adapts those artifacts, and RedThread still remains the attack/replay/validation/hardening engine

@@ -17,7 +17,7 @@ source_of_truth:
   - https://github.com/adoptai/abcd
   - https://github.com/adoptai/AdoptXchange
 updated_by: codex
-updated_at: 2026-04-21
+updated_at: 2026-04-22
 ---
 
 # RedThread x Adopt AI Strategy
@@ -175,45 +175,62 @@ That means:
 
 ## Current bridge milestone
 
-As of 2026-04-21, the bridge repo now has three meaningful intake/handoff lanes:
+As of 2026-04-22, the bridge repo now has three meaningful intake/handoff lanes:
 
 1. sample catalog-style ZAPI intake
 2. real HAR-derived ZAPI intake
 3. first NoUI MCP server intake (`manifest.json` + `tools.json`)
 
-It also now has two workflow runners on top of those lanes:
+It also now has a bounded live-control ladder on top of those lanes:
 - **one-command artifact pipeline**
 - **one-command live ZAPI capture runner**
+- **machine-readable live attack planning**
+- **bounded live safe-read replay**
+- **bounded reviewed auth-safe-read replay**
+- **bounded reviewed staging-write replay**
+- **bounded grouped workflow replay**
+- **evidence-aware replay gate**
 
 And it still reaches two real RedThread seams:
 - **ReplayBundle export + promotion-gate evaluation**
 - **dry-run campaign-case export + RedThread engine execution**
 
-What this means:
+What this means now:
 - `adopt-redthread` can ingest a HAR-shaped ZAPI capture
 - it can ingest a NoUI MCP server output
 - it can normalize those artifacts into the same RedThread-friendly fixture model
-- it can generate replay-plan and prototype gate outputs from the same normalized fixture set
-- it can export those fixtures into RedThread replay payloads and dry-run campaign seeds
+- it can generate `live_attack_plan.json` and `live_workflow_plan.json`
+- it can execute bounded live lanes when policy and approval context allow them
+- it can now carry **bounded workflow evidence** forward across grouped sequential steps
+- it can emit structured workflow evidence like:
+  - `final_state`
+  - per-step `workflow_evidence.state_before`
+  - per-step `workflow_evidence.state_after`
+  - summary `reason_counts`
+  - structured `failure_reason_code`
+- it can feed that workflow/live evidence plus the RedThread replay verdict back into the bridge gate
+- it can export fixtures into RedThread replay payloads and dry-run campaign seeds
 - it can evaluate the replay payload with RedThread's real promotion-gate code
 - it can run one generated case through RedThread's real dry-run engine path
 - it can now chain those steps from one top-level command
 - it can now launch a live ZAPI browser capture, select the downstream HAR, and feed that capture into the bridge automatically
 
-What this does **not** mean:
+What this still does **not** mean:
 - RedThread has become a browser automation product
 - RedThread core now depends on ZAPI, NoUI, or Tabby runtime code
 - the bridge is now a full live production integration
 - generated campaign prompts are production-truth target prompts
-- RedThread is already doing rich live attack execution immediately after discovery
+- workflow replay has become real browser/session-state orchestration
+- later requests are dynamically rewritten from prior response bodies
+- RedThread is already doing rich autonomous live attack execution immediately after discovery
 
 This milestone keeps the original split intact:
 - **Adopt tools improve discovery and app-specific surface generation**
-- **Adopt RedThread adapts those artifacts into fixtures, gate artifacts, and runtime handoff payloads**
+- **Adopt RedThread adapts those artifacts into fixtures, live plans, workflow evidence, gate artifacts, and runtime handoff payloads**
 - **RedThread remains the attack, replay, validation, and hardening engine**
 
 The practical value is personalization without identity drift.
-The target app can now shape the fixtures more realistically, and the bridge can hand them into actual RedThread replay/dry-run seams with less operator glue, while RedThread still owns the security assurance layer.
+The target app can now shape the fixtures more realistically, the bridge can carry bounded workflow evidence forward instead of only single-request results, and the resulting live/runtime evidence can feed a more honest gate without turning RedThread into a browser runtime.
 
 ---
 
@@ -475,6 +492,13 @@ RedThread job:
 
 Good for:
 - real business agent workflows
+
+Current bridge truth:
+- the bridge now has a **bounded version** of this layer
+- grouped workflow replay exists
+- it carries bounded workflow evidence forward in output artifacts
+- it emits structured failure reasons for gate mapping
+- but it is still not full browser/session-state orchestration
 
 ## Level 4 — Auth/session-aware live replay
 
