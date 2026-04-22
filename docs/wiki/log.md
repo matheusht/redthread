@@ -1,5 +1,10 @@
 # Wiki Log
 
+## [2026-04-22] adopt-bridge-path-binding-pass | recorded bounded path binding and review artifacts
+- updated `docs/wiki/research/redthread-adoptai-strategy.md` to capture Phase 9.3: `adopt-redthread` now supports bounded `request_path` binding targets, surfaces inferred/approved/pending/rejected/replaced binding counts, and emits per-workflow binding review artifacts so operators can inspect review decisions directly in replay output
+- kept the architecture split explicit: this is still bounded reviewed binding control inside the Adopt bridge, not broad path/body inference, browser orchestration, session repair, or freeform mutation inside RedThread core
+- updated `docs/wiki/index.md` so future sessions can find the new path-binding and review-artifact seam quickly
+
 ## [2026-04-22] adopt-bridge-binding-review-pass | recorded reviewed binding inference pack
 - updated `docs/wiki/research/redthread-adoptai-strategy.md` to capture Phase 9.2: inferred workflow bindings now carry explicit review metadata, replay blocks pending-review inferred bindings with `binding_review_required`, the bridge pipeline can accept a binding override file, and reviewed write flows can use bounded `request_body_json` binding when write approval explicitly opts in
 - kept the architecture split explicit: this is still bounded reviewed binding control inside the Adopt bridge, not browser orchestration, session repair, or freeform mutation inside RedThread core

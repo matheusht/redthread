@@ -212,8 +212,9 @@ What this means now:
 - the bridge can now also emit a first small class of those bindings automatically by preserving full captured request URLs and turning id-like query parameters in later workflow steps into declared placeholders sourced from the previous step response JSON
 - inferred bindings now carry explicit review metadata like `inferred`, `confidence`, `inference_reason`, and `review_status`, and replay now blocks them with `binding_review_required` until an operator approves or replaces them
 - the bridge pipeline can now accept a binding override file so operators can approve inferred bindings, reject them, or replace them with explicit reviewed bindings
-- it records extracted and applied response bindings in workflow evidence and tracks declared/applied binding counts plus inferred/approved/pending-review counts in workflow summaries
-- it can now target a bounded `request_body_json` field for reviewed writes when the write approval explicitly allows the bound body to be used
+- it records extracted and applied response bindings in workflow evidence and tracks declared/applied binding counts plus inferred/approved/pending-review/rejected/replaced counts in workflow summaries
+- workflow replay now emits per-workflow binding review artifacts so operators can see which inferred bindings stayed pending, got approved, or were replaced before execution
+- it can now target a bounded `request_path` field for reviewed path placeholder replacement and a bounded `request_body_json` field for reviewed writes when the write approval explicitly allows the bound body to be used
 - it can distinguish review/context supply gaps from workflow context mismatch more clearly in gate-facing reasons, including bounded `auth_header_family_mismatch`, `response_binding_missing`, and `response_binding_target_missing` failures when runtime contract expectations do not match
 - it can emit structured workflow evidence like:
   - `final_state`
