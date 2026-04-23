@@ -523,6 +523,7 @@ Current bridge truth:
 - it now treats streaming inference endpoints more honestly: bounded replay captures only the first chunk / first configured bytes, records stream evidence, and classifies `stream_open_partial_read` separately from true `timeout`
 - operators can tune that bounded stream read budget with `stream_max_bytes`, but the bridge still does not become a full stream client
 - it now records successful applied response-binding outcomes to an append-only `binding_history.jsonl` artifact so later bounded pattern learning has real replay evidence to work from
+- it now also emits a proposal-only `binding_pattern_candidates.json` artifact that groups repeated successful binding shapes and marks which ones are ready for human review before any alias-table promotion
 - but automatic binding emission is still intentionally narrow today: only a small query-parameter heuristic exists, not full body/path inference
 - but it is still not full browser/session-state orchestration
 

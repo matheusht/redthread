@@ -1,5 +1,10 @@
 # Wiki Log
 
+## [2026-04-23] stateful-workflow-replay-phase-e2-prep | implemented proposal-only binding pattern candidates
+- updated `docs/wiki/research/stateful-workflow-replay-roadmap.md` to record that E2 now has a shipped prep step in `adopt-redthread`: proposal-only `binding_pattern_candidates.json` generation from `binding_history.jsonl`
+- updated `docs/wiki/research/redthread-adoptai-strategy.md` to capture the new review artifact and keep the boundary explicit: no alias-table mutation yet, no automatic promotion yet
+- updated `docs/wiki/index.md` so future sessions can find the E2 prep seam quickly
+
 ## [2026-04-22] stateful-workflow-replay-phase-e1 | implemented binding outcome history recording
 - updated `docs/wiki/research/stateful-workflow-replay-roadmap.md` to mark Phase E1 as shipped in `adopt-redthread`
 - updated `docs/wiki/research/redthread-adoptai-strategy.md` to record the new append-only `binding_history.jsonl` artifact for successful applied bindings

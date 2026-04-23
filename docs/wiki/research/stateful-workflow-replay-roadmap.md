@@ -185,7 +185,11 @@ The current bounded implementation records one append-only JSONL row per success
 
 ### E2 — Pattern Promotion
 
+**Status (2026-04-23): partial prep shipped in `adopt-redthread`; proposal artifact exists, promotion still not implemented.**
+
 If the same `source_field → target_field` pair appears with `outcome: success` across 3+ distinct apps, promote it to the alias table.
+
+The current bounded implementation stops one step earlier: it reads `binding_history.jsonl`, groups repeated success patterns, and emits a proposal-only `binding_pattern_candidates.json` artifact with counts like success total, distinct app count, and promotion readiness. It does not mutate the alias table.
 
 **Human-in-loop requirement**: Pattern promotion requires explicit operator review. The engine proposes; a human approves adding to the alias table.
 
