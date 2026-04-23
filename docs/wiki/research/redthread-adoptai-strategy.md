@@ -526,6 +526,7 @@ Current bridge truth:
 - it now also emits a proposal-only `binding_pattern_candidates.json` artifact that groups repeated successful binding shapes and marks which ones are ready for human review before any alias-table promotion
 - it now supports a separate reviewed-alias handoff step: approved pattern candidates can be converted into an operator-authored `approved_binding_aliases.json` artifact, and future workflow planning can load that artifact without mutating the curated alias table
 - reviewed pattern aliases stay narrow on purpose: today they only feed bounded `request_body_json` inference and can auto-approve matching inferred body bindings on the next run when the alias tier is `reviewed_pattern`
+- the bridge now makes that reviewed-alias reuse visible in operator and handoff artifacts: loaded/used reviewed aliases appear in `live_workflow_plan.json`, `workflow_review_manifest.json`, `workflow_summary.json`, downstream `redthread_runtime_inputs.json` bridge context, and gate notes
 - this gives the bridge a concrete and testable bounded learning loop (`binding_history.jsonl` → `binding_pattern_candidates.json` → reviewed alias artifact → next-run workflow success) while keeping promotion human-reviewed
 - but automatic binding emission is still intentionally narrow today: only a small query-parameter heuristic exists, not full body/path inference
 - but it is still not full browser/session-state orchestration

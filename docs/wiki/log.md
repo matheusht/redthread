@@ -1,5 +1,10 @@
 # Wiki Log
 
+## [2026-04-22] stateful-workflow-replay-phase-e2-reviewed-alias-visibility | surfaced reviewed alias usage across bridge artifacts
+- updated `docs/wiki/research/stateful-workflow-replay-roadmap.md` to record that the shipped reviewed-alias loop now also exposes loaded/used alias details in plan, manifest, summary, runtime-input, and gate-note surfaces
+- updated `docs/wiki/research/redthread-adoptai-strategy.md` to capture the stronger operator traceability boundary: reviewed aliases remain bounded runtime inputs, but their usage is now visible end-to-end across bridge handoff artifacts
+- updated `docs/wiki/index.md` so future sessions can find the reviewed-alias visibility pass quickly
+
 ## [2026-04-22] stateful-workflow-replay-phase-e2-reviewed-alias-loop | implemented reviewed alias artifact loop
 - updated `docs/wiki/research/stateful-workflow-replay-roadmap.md` to record that the bounded E2 review loop now has two shipped operator steps in `adopt-redthread`: proposal-only `binding_pattern_candidates.json` plus reviewed `approved_binding_aliases.json` for next-run planning
 - updated `docs/wiki/research/redthread-adoptai-strategy.md` to capture the new safety boundary and testable loop: approved reviewed aliases can feed future body-binding inference without mutating the curated alias table

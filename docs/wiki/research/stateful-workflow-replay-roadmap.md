@@ -200,6 +200,13 @@ This makes the loop concrete and testable today:
 
 `binding_history.jsonl` → `binding_pattern_candidates.json` → human review input → `approved_binding_aliases.json` → next-run workflow plan/replay
 
+The current shipped bridge now also surfaces reviewed-alias visibility across the operator path:
+- `live_workflow_plan.json` records loaded reviewed aliases and which workflow steps use them
+- `workflow_review_manifest.json` mirrors the same loaded/used reviewed-alias details for operator review
+- `workflow_summary.json` surfaces reviewed alias counts and usage summaries at the top level
+- `redthread_runtime_inputs.json` now carries a `bridge_workflow_context` section with reviewed-alias counts/usages for downstream RedThread-side inspection
+- gate notes now call out reviewed-alias counts and targets so operators can see when a run depended on approved alias reuse
+
 **Human-in-loop requirement**: Pattern promotion still requires explicit operator review. The engine proposes candidates, a human approves reviewed aliases, and curated alias-table changes remain a separate future step.
 
 ### E3 — Scope
