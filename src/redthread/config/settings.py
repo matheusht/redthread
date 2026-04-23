@@ -156,6 +156,14 @@ class RedThreadSettings(BaseSettings):
         default=3.0,
         description="G-Eval score threshold to advance to next escalation level",
     )
+    narrative_adaptation_enabled: bool = Field(
+        default=True,
+        description=(
+            "Enable narrative phase tracking and adaptive strategy guidance in Crescendo. "
+            "When True, each turn receives phase/strategy/framing context in the attacker prompt. "
+            "Disable with REDTHREAD_NARRATIVE_ADAPTATION_ENABLED=false."
+        ),
+    )
 
     # ── GS-MCTS (Phase 6B) ──────────────────────────────────────────────────
     mcts_simulations: int = Field(

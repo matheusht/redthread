@@ -304,3 +304,50 @@ async def test_crescendo_trace_structure() -> None:
         assert turn.timestamp is not None
     assert result.duration_seconds > 0
     assert result.iterations_used == 2
+
+
+@pytest.mark.asyncio
+async def test_crescendo_narrative_state_in_metadata() -> None:
+    """Narrative state must be serialized into trace.metadata after a live run."""
+    settings = make_settings(crescendo_max_turns=2, narrative_adaptation_enabled=True)
+    persona = make_persona()
+
+    mock_attacker, mock_target, mock_judge = _make_mocks(
+        attacker_responses=["opener", "escalate"],
+        target_responses=["response_a", "response_b"],
+        inline_scores=[3.5, 3.8],
+        final_verdict=make_verdict(score=2.0, is_jailbreak=False),
+    )
+
+    with patch("redthread.pyrit_adapters.targets._build_pyrit_target"):
+        cres = CrescendoAttack(settings, attacker=mock_attacker, target=mock_target, judge=mock_judge)
+        result = await cres.run(persona)
+
+    assert "narrative_state" in result.trace.metadata
+    ns = result.trace.metadata["narrative_state"]
+    assert "phase" in ns
+    assert "used_strategies" in ns
+    assert "failed_strategies" in ns
+    assert "successful_strategies" in ns
+    assert "turn_count" in ns
+    assert ns["turn_count"] == 2
+
+
+@pytest.mark.asyncio
+async def test_crescendo_narrative_disabled_no_metadata() -> None:
+    """When narrative_adaptation_enabled=False, trace.metadata must NOT contain narrative_state."""
+    settings = make_settings(crescendo_max_turns=2, narrative_adaptation_enabled=False)
+    persona = make_persona()
+
+    mock_attacker, mock_target, mock_judge = _make_mocks(
+        attacker_responses=["opener", "escalate"],
+        target_responses=["response_a", "response_b"],
+        inline_scores=[3.5, 3.8],
+        final_verdict=make_verdict(score=2.0, is_jailbreak=False),
+    )
+
+    with patch("redthread.pyrit_adapters.targets._build_pyrit_target"):
+        cres = CrescendoAttack(settings, attacker=mock_attacker, target=mock_target, judge=mock_judge)
+        result = await cres.run(persona)
+
+    assert "narrative_state" not in result.trace.metadata

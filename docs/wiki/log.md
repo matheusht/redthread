@@ -1,5 +1,16 @@
 # Wiki Log
 
+## [2026-04-23] narrative-adaptation-mvp | bounded crescendo enhancement with phase-aware strategy tracking
+- added `src/redthread/core/narrative_models.py`: `NarrativePhase`, `NarrativeState`, `NarrativeGuidance` Pydantic models
+- added `src/redthread/core/narrative_policy.py`: `NarrativeAdaptationPolicy` — deterministic 6-rule policy engine, no LLM calls
+- updated `src/redthread/core/crescendo.py`: integrates `NarrativeAdaptationPolicy` into the turn loop; guidance injected as `## Narrative Guidance` section in attacker prompt; final state serialized into `trace.metadata["narrative_state"]`
+- updated `src/redthread/config/settings.py`: added `narrative_adaptation_enabled` (default `True`); disable with `REDTHREAD_NARRATIVE_ADAPTATION_ENABLED=false`
+- added `tests/test_narrative_policy.py`: 12 pure-logic unit tests for all policy rules
+- added 2 integration tests to `tests/test_crescendo.py`: metadata presence/absence tests for enabled/disabled feature flag
+- added `docs/wiki/research/narrative-protocol-evolution.md`: research page documenting the concept, overlap analysis, MVP implementation, open gaps, and potential Phase 2/3 directions
+- updated `docs/wiki/index.md` and `docs/wiki/log.md`
+- all 281 tests green; `make ci` passes
+
 ## [2026-04-22] stateful-workflow-replay-phase-e2-reviewed-alias-visibility | surfaced reviewed alias usage across bridge artifacts
 - updated `docs/wiki/research/stateful-workflow-replay-roadmap.md` to record that the shipped reviewed-alias loop now also exposes loaded/used alias details in plan, manifest, summary, runtime-input, and gate-note surfaces
 - updated `docs/wiki/research/redthread-adoptai-strategy.md` to capture the stronger operator traceability boundary: reviewed aliases remain bounded runtime inputs, but their usage is now visible end-to-end across bridge handoff artifacts
