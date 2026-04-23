@@ -185,13 +185,22 @@ The current bounded implementation records one append-only JSONL row per success
 
 ### E2 — Pattern Promotion
 
-**Status (2026-04-23): partial prep shipped in `adopt-redthread`; proposal artifact exists, promotion still not implemented.**
+**Status (2026-04-22): bounded review loop partially shipped in `adopt-redthread`; proposal artifact and reviewed alias artifact exist, curated alias-table mutation still not implemented.**
 
 If the same `source_field → target_field` pair appears with `outcome: success` across 3+ distinct apps, promote it to the alias table.
 
-The current bounded implementation stops one step earlier: it reads `binding_history.jsonl`, groups repeated success patterns, and emits a proposal-only `binding_pattern_candidates.json` artifact with counts like success total, distinct app count, and promotion readiness. It does not mutate the alias table.
+The current bounded implementation now ships two explicit human-reviewed steps before any future curated-table promotion:
 
-**Human-in-loop requirement**: Pattern promotion requires explicit operator review. The engine proposes; a human approves adding to the alias table.
+1. it reads `binding_history.jsonl`, groups repeated success patterns, and emits a proposal-only `binding_pattern_candidates.json` artifact with counts like success total, distinct app count, and promotion readiness
+2. a separate reviewed step can turn approved proposal entries into an `approved_binding_aliases.json` artifact that future workflow planning loads on the next run
+
+That second artifact is intentionally **not** a mutation of the curated alias table. It is a bounded, operator-approved runtime input that lets the next workflow plan reuse reviewed body-field aliases without widening replay autonomy.
+
+This makes the loop concrete and testable today:
+
+`binding_history.jsonl` → `binding_pattern_candidates.json` → human review input → `approved_binding_aliases.json` → next-run workflow plan/replay
+
+**Human-in-loop requirement**: Pattern promotion still requires explicit operator review. The engine proposes candidates, a human approves reviewed aliases, and curated alias-table changes remain a separate future step.
 
 ### E3 — Scope
 

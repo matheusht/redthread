@@ -1,5 +1,10 @@
 # Wiki Log
 
+## [2026-04-22] stateful-workflow-replay-phase-e2-reviewed-alias-loop | implemented reviewed alias artifact loop
+- updated `docs/wiki/research/stateful-workflow-replay-roadmap.md` to record that the bounded E2 review loop now has two shipped operator steps in `adopt-redthread`: proposal-only `binding_pattern_candidates.json` plus reviewed `approved_binding_aliases.json` for next-run planning
+- updated `docs/wiki/research/redthread-adoptai-strategy.md` to capture the new safety boundary and testable loop: approved reviewed aliases can feed future body-binding inference without mutating the curated alias table
+- updated `docs/wiki/index.md` so future sessions can find the reviewed alias artifact seam quickly
+
 ## [2026-04-23] stateful-workflow-replay-phase-e2-prep | implemented proposal-only binding pattern candidates
 - updated `docs/wiki/research/stateful-workflow-replay-roadmap.md` to record that E2 now has a shipped prep step in `adopt-redthread`: proposal-only `binding_pattern_candidates.json` generation from `binding_history.jsonl`
 - updated `docs/wiki/research/redthread-adoptai-strategy.md` to capture the new review artifact and keep the boundary explicit: no alias-table mutation yet, no automatic promotion yet
