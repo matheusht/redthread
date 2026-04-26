@@ -1,5 +1,22 @@
 # Wiki Log
 
+## [2026-04-26] research-pass | ingested ai red teaming reference material
+- added research page `research/ai-red-teaming-academic-papers.md` for must-read papers
+- added concept page `concepts/ai-security-frameworks.md` for major security frameworks
+- added concept page `concepts/ai-red-teaming-tooling-landscape.md` for open-source and commercial tools
+- updated wiki index
+- mined changes into MemPalace
+## [2026-04-26] research-pass | ingested agentic ai attack trees and operational controls mapping
+- added concept page for `concepts/agentic-attack-trees-operational.md` (AI-Red-Teaming-Guide)
+- updated wiki index to include new operational controls mapping
+- mined changes into MemPalace
+## [2026-04-25] workflow-binding-runtime-truth | surfaced planned/applied binding evidence and generic workflow context
+- `adopt-redthread` now records planned/applied response-binding evidence in live workflow replay rows and top-level binding application summaries, including failure counts and failed binding ids when application blocks
+- bridge gate/runtime handoff now carries planned/applied/unapplied binding counts in `bridge_workflow_context` and gate notes
+- `redthread` now accepts passive generic `ReplayBundle.bridge_workflow_context` metadata and surfaces it in promotion verdicts without importing bridge-specific code or enforcing new policy yet
+- added `adopt-redthread/docs/impact-execution-checklist.md`, `adopt-redthread/docs/impact-implementation-log.md`, and `adopt-redthread/docs/hero-flow-binding-truth.md` for the impact-first execution record and demo proof
+- updated `research/stateful-workflow-replay-roadmap.md` and `index.md` so future sessions can find the runtime-row binding proof seam quickly
+
 ## [2026-04-23] narrative-adaptation-mvp | bounded crescendo enhancement with phase-aware strategy tracking
 - added `src/redthread/core/narrative_models.py`: `NarrativePhase`, `NarrativeState`, `NarrativeGuidance` Pydantic models
 - added `src/redthread/core/narrative_policy.py`: `NarrativeAdaptationPolicy` — deterministic 6-rule policy engine, no LLM calls
