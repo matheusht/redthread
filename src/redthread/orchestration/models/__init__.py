@@ -13,8 +13,26 @@ from redthread.orchestration.models.agentic_security import (
     ProvenanceSourceKind,
     TrustLevel,
 )
+from redthread.orchestration.models.attack_strategy import (
+    AttackStrategySpec,
+    CostLevel,
+    StrategyFamily,
+)
+from redthread.orchestration.models.authorized_scope import AuthorizedScope
+from redthread.orchestration.models.detector_hint import DetectorHint
+from redthread.orchestration.models.regression_case import RegressionCase
+from redthread.orchestration.models.risk_plugin import RiskCategory, RiskPlugin, TargetType
 
 __all__ = [
+    "AttackStrategySpec",
+    "AuthorizedScope",
+    "CostLevel",
+    "DetectorHint",
+    "RegressionCase",
+    "RiskCategory",
+    "RiskPlugin",
+    "StrategyFamily",
+    "TargetType",
     "ActionEffect",
     "ActionEnvelope",
     "AgenticSecurityThreat",

@@ -42,6 +42,11 @@ This is the primary content map for the RedThread wiki.
 
 - [research/README.md](research/README.md) — How to structure ongoing investigations.
 - [research/ai-red-teaming-academic-papers.md](research/ai-red-teaming-academic-papers.md) — Curated bibliography of must-read academic papers on AI Red Teaming.
+- [research/open-source-redteam-tool-integration-strategy.md](research/open-source-redteam-tool-integration-strategy.md) — Strategy for using garak, promptfoo, and Strix as RedThread surface expanders without replacing the closed-loop defense engine.
+- [research/ai-red-teaming-guide-redthread-use-case-map.md](research/ai-red-teaming-guide-redthread-use-case-map.md) — Deep use-case map from AI-Red-Teaming-Guide and related tools into exact RedThread workflow entrypoints, infrastructure changes, and anti-overkill boundaries.
+- [research/tool-technology-incorporation-assessment.md](research/tool-technology-incorporation-assessment.md) — Honest assessment of which external AI red-teaming tool ideas RedThread should absorb natively versus keep external.
+- [research/tool-technology-incorporation-roadmap.md](research/tool-technology-incorporation-roadmap.md) — Detailed next-step roadmap for implementing RedThread-native plugin, strategy, detector-hint, scope, regression, and reporting concepts.
+- [research/tool-technology-slice-1-implementation-plan.md](research/tool-technology-slice-1-implementation-plan.md) — Exact Slice 1 implementation checklist for RedThread-native contracts, registries, built-ins, tests, and no execution wiring.
 - [research/bounded-autoresearch.md](research/bounded-autoresearch.md) — Current synthesis of bounded offense and defense mutation lanes.
 - [research/current-hardening-tracks.md](research/current-hardening-tracks.md) — Current ordered execution plans for verification, governance, runtime truth, and defense confidence hardening.
 - [research/next-deep-dive-subsystem.md](research/next-deep-dive-subsystem.md) — Recommendation for the next subsystem RedThread should investigate deeply after the current hardening tranche.

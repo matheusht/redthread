@@ -1,5 +1,30 @@
 # Wiki Log
 
+## [2026-04-26] implementation | shipped tool technology incorporation slice 1
+- created `research/tool-technology-slice-1-implementation-plan.md` with exact checked implementation plan, scope boundaries, acceptance criteria, and follow-up slice
+- added RedThread-native Slice 1 contracts for risk plugins, attack strategy specs, authorized scope, detector hints, and regression cases
+- added built-in risk plugin and attack strategy registries without adding promptfoo, garak, or Strix runtime dependencies
+- added targeted tests for registries, model validation, compatibility lookup, scope helpers, detector confidence bounds, and regression serialization
+
+## [2026-04-26] strategy-research | assessed tool technology incorporation for RedThread
+- created `research/tool-technology-incorporation-assessment.md`
+- created `research/tool-technology-incorporation-roadmap.md` with phased implementation slices, package layout, tests, acceptance criteria, risks, and next commands
+- answered whether RedThread should absorb ideas/technologies from PyRIT, promptfoo, garak, DeepEval, Giskard, Strix, ART, Gideon, and commercial tools instead of only integrating with them
+- recommended RedThread-native `RiskPlugin`, `AttackStrategy`, `DetectorHint`, `AuthorizedScope`, and `RegressionCase` concepts while avoiding wholesale runtime absorption
+- updated wiki index and tooling landscape cross-link
+
+## [2026-04-26] deep-research | mapped AI-Red-Teaming-Guide to RedThread use cases
+- created `research/ai-red-teaming-guide-redthread-use-case-map.md`
+- mapped guide methodology, templates, tool comparison, exact RedThread workflow entrypoints, infrastructure needs, expected outcomes, and anti-overkill boundaries
+- updated wiki index and tooling landscape cross-link
+- mined changes into MemPalace
+
+## [2026-04-26] research-pass | added open-source red-team tool integration strategy
+- created `research/open-source-redteam-tool-integration-strategy.md` covering garak, promptfoo, and Strix integration paths
+- updated `concepts/ai-red-teaming-tooling-landscape.md` with current sources, Strix, and a RedThread integration stance
+- updated wiki index
+- mined changes into MemPalace
+
 ## [2026-04-26] research-pass | ingested ai red teaming reference material
 - added research page `research/ai-red-teaming-academic-papers.md` for must-read papers
 - added concept page `concepts/ai-security-frameworks.md` for major security frameworks
