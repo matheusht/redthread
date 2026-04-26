@@ -729,6 +729,22 @@ Slice 2: Campaign config planning path
 - Invalid risk/strategy fails early.
 - Operator sees a plan summary before execution.
 
+## Slice 2 implementation status
+
+Slice 2 is shipped as of 2026-04-26.
+
+Implemented:
+
+- Deterministic `build_campaign_plan()` parser.
+- Legacy `CampaignConfig` compatibility through a `legacy_objective` temporary risk plugin.
+- Dict-style config parsing for `risks`, `strategies`, and `scope`.
+- Custom policy parsing into temporary RedThread-native `RiskPlugin` objects.
+- Strategy include/max-cost handling.
+- Early failures for unknown risks, unknown strategies, and incompatible risk/strategy selections.
+- `CampaignPlan` and `PlannedRisk` models with deterministic `summary_lines()`.
+
+See [Tool Technology Slice 2 Implementation Plan](tool-technology-slice-2-implementation-plan.md) for the exact checklist.
+
 ## Third implementation slice
 
 ```text

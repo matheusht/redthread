@@ -1,5 +1,12 @@
 # Wiki Log
 
+## [2026-04-26] implementation | shipped tool technology incorporation slice 2
+- created `research/tool-technology-slice-2-implementation-plan.md` with exact checked implementation plan, scope boundaries, acceptance criteria, and follow-up slice
+- added deterministic campaign planning parser for legacy `CampaignConfig` and dict-style configs with `risks`, `strategies`, and `scope`
+- added custom policy parsing into temporary RedThread-native `RiskPlugin` objects
+- added `CampaignPlan` and `PlannedRisk` models plus operator-readable summary lines
+- added targeted tests for legacy config compatibility, built-in risk/strategy resolution, custom policies, scope parsing, early validation failures, cost filtering, and deterministic summaries
+
 ## [2026-04-26] implementation | shipped tool technology incorporation slice 1
 - created `research/tool-technology-slice-1-implementation-plan.md` with exact checked implementation plan, scope boundaries, acceptance criteria, and follow-up slice
 - added RedThread-native Slice 1 contracts for risk plugins, attack strategy specs, authorized scope, detector hints, and regression cases
