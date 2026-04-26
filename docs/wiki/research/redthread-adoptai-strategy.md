@@ -17,7 +17,7 @@ source_of_truth:
   - https://github.com/adoptai/abcd
   - https://github.com/adoptai/AdoptXchange
 updated_by: codex
-updated_at: 2026-04-22
+updated_at: 2026-04-25
 ---
 
 # RedThread x Adopt AI Strategy
@@ -527,6 +527,8 @@ Current bridge truth:
 - it now supports a separate reviewed-alias handoff step: approved pattern candidates can be converted into an operator-authored `approved_binding_aliases.json` artifact, and future workflow planning can load that artifact without mutating the curated alias table
 - reviewed pattern aliases stay narrow on purpose: today they only feed bounded `request_body_json` inference and can auto-approve matching inferred body bindings on the next run when the alias tier is `reviewed_pattern`
 - the bridge now makes that reviewed-alias reuse visible in operator and handoff artifacts: loaded/used reviewed aliases appear in `live_workflow_plan.json`, `workflow_review_manifest.json`, `workflow_summary.json`, downstream `redthread_runtime_inputs.json` bridge context, and gate notes
+- the bridge now also records runtime-row binding truth: `planned_response_bindings`, `applied_response_bindings`, per-step binding summaries, top-level planned/applied/unapplied counts, binding application failure counts, and failed binding ids
+- the RedThread handoff now has a narrow generic seam: `ReplayBundle.bridge_workflow_context` accepts the bridge workflow context and promotion verdicts surface it passively without importing Adopt-specific code or widening RedThread behavior
 - this gives the bridge a concrete and testable bounded learning loop (`binding_history.jsonl` → `binding_pattern_candidates.json` → reviewed alias artifact → next-run workflow success) while keeping promotion human-reviewed
 - but automatic binding emission is still intentionally narrow today: only a small query-parameter heuristic exists, not full body/path inference
 - but it is still not full browser/session-state orchestration

@@ -33,4 +33,5 @@ def evaluate_agentic_promotion(bundle: ReplayBundle) -> PromotionGateResult:
         passed=not failures,
         failure_count=len(failures),
         failures=failures,
+        bridge_workflow_context=bundle.bridge_workflow_context,
     )

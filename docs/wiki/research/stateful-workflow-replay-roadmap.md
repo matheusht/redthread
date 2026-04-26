@@ -7,7 +7,7 @@ source_of_truth:
   - ../WIKI_QUERY_TO_PAGE_WORKFLOW.md
   - /Users/matheusvsky/Documents/personal/adopt-redthread/docs/live-attack-implementation-plan.md
 updated_by: codex
-updated_at: 2026-04-22
+updated_at: 2026-04-25
 ---
 
 # Stateful Workflow Replay — Next-Phase Roadmap
@@ -206,6 +206,18 @@ The current shipped bridge now also surfaces reviewed-alias visibility across th
 - `workflow_summary.json` surfaces reviewed alias counts and usage summaries at the top level
 - `redthread_runtime_inputs.json` now carries a `bridge_workflow_context` section with reviewed-alias counts/usages for downstream RedThread-side inspection
 - gate notes now call out reviewed-alias counts and targets so operators can see when a run depended on approved alias reuse
+
+**Status (2026-04-25): runtime-row binding evidence shipped in `adopt-redthread`; generic context seam shipped in `redthread`.**
+
+The bridge now records planned/applied binding truth directly in live workflow replay rows:
+- each executed step can carry `planned_response_bindings`
+- each executed step can carry `applied_response_bindings`
+- each relevant step carries a `binding_application_summary`
+- top-level `live_workflow_replay.json` carries planned/applied/unapplied binding counts, workflow counts, binding failure counts, and failed binding ids
+- `gate_verdict.json` notes now expose planned/applied/unapplied binding counts plus binding application failure counts
+- `redthread_runtime_inputs.json` carries the same generic summary in `bridge_workflow_context`
+
+RedThread core now accepts this as passive generic metadata via `ReplayBundle.bridge_workflow_context` and surfaces it in the promotion verdict. It does not enforce policy on the field yet and does not depend on Adopt/HAR/ZAPI code.
 
 **Human-in-loop requirement**: Pattern promotion still requires explicit operator review. The engine proposes candidates, a human approves reviewed aliases, and curated alias-table changes remain a separate future step.
 

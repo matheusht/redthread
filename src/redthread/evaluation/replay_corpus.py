@@ -19,4 +19,5 @@ class ReplayTrace(BaseModel):
 
 class ReplayBundle(BaseModel):
     bundle_id: str
+    bridge_workflow_context: dict[str, object] = Field(default_factory=dict)
     traces: list[ReplayTrace] = Field(default_factory=list)

@@ -55,6 +55,7 @@ def test_replay_bundle_passes_when_controls_match_expectations() -> None:
 
     bundle = ReplayBundle(
         bundle_id="phase-8e-smoke",
+        bridge_workflow_context={"workflow_count": 1, "applied_response_binding_count": 1},
         traces=[
             ReplayTrace(
                 trace_id="tool-poisoning",
@@ -86,6 +87,8 @@ def test_replay_bundle_passes_when_controls_match_expectations() -> None:
 
     assert result["passed"] is True
     assert result["failure_count"] == 0
+    assert result["bridge_workflow_context"]["workflow_count"] == 1
+    assert result["bridge_workflow_context"]["applied_response_binding_count"] == 1
 
 
 def test_replay_bundle_fails_when_expected_control_is_missing() -> None:
@@ -105,6 +108,7 @@ def test_replay_bundle_fails_when_expected_control_is_missing() -> None:
 
     assert result["passed"] is False
     assert result["failure_count"] == 1
+    assert result["bridge_workflow_context"] == {}
 
 
 @pytest.mark.asyncio
