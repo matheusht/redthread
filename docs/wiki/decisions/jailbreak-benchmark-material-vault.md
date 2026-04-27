@@ -75,6 +75,18 @@ redthread eval jailbreak-corpus \
   --report-out artifacts/spiritual-spell-0032-dry-run.json
 ```
 
+Import reviewed material into the private vault after human review:
+
+```bash
+redthread eval jailbreak-material import \
+  --fixture-id spiritual-spell-0032 \
+  --source-material /reviewed/local/spiritual-spell-0032.txt \
+  --material-root "$REDTHREAD_BENCHMARK_MATERIAL_ROOT" \
+  --reviewed-by "security-review-owner" \
+  --reviewed-at "2026-04-26T00:00:00Z" \
+  --material-class approved_replay_seed
+```
+
 Use replay only after the Security Review Owner has approved a manifest:
 
 ```bash
