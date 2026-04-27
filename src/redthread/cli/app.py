@@ -11,6 +11,7 @@ from redthread import __version__
 from redthread.cli.benchmark_eval import register_benchmark_eval_commands
 from redthread.cli.dashboard import register_dashboard_command
 from redthread.cli.doctor import run_doctor
+from redthread.cli.evidence import register_evidence_commands
 from redthread.cli.home import render_home_screen
 from redthread.cli.init_cmd import run_init
 from redthread.cli.monitor import register_monitor_commands
@@ -54,6 +55,7 @@ def doctor(env_file: str) -> None:
 
 
 register_run_command(main, console)
+register_evidence_commands(main, console)
 register_benchmark_eval_commands(main, console)
 register_monitor_commands(main, console)
 register_test_commands(main, console)

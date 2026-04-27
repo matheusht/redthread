@@ -960,6 +960,69 @@ Implemented:
 
 See [Tool Technology Slice 8 Implementation Plan](tool-technology-slice-8-implementation-plan.md) for the exact checklist.
 
+## Ninth implementation slice
+
+```text
+Slice 9: External evidence import CLI
+```
+
+### Build
+
+- JSON import helper for common external payload shapes
+- `redthread evidence import` command
+- output file using `redthread.external_evidence_bundle.v1`
+- overclaim rejection for rows that claim confirmed-finding authority
+
+### Definition of done
+
+- promptfoo/garak/Strix/generic JSON rows can become weak evidence bundles.
+- Imported evidence remains weak and JudgeAgent-gated.
+- No findings, regression cases, or attacks are created by import.
+
+## Slice 9 implementation status
+
+Slice 9 is shipped as of 2026-04-27.
+
+Implemented:
+
+- `redthread.reporting.external_import` for JSON payload import.
+- `redthread evidence import` CLI command.
+- Tests for promptfoo-style import and bad generic overclaim rejection.
+
+See [Tool Technology Slice 9 Implementation Plan](tool-technology-slice-9-implementation-plan.md) for the exact checklist.
+
+## Tenth implementation slice
+
+```text
+Slice 10: External evidence to candidate campaign/probe seeds
+```
+
+### Build
+
+- candidate campaign artifact model
+- weak evidence bundle to probe-seed conversion
+- campaign config hint with static seed replay strategy
+- `redthread evidence plan` command
+
+### Definition of done
+
+- Weak evidence bundles can produce candidate probe seeds and campaign hints.
+- The artifact is explicitly planning-only and not a finding.
+- Operators still run RedThread campaigns for JudgeAgent confirmation.
+
+## Slice 10 implementation status
+
+Slice 10 is shipped as of 2026-04-27.
+
+Implemented:
+
+- `redthread.reporting.external_campaigns` for candidate campaign/probe artifacts.
+- Schema marker `redthread.external_campaign_candidates.v1`.
+- `redthread evidence plan` CLI command.
+- Tests for probe seed extraction, safety notes, and CLI output.
+
+See [Tool Technology Slice 10 Implementation Plan](tool-technology-slice-10-implementation-plan.md) for the exact checklist.
+
 ## Risk register
 
 | Risk | Why it matters | Mitigation |

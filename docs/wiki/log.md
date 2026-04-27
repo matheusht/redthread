@@ -1,5 +1,12 @@
 # Wiki Log
 
+## [2026-04-27] implementation | shipped tool technology incorporation slices 9 and 10
+- created `research/tool-technology-slice-9-implementation-plan.md` for the external evidence import CLI
+- created `research/tool-technology-slice-10-implementation-plan.md` for weak evidence to candidate campaign/probe-seed artifacts
+- added `redthread.reporting.external_import` and `redthread evidence import` for JSON-to-weak-evidence conversion
+- added `redthread.reporting.external_campaigns` and `redthread evidence plan` for planning-only candidate probe artifacts
+- preserved the original direction: external tools feed weak signals; RedThread campaigns and JudgeAgent still own confirmation
+
 ## [2026-04-27] implementation | shipped tool technology incorporation slice 8
 - analyzed dry-run artifacts for `campaign-7175a5a6`; result was successful report persistence with `sealed_dry_run`, `error_count: 0`, transcript manifest linkage, and Markdown/JSON/manifest files present
 - updated `research/tool-technology-testing-commands-and-takeaways.md` with the dry-run smoke result and takeaways
