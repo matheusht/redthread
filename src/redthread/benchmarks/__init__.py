@@ -1,6 +1,11 @@
 """Benchmark fixture helpers for RedThread."""
 
 from redthread.benchmarks.campaigns import BenchmarkCampaignDraft, build_benchmark_campaign_draft
+from redthread.benchmarks.hints import (
+    BenchmarkHintProfile,
+    build_fixture_hint_profile,
+    build_fixture_hint_profiles,
+)
 from redthread.benchmarks.jailbreak_fixtures import (
     JAILBREAK_FIXTURE_SCHEMA_VERSION,
     JailbreakBenchmarkFixture,
@@ -26,6 +31,7 @@ from redthread.benchmarks.spiritual_spell import (
 
 __all__ = [
     "BenchmarkCampaignDraft",
+    "BenchmarkHintProfile",
     "BenchmarkRunReport",
     "BenchmarkVerdictSummary",
     "JAILBREAK_FIXTURE_SCHEMA_VERSION",
@@ -35,6 +41,8 @@ __all__ = [
     "JailbreakFixtureError",
     "build_benchmark_campaign_draft",
     "build_benchmark_run_report",
+    "build_fixture_hint_profile",
+    "build_fixture_hint_profiles",
     "load_jailbreak_fixture_file",
     "load_jailbreak_fixture_pack",
     "load_prompt_material",
