@@ -135,6 +135,11 @@ def register_run_command(main: click.Group, console: Console) -> None:
             target_system_prompt=system_prompt,
             rubric_name=rubric,
             num_personas=personas,
+            prompting_layer_profile=(
+                benchmark_context.prompting_layer_profile.model_dump(mode="json")
+                if benchmark_context
+                else {}
+            ),
         )
         engine = RedThreadEngine(settings, trace_all=trace_all)
         result = run_async_command(

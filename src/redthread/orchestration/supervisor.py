@@ -86,6 +86,7 @@ async def generate_personas_node(state: SupervisorState) -> dict[str, Any]:
     from redthread.config.settings import RedThreadSettings
     from redthread.models import CampaignConfig
     from redthread.personas.generator import PersonaGenerator
+    from redthread.personas.prompt_layers import PromptingLayerProfile
 
     settings = RedThreadSettings.model_validate(state["settings_dict"])
     config = CampaignConfig.model_validate(state["config_dict"])
@@ -93,9 +94,15 @@ async def generate_personas_node(state: SupervisorState) -> dict[str, Any]:
     logger.info("👤 Supervisor: generating %d personas...", config.num_personas)
 
     gen = PersonaGenerator(settings)
+    prompting_layer_profile = (
+        PromptingLayerProfile.model_validate(config.prompting_layer_profile)
+        if config.prompting_layer_profile
+        else None
+    )
     personas = await gen.generate_batch(
         objective=config.objective,
         count=config.num_personas,
+        prompting_layer_profile=prompting_layer_profile,
     )
 
     return {"persona_dicts": [p.model_dump(mode="json") for p in personas]}

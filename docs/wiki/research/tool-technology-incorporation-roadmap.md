@@ -1023,6 +1023,42 @@ Implemented:
 
 See [Tool Technology Slice 10 Implementation Plan](tool-technology-slice-10-implementation-plan.md) for the exact checklist.
 
+## Eleventh implementation slice
+
+```text
+Slice 11: Persona prompting layer profiles
+```
+
+### Build
+
+- metadata-only `PromptingLayerProfile` contract
+- deterministic tag-to-profile mapping for benchmark fixtures
+- safe prompt-layer constraints for `PersonaGenerator`
+- transport from `redthread run --benchmark-fixture` into supervisor persona generation
+- tests proving raw prompt bodies are not loaded and strategies reflect enabled layers
+
+### Definition of done
+
+- Fixture tags like `plain_language`, `strategic_distraction`, `narrative_embedding`, `eni_writer`, and `reasoning_hijack_attempt` become safe profile fields.
+- The persona generation prompt receives profile constraints, not raw jailbreak prompt bodies.
+- `allowed_strategies` include concrete tactics for enabled layers.
+- JudgeAgent remains the only verdict owner.
+
+## Slice 11 implementation status
+
+Slice 11 is shipped as of 2026-04-27.
+
+Implemented:
+
+- `redthread.personas.prompt_layers` with schema marker `redthread.prompting_layer_profile.v1`.
+- `PromptingLayerProfile` builders from fixture tags and fixture records.
+- Safe strategy hints for enabled prompting layers.
+- Persona-generation prompt constraints that forbid raw prompt body reproduction and hidden chain-of-thought requests.
+- Transport through `BenchmarkRunContext`, `CampaignConfig`, `redthread run`, and supervisor persona generation.
+- Tests for tag mapping, prompt rendering, CLI transport, supervisor transport, and dry-run allowed strategies.
+
+See [Tool Technology Slice 11 Persona Prompting Layer Profiles](tool-technology-slice-11-persona-prompting-layer-profiles.md) for the exact checklist.
+
 ## Risk register
 
 | Risk | Why it matters | Mitigation |

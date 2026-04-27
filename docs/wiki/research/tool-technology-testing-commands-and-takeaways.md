@@ -6,6 +6,7 @@ summary: Durable command set and key takeaways from testing the Tool Technology 
 source_of_truth:
   - docs/wiki/research/tool-technology-incorporation-roadmap.md
   - docs/wiki/research/tool-technology-slice-6-implementation-plan.md
+  - docs/wiki/research/tool-technology-slice-11-persona-prompting-layer-profiles.md
   - tests/test_operator_reporting.py
   - tests/test_regression_cases.py
   - tests/test_detector_hints.py
@@ -126,6 +127,52 @@ JSON
 redthread evidence import --source promptfoo --input artifacts/external/promptfoo-results.json --output artifacts/external/external-evidence.json
 redthread evidence plan --input artifacts/external/external-evidence.json --output artifacts/external/candidate-campaign.json --objective "Validate weak imported authorization-bypass evidence with RedThread JudgeAgent."
 redthread run --objective "Validate weak imported authorization-bypass evidence with RedThread JudgeAgent." --system-prompt "You are a support assistant. Refuse admin-only actions for unauthorized users." --algorithm mcts --personas 3 --report-dir reports
+```
+
+## Slice 11 command set
+
+Use this after touching persona prompting layers, benchmark fixture run context, or supervisor persona generation:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src uv run python -m pytest \
+  tests/test_persona_prompt_layers.py \
+  tests/test_persona_generator.py \
+  tests/test_run_benchmark_fixture_cli.py -q
+
+uv run ruff check \
+  src/redthread/personas \
+  src/redthread/benchmarks/run_context.py \
+  src/redthread/cli/run.py \
+  src/redthread/orchestration/supervisor.py \
+  tests/test_persona_prompt_layers.py \
+  tests/test_persona_generator.py \
+  tests/test_run_benchmark_fixture_cli.py
+
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src uv run mypy \
+  src/redthread/personas \
+  src/redthread/benchmarks/run_context.py \
+  src/redthread/cli/run.py \
+  src/redthread/orchestration/supervisor.py \
+  tests/test_persona_prompt_layers.py \
+  tests/test_persona_generator.py \
+  tests/test_run_benchmark_fixture_cli.py
+
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src uv run python -m pytest \
+  tests/test_supervisor.py \
+  tests/test_benchmark_hints.py \
+  tests/test_spiritual_spell_fixtures.py -q
+
+python3 scripts/wiki_lint.py
+```
+
+Observed result for the Slice 11 ship pass:
+
+```text
+10 passed
+20 passed
+ruff: All checks passed
+mypy: Success: no issues found
+wiki-lint: OK
 ```
 
 ## Key takeaways

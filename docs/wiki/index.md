@@ -62,6 +62,7 @@ This is the primary content map for the RedThread wiki.
 - [research/tool-technology-slice-8-implementation-plan.md](research/tool-technology-slice-8-implementation-plan.md) — Exact Slice 8 implementation checklist for weak external evidence bridge models and safe promptfoo/garak/Strix mapping helpers.
 - [research/tool-technology-slice-9-implementation-plan.md](research/tool-technology-slice-9-implementation-plan.md) — Exact Slice 9 implementation checklist for importing external JSON rows into RedThread weak evidence bundles.
 - [research/tool-technology-slice-10-implementation-plan.md](research/tool-technology-slice-10-implementation-plan.md) — Exact Slice 10 implementation checklist for turning weak external evidence into candidate campaign/probe-seed artifacts.
+- [research/tool-technology-slice-11-persona-prompting-layer-profiles.md](research/tool-technology-slice-11-persona-prompting-layer-profiles.md) — Exact Slice 11 plan and RPI findings for metadata-only persona prompting layer profiles.
 - [research/tool-technology-testing-commands-and-takeaways.md](research/tool-technology-testing-commands-and-takeaways.md) — Durable test commands, dry-run smoke analysis, and key takeaways for the Tool Technology Incorporation track.
 - [research/bounded-autoresearch.md](research/bounded-autoresearch.md) — Current synthesis of bounded offense and defense mutation lanes.
 - [research/current-hardening-tracks.md](research/current-hardening-tracks.md) — Current ordered execution plans for verification, governance, runtime truth, and defense confidence hardening.

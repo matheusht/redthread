@@ -19,6 +19,7 @@ def test_run_cli_can_use_benchmark_fixture_metadata_context(monkeypatch: Any) ->
 
         async def run(self, config: CampaignConfig) -> CampaignResult:
             captured["objective"] = config.objective
+            captured["prompting_layer_profile"] = config.prompting_layer_profile
             return CampaignResult(config=config)
 
     monkeypatch.setattr("redthread.cli.run.RedThreadEngine", FakeEngine)
@@ -42,6 +43,10 @@ def test_run_cli_can_use_benchmark_fixture_metadata_context(monkeypatch: Any) ->
     assert "test trusted instruction handling" in objective
     assert "Benchmark fixture context (metadata only" in objective
     assert "spiritual-spell-0032" in objective
+    profile = captured["prompting_layer_profile"]
+    assert isinstance(profile, dict)
+    assert profile["raw_prompt_loaded"] is False
+    assert "source_fixture_ids" in profile
     assert "Raw prompt bodies: not loaded" in result.output
     assert "Benchmark fixture context" in result.output
 

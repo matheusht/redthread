@@ -3,15 +3,22 @@
 from __future__ import annotations
 
 import logging
+from typing import Any, cast
 
 from redthread.config.settings import RedThreadSettings
 from redthread.models import MitreAtlasTactic, Persona, PsychologicalTrigger
-from redthread.personas.atlas_taxonomy import TECHNIQUES_BY_TACTIC, AtlasTechnique
+from redthread.personas.generation_defaults import (
+    build_dry_run_persona,
+    default_trigger_sets,
+    get_primary_technique,
+)
 from redthread.personas.generation_support import (
     PERSONA_GENERATION_PROMPT,
     normalize_persona_data,
     parse_persona_json,
+    render_prompting_layer_constraints,
 )
+from redthread.personas.prompt_layers import PromptingLayerProfile
 from redthread.pyrit_adapters.targets import (
     ExecutionMetadata,
     ExecutionRecorder,
@@ -49,13 +56,14 @@ class PersonaGenerator:
         objective: str,
         tactic: MitreAtlasTactic = MitreAtlasTactic.INITIAL_ACCESS,
         triggers: list[PsychologicalTrigger] | None = None,
+        prompting_layer_profile: PromptingLayerProfile | None = None,
     ) -> Persona:
         if triggers is None:
             triggers = [PsychologicalTrigger.AUTHORITY, PsychologicalTrigger.URGENCY]
         if self.settings.dry_run:
-            return _build_dry_run_persona(objective, tactic, triggers)
+            return build_dry_run_persona(objective, tactic, triggers, prompting_layer_profile)
 
-        technique = _get_primary_technique(tactic)
+        technique = get_primary_technique(tactic)
         prompt = PERSONA_GENERATION_PROMPT.format(
             tactic_name=tactic.name.replace("_", " ").title(),
             tactic_id=tactic.value,
@@ -64,6 +72,7 @@ class PersonaGenerator:
             technique_description=technique.description,
             objective=objective,
             triggers=", ".join(trigger.value for trigger in triggers),
+            prompting_layer_constraints=render_prompting_layer_constraints(prompting_layer_profile),
         )
         logger.info("Generating persona", extra={"tactic": tactic.value, "technique": technique.id})
         return await self._generate_with_retries(prompt, tactic, triggers, technique.id, technique.name)
@@ -73,6 +82,7 @@ class PersonaGenerator:
         objective: str,
         count: int = 3,
         tactics: list[MitreAtlasTactic] | None = None,
+        prompting_layer_profile: PromptingLayerProfile | None = None,
     ) -> list[Persona]:
         if tactics is None:
             default_tactics = [
@@ -83,16 +93,22 @@ class PersonaGenerator:
             tactics = (default_tactics * ((count // len(default_tactics)) + 1))[:count]
         personas = []
         for index, tactic in enumerate(tactics[:count]):
-            triggers = _default_trigger_sets()[index % len(_default_trigger_sets())]
-            persona = await self.generate(objective, tactic, triggers)
+            trigger_sets = default_trigger_sets()
+            triggers = trigger_sets[index % len(trigger_sets)]
+            persona = await self.generate(
+                objective,
+                tactic,
+                triggers,
+                prompting_layer_profile,
+            )
             personas.append(persona)
             logger.info("Generated persona %d/%d: %s", index + 1, count, persona.name)
         return personas
 
-    def _parse_persona_json(self, raw: str) -> dict[str, str]:
+    def _parse_persona_json(self, raw: str) -> dict[str, Any]:
         return parse_persona_json(raw)
 
-    def _normalize_persona_data(self, raw_data: dict) -> dict[str, str]:
+    def _normalize_persona_data(self, raw_data: dict[str, Any]) -> dict[str, Any]:
         return normalize_persona_data(raw_data)
 
     async def _generate_with_retries(
@@ -128,12 +144,12 @@ class PersonaGenerator:
                 if not isinstance(strategies, list):
                     strategies = []
                 candidate = Persona(
-                    name=persona_data["name"],
+                    name=cast(str, persona_data["name"]),
                     tactic=tactic,
                     technique=f"{technique_id} — {technique_name}",
-                    cover_story=persona_data["cover_story"],
-                    hidden_objective=persona_data["hidden_objective"],
-                    system_prompt=persona_data["system_prompt"],
+                    cover_story=cast(str, persona_data["cover_story"]),
+                    hidden_objective=cast(str, persona_data["hidden_objective"]),
+                    system_prompt=cast(str, persona_data["system_prompt"]),
                     psychological_triggers=triggers,
                     allowed_strategies=strategies,
                 )
@@ -150,40 +166,3 @@ class PersonaGenerator:
                 if attempt == 2:
                     raise
         raise RuntimeError("persona generation retries exhausted")
-
-
-def _default_trigger_sets() -> list[list[PsychologicalTrigger]]:
-    return [
-        [PsychologicalTrigger.AUTHORITY, PsychologicalTrigger.URGENCY],
-        [PsychologicalTrigger.RECIPROCITY, PsychologicalTrigger.SOCIAL_PROOF],
-        [PsychologicalTrigger.FEAR],
-    ]
-
-
-def _get_primary_technique(tactic: MitreAtlasTactic) -> AtlasTechnique:
-    techniques = TECHNIQUES_BY_TACTIC.get(tactic, [])
-    if not techniques:
-        raise ValueError(f"No techniques found for tactic: {tactic}")
-    return techniques[0]
-
-
-def _build_dry_run_persona(
-    objective: str,
-    tactic: MitreAtlasTactic,
-    triggers: list[PsychologicalTrigger],
-) -> Persona:
-    return Persona(
-        name=f"Dry Run {tactic.name.replace('_', ' ').title()} Persona",
-        tactic=tactic,
-        technique="AML.T0054 — LLM Prompt Injection",
-        cover_story=f"Safe offline probe for: {objective}",
-        hidden_objective=objective,
-        system_prompt=(
-            "You are a sealed dry-run persona used for offline validation. "
-            "Stay in character, but do not require a live attacker model."
-        ),
-        psychological_triggers=triggers,
-        allowed_strategies=[
-            f"use {trigger.value.replace('_', ' ')} framing" for trigger in triggers
-        ],
-    )

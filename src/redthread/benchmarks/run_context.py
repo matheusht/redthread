@@ -9,6 +9,10 @@ from pydantic import BaseModel, Field
 from redthread.benchmarks.hints import BenchmarkHintProfile, build_fixture_hint_profiles
 from redthread.benchmarks.jailbreak_fixtures import JailbreakBenchmarkFixture
 from redthread.benchmarks.spiritual_spell import load_spiritual_spell_fixtures
+from redthread.personas.prompt_layers import (
+    PromptingLayerProfile,
+    prompting_layer_profile_from_fixtures,
+)
 
 
 class BenchmarkRunContextError(ValueError):
@@ -22,6 +26,7 @@ class BenchmarkRunContext(BaseModel):
     objective: str
     fixtures: list[JailbreakBenchmarkFixture] = Field(default_factory=list)
     hint_profiles: list[BenchmarkHintProfile] = Field(default_factory=list)
+    prompting_layer_profile: PromptingLayerProfile = Field(default_factory=PromptingLayerProfile)
     summary_lines: list[str] = Field(default_factory=list)
 
     def metadata(self) -> dict[str, object]:
@@ -33,6 +38,7 @@ class BenchmarkRunContext(BaseModel):
             "technique_tags": sorted({tag for fixture in self.fixtures for tag in fixture.technique_tags}),
             "persona_tags": sorted({tag for fixture in self.fixtures for tag in fixture.persona_tags}),
             "attack_layers": sorted({layer for fixture in self.fixtures for layer in fixture.attack_layers}),
+            "prompting_layer_profile": self.prompting_layer_profile.model_dump(mode="json"),
             "raw_prompt_loaded": False,
             "raw_prompt_policy": "fixture context uses metadata only; raw prompt bodies are not loaded",
         }
@@ -45,12 +51,14 @@ def apply_benchmark_fixture_context(
     """Append safe fixture metadata hints to a normal run objective."""
     fixtures = _fixtures_by_id(fixture_ids)
     hint_profiles = build_fixture_hint_profiles(fixtures)
-    summary_lines = _summary_lines(fixtures, hint_profiles)
+    prompting_layer_profile = prompting_layer_profile_from_fixtures(fixtures)
+    summary_lines = _summary_lines(fixtures, hint_profiles, prompting_layer_profile)
     return BenchmarkRunContext(
         original_objective=objective,
         objective=_augmented_objective(objective, fixtures, hint_profiles),
         fixtures=fixtures,
         hint_profiles=hint_profiles,
+        prompting_layer_profile=prompting_layer_profile,
         summary_lines=summary_lines,
     )
 
@@ -97,6 +105,7 @@ def _augmented_objective(
 def _summary_lines(
     fixtures: Sequence[JailbreakBenchmarkFixture],
     hint_profiles: Sequence[BenchmarkHintProfile],
+    prompting_layer_profile: PromptingLayerProfile,
 ) -> list[str]:
     strategy_ids = sorted(
         {
@@ -110,6 +119,8 @@ def _summary_lines(
         "Benchmark fixture context: metadata only",
         f"Fixtures: {', '.join(fixture.id for fixture in fixtures)}",
         f"Suggested run algorithms: {', '.join(strategy_ids) if strategy_ids else '(none)'}",
+        "Prompting layers: "
+        f"{', '.join(prompting_layer_profile.enabled_layers) if prompting_layer_profile.enabled_layers else '(none)'}",
         "Raw prompt bodies: not loaded",
     ]
     return lines

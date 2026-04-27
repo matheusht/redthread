@@ -189,6 +189,7 @@ class CampaignConfig(BaseModel):
     target_system_prompt: str   # The target agent's system prompt
     rubric_name: str = "authorization_bypass"
     num_personas: int = 3
+    prompting_layer_profile: dict[str, Any] = Field(default_factory=dict)
 
 
 class CampaignResult(BaseModel):

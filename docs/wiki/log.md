@@ -1,5 +1,12 @@
 # Wiki Log
 
+## [2026-04-27] implementation | shipped tool technology incorporation slice 11
+- created `research/tool-technology-slice-11-persona-prompting-layer-profiles.md` with RPI findings, the safe profile contract, implementation checklist, acceptance criteria, and gap check
+- added metadata-only `PromptingLayerProfile` transport from benchmark fixture tags into persona generation
+- preserved the benchmark material vault boundary: raw jailbreak prompt bodies stay out of source, tests, docs, wiki, and generated persona prompts
+- kept JudgeAgent as verdict owner; prompting profiles only shape persona strategy diversity
+- updated `research/tool-technology-testing-commands-and-takeaways.md` with the Slice 11 focused validation commands and observed results
+
 ## [2026-04-27] implementation | shipped tool technology incorporation slices 9 and 10
 - created `research/tool-technology-slice-9-implementation-plan.md` for the external evidence import CLI
 - created `research/tool-technology-slice-10-implementation-plan.md` for weak evidence to candidate campaign/probe-seed artifacts
