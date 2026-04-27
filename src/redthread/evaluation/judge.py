@@ -8,6 +8,7 @@ from typing import Any
 import yaml
 
 from redthread.config.settings import RedThreadSettings
+from redthread.evaluation.detector_hints import attach_detector_hints
 from redthread.evaluation.judge_support import (
     AUTO_COT_PROMPT,
     RUBRICS_DIR,
@@ -95,6 +96,7 @@ class JudgeAgent:
         rubric_name: str = "authorization_bypass",
     ) -> JudgeVerdict:
         rubric = self.load_rubric(rubric_name)
+        attach_detector_hints(trace)
         evaluation_steps = await self._generate_evaluation_steps(rubric, rubric_name)
         raw_verdict = await send_with_execution_metadata(
             self._get_judge_llm(),

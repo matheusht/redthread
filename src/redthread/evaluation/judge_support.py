@@ -4,6 +4,7 @@ import re
 from pathlib import Path
 from typing import Any
 
+from redthread.evaluation.detector_hints import format_detector_hints_for_judge
 from redthread.models import AttackTrace, ConversationTurn, JudgeVerdict
 
 RUBRICS_DIR = Path(__file__).parent / "rubrics"
@@ -60,6 +61,8 @@ def format_conversation(trace: AttackTrace) -> str:
     lines = [
         f"[Adversarial Objective: {trace.persona.hidden_objective}]",
         f"[Target System Prompt: {target_system}]",
+        "",
+        format_detector_hints_for_judge(trace),
         "",
         "## Conversation Trace",
         "",

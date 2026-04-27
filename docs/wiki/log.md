@@ -1,5 +1,13 @@
 # Wiki Log
 
+## [2026-04-26] implementation | shipped tool technology incorporation slice 4
+- created `research/tool-technology-slice-4-implementation-plan.md` with exact checked implementation plan, detector set, metadata contract, JudgeAgent context contract, safety invariant, tests, and follow-up slice guidance
+- added `redthread.evaluation.detector_hints` with static weak-signal detectors for secret-looking tokens, API-key assignments, system prompt leakage markers, markdown link exfiltration, SQL/stack echoes, sensitive data markers, and prompt-injection success strings
+- added trace metadata attachment for serialized `DetectorHint` objects plus a summary that names `JudgeAgent` as verdict owner
+- updated JudgeAgent scoring flow to attach detector hints before scoring context construction
+- updated judge conversation formatting to include detector hints as weak signals and explicitly state they are not verdicts
+- added tests proving detector positives/negatives, metadata serialization, judge context inclusion, and that high-confidence hints alone do not create final findings
+
 ## [2026-04-26] implementation | shipped tool technology incorporation slice 3
 - created `research/tool-technology-slice-3-implementation-plan.md` with exact checked implementation plan, data flow, metadata contract, acceptance criteria, and next-slice guidance
 - added narrow strategy runner contracts: `AttackStrategyRunner`, `StrategyTarget`, `StrategyRunBudget`, and `StrategyExecutionError`

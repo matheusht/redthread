@@ -799,6 +799,23 @@ Slice 4: Detector hints
 - JudgeAgent remains verdict owner.
 - Report/test language says hints are weak signals.
 
+## Slice 4 implementation status
+
+Slice 4 is shipped as of 2026-04-26.
+
+Implemented:
+
+- Static weak-signal detector library in `redthread.evaluation.detector_hints`.
+- Detector coverage for secret-looking tokens, API-key assignment text, system prompt leakage markers, markdown link exfiltration patterns, SQL/stack/error echoes, sensitive data markers, and prompt-injection success strings.
+- Target response scanning across normal turns, Crescendo turns, MCTS nodes, and TAP nodes.
+- Serialized `DetectorHint` attachment under `AttackTrace.metadata["detector_hints"]`.
+- `detector_hint_summary` with count, max confidence, explicit limitations, and `verdict_owner = JudgeAgent`.
+- JudgeAgent integration that attaches hints before scoring context construction.
+- Judge prompt context that says detector hints are weak static signals, not verdicts, and JudgeAgent must decide final score from full context.
+- Tests for detector positives/negatives, trace metadata serialization, judge context inclusion, and the invariant that a high-confidence hint alone does not create a final finding.
+
+See [Tool Technology Slice 4 Implementation Plan](tool-technology-slice-4-implementation-plan.md) for the exact checklist.
+
 ## Fifth implementation slice
 
 ```text
