@@ -852,6 +852,43 @@ Implemented:
 
 See [Tool Technology Slice 5 Implementation Plan](tool-technology-slice-5-implementation-plan.md) for the exact checklist.
 
+## Sixth implementation slice
+
+```text
+Slice 6: Guide-style operator artifacts
+```
+
+### Build
+
+- guide-style operator artifact models
+- pure campaign-result to artifact-bundle builder
+- Markdown exporter
+- JSON exporter
+- detector-hint limitation wording
+- regression-link report visibility
+- optional one-run CLI report emission
+
+### Definition of done
+
+- A run can emit Markdown and JSON operator summaries.
+- Reports include scope, risks, strategies, JudgeAgent verdicts, detector limitations, defense status, and regression links when present.
+- Detector hints are presented as weak signals, not proof.
+- Report generation remains separate from attack execution.
+
+## Slice 6 implementation status
+
+Slice 6 is shipped as of 2026-04-27.
+
+Implemented:
+
+- `redthread.reporting.models` for rules of engagement, vulnerability report, security card, PR checklist, stakeholder readout, and regression pack summaries.
+- `redthread.reporting.artifacts.build_operator_artifact_bundle()` for pure artifact construction from `CampaignResult` with optional `CampaignPlan`, regression links, and defense status inputs.
+- `redthread.reporting.exporters` for stable JSON and Markdown output.
+- Optional `redthread run --report-md/--report-json` flags for caller-chosen artifact paths.
+- Tests proving report shape, required Markdown sections, stable JSON schema, detector no-overclaim wording, and regression-link visibility.
+
+See [Tool Technology Slice 6 Implementation Plan](tool-technology-slice-6-implementation-plan.md) for the exact checklist.
+
 ## Risk register
 
 | Risk | Why it matters | Mitigation |

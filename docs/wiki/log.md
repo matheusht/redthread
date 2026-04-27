@@ -1,5 +1,12 @@
 # Wiki Log
 
+## [2026-04-27] implementation | shipped tool technology incorporation slice 6
+- created `research/tool-technology-slice-6-implementation-plan.md` with exact checked implementation plan, data contract, safety invariant, tests, and next-slice guidance
+- added `redthread.reporting` as a separate operator artifact/export layer instead of changing attack execution, JudgeAgent, or defense synthesis
+- added guide-style artifact models for rules of engagement, vulnerability report, model/system security card, PR checklist, stakeholder readout, and regression pack summary
+- added Markdown and JSON exporters plus optional `redthread run --report-md/--report-json` output flags
+- kept detector hints framed as weak static signals, not proof, and linked confirmed findings to regression cases when Slice 5 links are supplied
+
 ## [2026-04-26] research-pass | ingested ENI writer persona entity
 - added `entities/eni-writer-persona.md` covering limerence, CoT hijacking, and injection rebuttal
 - updated `docs/wiki/index.md`
