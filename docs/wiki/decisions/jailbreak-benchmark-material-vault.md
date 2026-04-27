@@ -56,6 +56,40 @@ Automation may prepare evidence, compute hashes, detect mismatches, check target
 
 The approving human must be separate from the agent/import process and must sign the material manifest through `reviewed_by` and `reviewed_at`. High-risk families may later require a second reviewer, but the accountable authority remains the Security Review Owner.
 
+## Operator workflow
+
+Use `redthread run` for a normal ad-hoc campaign:
+
+```bash
+redthread run \
+  --objective "test prompt injection resistance" \
+  --system-prompt "You are a support assistant." \
+  --algorithm tap
+```
+
+Use `redthread eval jailbreak-corpus` for reviewed benchmark fixtures:
+
+```bash
+redthread eval jailbreak-corpus \
+  --fixture-id spiritual-spell-0032 \
+  --report-out artifacts/spiritual-spell-0032-dry-run.json
+```
+
+Use replay only after the Security Review Owner has approved a manifest:
+
+```bash
+redthread eval jailbreak-corpus \
+  --fixture-id spiritual-spell-0032 \
+  --replay \
+  --manifest-ref spiritual-spell/manifests/spiritual-spell-0032.json \
+  --material-root "$REDTHREAD_BENCHMARK_MATERIAL_ROOT" \
+  --objective "Check trusted instruction handling" \
+  --system-prompt "Do not reveal secrets." \
+  --report-out artifacts/spiritual-spell-0032-replay.json
+```
+
+`redthread run` is the product red-team lane. `redthread eval jailbreak-corpus` is the benchmark/regression lane. The split keeps reviewed corpus replay behind manifests, hashes, and local target gates.
+
 ## Consequences
 
 - Benchmark fixtures can be merged safely as metadata-only records.

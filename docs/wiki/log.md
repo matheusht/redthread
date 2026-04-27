@@ -1,5 +1,9 @@
 # Wiki Log
 
+## [2026-04-26] implementation | documented jailbreak benchmark operator commands
+- updated `decisions/jailbreak-benchmark-material-vault.md` with the split between `redthread run` for product red-team campaigns and `redthread eval jailbreak-corpus` for reviewed benchmark fixtures
+- added dry-run, approved replay, and prompt-safe report artifact command examples
+
 ## [2026-04-26] decision | named benchmark replay approval authority
 - updated `decisions/jailbreak-benchmark-material-vault.md` to name the CTO-appointed Security Review Owner as the human approval authority for `metadata_only` to `approved_replay_seed`
 - recorded automation as evidence/preflight only, not final approval
