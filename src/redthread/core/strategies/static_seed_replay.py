@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from datetime import datetime, timezone
 
 from redthread.core.strategies.builtin import default_attack_strategy_registry
@@ -37,6 +38,7 @@ class StaticSeedReplayRunner:
         risk_plugin_id: str | None = None,
         budget: StrategyRunBudget | None = None,
         target_id: str | None = None,
+        benchmark_metadata: Mapping[str, object] | None = None,
     ) -> AttackTrace:
         """Execute static replay and return an unjudged AttackTrace."""
         run_budget = budget or StrategyRunBudget()
@@ -46,7 +48,13 @@ class StaticSeedReplayRunner:
         trace = AttackTrace(
             persona=self._build_persona(plan, planned_risk),
             algorithm=self.strategy_id,
-            metadata=self._metadata(plan, planned_risk, run_budget, target_id),
+            metadata=self._metadata(
+                plan,
+                planned_risk,
+                run_budget,
+                target_id,
+                benchmark_metadata,
+            ),
         )
         for index, prompt in enumerate(prompts, start=1):
             response = await target.send(
@@ -117,9 +125,10 @@ class StaticSeedReplayRunner:
         planned_risk: PlannedRisk,
         budget: StrategyRunBudget,
         target_id: str | None,
+        benchmark_metadata: Mapping[str, object] | None,
     ) -> dict[str, object]:
         plugin = planned_risk.plugin
-        return {
+        metadata: dict[str, object] = {
             "trace_source": "strategy_adapter",
             "risk_plugin_id": plugin.id,
             "risk_plugin_name": plugin.name,
@@ -136,3 +145,6 @@ class StaticSeedReplayRunner:
             "budget_max_turns": budget.max_turns,
             "judge_required": True,
         }
+        if benchmark_metadata:
+            metadata.update(benchmark_metadata)
+        return metadata
