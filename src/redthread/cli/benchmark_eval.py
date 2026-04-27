@@ -19,6 +19,7 @@ from redthread.benchmarks.dry_run import (
     build_jailbreak_corpus_dry_run_report,
 )
 from redthread.benchmarks.replay import BenchmarkReplayError, run_approved_jailbreak_replay
+from redthread.cli.benchmark_materials import register_benchmark_material_commands
 from redthread.cli.shared import run_async_command
 
 
@@ -28,6 +29,8 @@ def register_benchmark_eval_commands(main: click.Group, console: Console) -> Non
     @main.group(name="eval")
     def eval_group() -> None:
         """Evaluation and benchmark commands."""
+
+    register_benchmark_material_commands(eval_group, console)
 
     @eval_group.command(name="jailbreak-corpus")
     @click.option("--source", default="spiritual-spell", show_default=True)
