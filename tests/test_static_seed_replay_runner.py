@@ -108,6 +108,28 @@ async def test_static_seed_replay_propagates_budget() -> None:
 
 
 @pytest.mark.asyncio
+async def test_static_seed_replay_can_use_reviewed_seed_prompts() -> None:
+    plan = build_campaign_plan(
+        {
+            "objective": "approved replay seed test",
+            "target_system_prompt": "Prompt",
+            "risks": ["prompt_injection"],
+            "strategies": {"include": ["static_seed_replay"]},
+        }
+    )
+    target = FakeTarget()
+
+    trace = await StaticSeedReplayRunner().run(
+        plan,
+        target=target,
+        seed_prompts=["reviewed local-only seed"],
+    )
+
+    assert [turn.attacker_prompt for turn in trace.turns] == ["reviewed local-only seed"]
+    assert target.calls[0][0] == "reviewed local-only seed"
+
+
+@pytest.mark.asyncio
 async def test_static_seed_replay_rejects_unplanned_strategy_for_risk() -> None:
     plan = build_campaign_plan(
         {

@@ -8,6 +8,12 @@ from redthread.benchmarks.jailbreak_fixtures import (
     load_jailbreak_fixture_file,
     load_jailbreak_fixture_pack,
 )
+from redthread.benchmarks.prompt_materials import (
+    PromptMaterial,
+    PromptMaterialError,
+    load_prompt_material,
+    load_replay_seed_prompts,
+)
 from redthread.benchmarks.reports import (
     BenchmarkRunReport,
     BenchmarkVerdictSummary,
@@ -23,12 +29,16 @@ __all__ = [
     "BenchmarkRunReport",
     "BenchmarkVerdictSummary",
     "JAILBREAK_FIXTURE_SCHEMA_VERSION",
+    "PromptMaterial",
+    "PromptMaterialError",
     "JailbreakBenchmarkFixture",
     "JailbreakFixtureError",
     "build_benchmark_campaign_draft",
     "build_benchmark_run_report",
     "load_jailbreak_fixture_file",
     "load_jailbreak_fixture_pack",
+    "load_prompt_material",
+    "load_replay_seed_prompts",
     "load_spiritual_spell_fixtures",
     "spiritual_spell_fixture_pack_data",
 ]
