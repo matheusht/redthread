@@ -833,6 +833,25 @@ Slice 5: RegressionCase
 - A confirmed finding can generate a replayable regression artifact.
 - Defense validation can consume it in fake/dry-run mode.
 
+## Slice 5 implementation status
+
+Slice 5 is shipped as of 2026-04-26.
+
+Implemented:
+
+- `redthread.core.regression_cases` helper module.
+- `regression_case_from_attack_result()` for JudgeAgent-confirmed finding to `RegressionCase` conversion.
+- `minimize_attack_trace()` for replay-focused trace reduction across normal, Crescendo, MCTS, and TAP traces.
+- `replay_payload_from_regression_case()` for extracting the payload defense validation should replay.
+- `validate_regression_case_dry()` using the existing sealed defense replay dry-run path.
+- `response_satisfies_expected_safe_behavior()` for lightweight expected-safe-response checks.
+- `regression_case_artifact()` with stable `redthread.regression_case.v1` schema marker.
+- `finding_regression_link()` for report/export slices to connect findings to regression cases.
+- Safety invariant: unconfirmed results cannot create regression cases, so detector hints alone cannot create durable regression memory.
+- Targeted tests for conversion, rejection, artifact serialization, expected behavior, dry-run replay, and finding links.
+
+See [Tool Technology Slice 5 Implementation Plan](tool-technology-slice-5-implementation-plan.md) for the exact checklist.
+
 ## Risk register
 
 | Risk | Why it matters | Mitigation |

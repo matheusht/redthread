@@ -1,5 +1,19 @@
 # Wiki Log
 
+## [2026-04-26] implementation | shipped tool technology incorporation slice 5
+- created `research/tool-technology-slice-5-implementation-plan.md` with exact checked implementation plan, data contract, safety invariant, tests, and next-slice guidance
+- added `redthread.core.regression_cases` helper module for converting JudgeAgent-confirmed `AttackResult` objects into durable `RegressionCase` artifacts
+- added minimized replay trace extraction across normal, Crescendo, MCTS, and TAP traces while preserving risk plugin, strategy, source policy, target system prompt, and detector summary lineage
+- added stable regression artifact serialization and finding-to-regression link metadata for later report/export slices
+- reused sealed defense replay dry-run validation so a regression case can already feed defense validation without new runtime coupling
+- added tests proving confirmed findings create regression cases, unconfirmed findings are rejected, artifacts serialize, expected-safe-behavior checks work, dry-run replay consumes the case, and report links are deterministic
+
+## [2026-04-26] research-pass | ingested Spiritual-Spell-Red-Teaming corpus map
+- created `research/spiritual-spell-red-teaming-corpus.md` with a safe source inventory, method-family taxonomy, RedThread fit map, CTO recommendation, fixture data model, end-to-end benchmark workflow, safety boundaries, MVP, and future path
+- created `research/spiritual-spell-red-teaming-source-inventory.md` with metadata-only source paths and family labels for all inspected files
+- updated `docs/wiki/index.md`
+- did not copy raw jailbreak prompts into the wiki; license and alleged system-prompt provenance are marked uncertain
+
 ## [2026-04-26] implementation | shipped tool technology incorporation slice 4
 - created `research/tool-technology-slice-4-implementation-plan.md` with exact checked implementation plan, detector set, metadata contract, JudgeAgent context contract, safety invariant, tests, and follow-up slice guidance
 - added `redthread.evaluation.detector_hints` with static weak-signal detectors for secret-looking tokens, API-key assignments, system prompt leakage markers, markdown link exfiltration, SQL/stack echoes, sensitive data markers, and prompt-injection success strings
