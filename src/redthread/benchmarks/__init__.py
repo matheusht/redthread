@@ -13,6 +13,15 @@ from redthread.benchmarks.jailbreak_fixtures import (
     load_jailbreak_fixture_file,
     load_jailbreak_fixture_pack,
 )
+from redthread.benchmarks.material_vault import (
+    BENCHMARK_MATERIAL_ROOT_ENV,
+    MATERIAL_MANIFEST_SCHEMA_VERSION,
+    BenchmarkMaterialManifest,
+    MaterialVaultError,
+    benchmark_material_root,
+    load_material_manifest,
+    resolve_reviewed_material,
+)
 from redthread.benchmarks.prompt_materials import (
     PromptMaterial,
     PromptMaterialError,
@@ -31,7 +40,10 @@ from redthread.benchmarks.spiritual_spell import (
 
 __all__ = [
     "BenchmarkCampaignDraft",
+    "BENCHMARK_MATERIAL_ROOT_ENV",
+    "MATERIAL_MANIFEST_SCHEMA_VERSION",
     "BenchmarkHintProfile",
+    "BenchmarkMaterialManifest",
     "BenchmarkRunReport",
     "BenchmarkVerdictSummary",
     "JAILBREAK_FIXTURE_SCHEMA_VERSION",
@@ -39,14 +51,18 @@ __all__ = [
     "PromptMaterialError",
     "JailbreakBenchmarkFixture",
     "JailbreakFixtureError",
+    "MaterialVaultError",
     "build_benchmark_campaign_draft",
     "build_benchmark_run_report",
+    "benchmark_material_root",
     "build_fixture_hint_profile",
     "build_fixture_hint_profiles",
     "load_jailbreak_fixture_file",
+    "load_material_manifest",
     "load_jailbreak_fixture_pack",
     "load_prompt_material",
     "load_replay_seed_prompts",
+    "resolve_reviewed_material",
     "load_spiritual_spell_fixtures",
     "spiritual_spell_fixture_pack_data",
 ]
