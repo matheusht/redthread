@@ -39,6 +39,11 @@ from redthread.benchmarks.prompt_materials import (
     load_prompt_material,
     load_replay_seed_prompts,
 )
+from redthread.benchmarks.replay import (
+    BenchmarkReplayError,
+    LocalBenchmarkTarget,
+    run_approved_jailbreak_replay,
+)
 from redthread.benchmarks.reports import (
     BenchmarkRunReport,
     BenchmarkVerdictSummary,
@@ -57,6 +62,7 @@ __all__ = [
     "MATERIAL_MANIFEST_SCHEMA_VERSION",
     "BenchmarkHintProfile",
     "BenchmarkMaterialManifest",
+    "BenchmarkReplayError",
     "BenchmarkRunReport",
     "BenchmarkVerdictSummary",
     "JAILBREAK_FIXTURE_SCHEMA_VERSION",
@@ -64,6 +70,7 @@ __all__ = [
     "PromptMaterialError",
     "JailbreakBenchmarkFixture",
     "JailbreakFixtureError",
+    "LocalBenchmarkTarget",
     "MaterialImportResult",
     "MaterialReviewError",
     "MaterialVaultError",
@@ -75,6 +82,7 @@ __all__ = [
     "build_fixture_hint_profile",
     "build_fixture_hint_profiles",
     "import_reviewed_material",
+    "run_approved_jailbreak_replay",
     "load_jailbreak_fixture_file",
     "load_material_manifest",
     "load_jailbreak_fixture_pack",
