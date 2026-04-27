@@ -48,6 +48,14 @@ $REDTHREAD_BENCHMARK_MATERIAL_ROOT/
 
 The Spiritual Spell corpus is useful for defensive evaluation. It also contains jailbreak prompts and alleged system prompt captures. The source repository has unclear license/provenance. RedThread needs repeatable benchmarks, but normal repository paths must stay safe to inspect, lint, index, and share.
 
+## Approval authority
+
+The human approval authority for moving `metadata_only` to `approved_replay_seed` is the **Security Review Owner** appointed by the CTO/project owner.
+
+Automation may prepare evidence, compute hashes, detect mismatches, check target scope, classify risk, and recommend a transition. Automation must not approve the transition by itself.
+
+The approving human must be separate from the agent/import process and must sign the material manifest through `reviewed_by` and `reviewed_at`. High-risk families may later require a second reviewer, but the accountable authority remains the Security Review Owner.
+
 ## Consequences
 
 - Benchmark fixtures can be merged safely as metadata-only records.
@@ -74,7 +82,7 @@ Rejected. It would bypass review, provenance pinning, hashing, and local target 
 ## Open questions
 
 - Which private storage backend should production use: encrypted object store, internal artifact store, or local-only operator vault?
-- Who is the human approval authority for moving a record from `metadata_only` to `approved_replay_seed`?
+- Should high-risk families require mandatory second-reviewer countersignature before `approved_replay_seed`?
 - What retention period should apply to reviewed prompt material?
 
 ## Sources

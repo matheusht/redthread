@@ -1,5 +1,9 @@
 # Wiki Log
 
+## [2026-04-26] decision | named benchmark replay approval authority
+- updated `decisions/jailbreak-benchmark-material-vault.md` to name the CTO-appointed Security Review Owner as the human approval authority for `metadata_only` to `approved_replay_seed`
+- recorded automation as evidence/preflight only, not final approval
+
 ## [2026-04-26] decision | accepted jailbreak benchmark material vault architecture
 - created `decisions/jailbreak-benchmark-material-vault.md` to record that raw jailbreak prompt bodies stay outside git behind a reviewed material root, manifests, hashes, and approved target gates
 - updated `docs/wiki/index.md`
