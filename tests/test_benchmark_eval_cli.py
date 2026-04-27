@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 from click.testing import CliRunner
 
@@ -52,6 +53,27 @@ def test_jailbreak_corpus_cli_can_show_safe_hints() -> None:
     assert result.exit_code == 0
     assert "Safe planning hints" in result.output
     assert "relational_persona_pressure" in result.output
+
+
+def test_jailbreak_corpus_cli_writes_report_artifact(tmp_path: Path) -> None:
+    output_path = tmp_path / "dry-run-report.json"
+
+    result = CliRunner().invoke(
+        main,
+        [
+            "eval",
+            "jailbreak-corpus",
+            "--fixture-id",
+            "spiritual-spell-0032",
+            "--report-out",
+            str(output_path),
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert "Report written:" in result.output
+    payload = json.loads(output_path.read_text(encoding="utf-8"))
+    assert payload["selected_fixture_ids"] == ["spiritual-spell-0032"]
 
 
 def test_jailbreak_corpus_cli_blocks_live_target_by_default() -> None:

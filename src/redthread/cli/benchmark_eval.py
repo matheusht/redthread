@@ -8,6 +8,11 @@ from typing import cast
 import click
 from rich.console import Console
 
+from redthread.benchmarks.artifacts import (
+    BenchmarkArtifactError,
+    BenchmarkReportPayload,
+    write_benchmark_report_artifact,
+)
 from redthread.benchmarks.dry_run import (
     BenchmarkDryRunError,
     BenchmarkSource,
@@ -37,6 +42,7 @@ def register_benchmark_eval_commands(main: click.Group, console: Console) -> Non
     @click.option("--material-root", default=None, type=click.Path(exists=False))
     @click.option("--limit", type=click.IntRange(min=1), default=25, show_default=True)
     @click.option("--show-hints", is_flag=True, default=False)
+    @click.option("--report-out", default="", type=click.Path(exists=False), help="Write prompt-safe report JSON.")
     @click.option("--json", "as_json", is_flag=True, default=False)
     def jailbreak_corpus(
         source: str,
@@ -51,6 +57,7 @@ def register_benchmark_eval_commands(main: click.Group, console: Console) -> Non
         material_root: str | None,
         limit: int,
         show_hints: bool,
+        report_out: str,
         as_json: bool,
     ) -> None:
         """Dry-run a reviewed jailbreak corpus benchmark plan without raw prompts."""
@@ -77,6 +84,7 @@ def register_benchmark_eval_commands(main: click.Group, console: Console) -> Non
                 )
             except BenchmarkReplayError as exc:
                 raise click.ClickException(str(exc)) from exc
+            _write_report_artifact(console, report, report_out, as_json)
             _emit_report(console, report.model_dump(), report.summary_lines, as_json)
             return
         try:
@@ -91,6 +99,7 @@ def register_benchmark_eval_commands(main: click.Group, console: Console) -> Non
             )
         except BenchmarkDryRunError as exc:
             raise click.ClickException(str(exc)) from exc
+        _write_report_artifact(console, report, report_out, as_json)
         if as_json:
             click.echo(json.dumps(report.model_dump(), indent=2))
             return
@@ -102,6 +111,22 @@ def register_benchmark_eval_commands(main: click.Group, console: Console) -> Non
             for profile in report.hint_profiles:
                 for line in profile.summary_lines():
                     console.print(line)
+
+
+def _write_report_artifact(
+    console: Console,
+    report: BenchmarkReportPayload,
+    report_out: str,
+    as_json: bool,
+) -> None:
+    if not report_out:
+        return
+    try:
+        result = write_benchmark_report_artifact(report, report_out)
+    except BenchmarkArtifactError as exc:
+        raise click.ClickException(str(exc)) from exc
+    if not as_json:
+        console.print(f"Report written: {result.path}")
 
 
 def _emit_report(

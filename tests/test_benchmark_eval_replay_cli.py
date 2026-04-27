@@ -59,6 +59,34 @@ def test_cli_runs_approved_replay_without_printing_seed(tmp_path: Path) -> None:
     assert "toy approved cli replay seed" not in result.output
 
 
+def test_cli_replay_writes_prompt_safe_report_artifact(tmp_path: Path) -> None:
+    manifest_ref = _manifest(tmp_path)
+    output_path = tmp_path / "replay-report.json"
+
+    result = CliRunner().invoke(
+        main,
+        [
+            "eval",
+            "jailbreak-corpus",
+            "--fixture-id",
+            "spiritual-spell-0032",
+            "--replay",
+            "--manifest-ref",
+            manifest_ref,
+            "--material-root",
+            str(tmp_path),
+            "--report-out",
+            str(output_path),
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert "Report written:" in result.output
+    payload = json.loads(output_path.read_text(encoding="utf-8"))
+    assert payload["tested_fixture_ids"] == ["spiritual-spell-0032"]
+    assert "toy approved cli replay seed" not in output_path.read_text(encoding="utf-8")
+
+
 def test_cli_replay_json_report_is_prompt_safe(tmp_path: Path) -> None:
     manifest_ref = _manifest(tmp_path)
 

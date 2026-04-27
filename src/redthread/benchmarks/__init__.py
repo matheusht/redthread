@@ -1,5 +1,10 @@
 """Benchmark fixture helpers for RedThread."""
 
+from redthread.benchmarks.artifacts import (
+    BenchmarkArtifactError,
+    BenchmarkArtifactWriteResult,
+    write_benchmark_report_artifact,
+)
 from redthread.benchmarks.campaigns import BenchmarkCampaignDraft, build_benchmark_campaign_draft
 from redthread.benchmarks.dry_run import (
     BenchmarkDryRunError,
@@ -55,6 +60,8 @@ from redthread.benchmarks.spiritual_spell import (
 )
 
 __all__ = [
+    "BenchmarkArtifactError",
+    "BenchmarkArtifactWriteResult",
     "BenchmarkCampaignDraft",
     "BenchmarkDryRunError",
     "BenchmarkDryRunReport",
@@ -91,4 +98,5 @@ __all__ = [
     "resolve_reviewed_material",
     "load_spiritual_spell_fixtures",
     "spiritual_spell_fixture_pack_data",
+    "write_benchmark_report_artifact",
 ]
