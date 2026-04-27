@@ -20,6 +20,7 @@ This is the primary content map for the RedThread wiki.
 ## Entities
 
 - [entities/README.md](entities/README.md) — Index rules and scope for entity pages.
+- [entities/eni-writer-persona.md](entities/eni-writer-persona.md) — Jailbreak persona utilizing limerence, chain-of-thought hijacking, and active rebuttal.
 - [entities/mempalace.md](entities/mempalace.md) — Memory and retrieval layer used by the repo.
 - [entities/judge-agent.md](entities/judge-agent.md) — Evaluation role responsible for scoring attack traces.
 - [entities/defense-architect.md](entities/defense-architect.md) — Grounded defensive generation role in the self-healing loop.
@@ -32,6 +33,7 @@ This is the primary content map for the RedThread wiki.
 ## Concepts
 
 - [concepts/README.md](concepts/README.md) — Index rules and scope for concept pages.
+- [concepts/peeling-onions.md](concepts/peeling-onions.md) — Jailbreak framework using plain language, distraction, and narrative embedding.
 - [concepts/confused-deputy-llm.md](concepts/confused-deputy-llm.md) — Privilege escalation in multi-agent systems via indirect prompt injection.
 - [concepts/pre-action-authorization.md](concepts/pre-action-authorization.md) — Deterministic, policy-based enforcement before LLM tool call execution.
 - [concepts/agentic-attack-trees-operational.md](concepts/agentic-attack-trees-operational.md) — Agentic AI Attack Trees and Operational Controls Mapping.
@@ -46,6 +48,7 @@ This is the primary content map for the RedThread wiki.
 - [research/ai-red-teaming-guide-redthread-use-case-map.md](research/ai-red-teaming-guide-redthread-use-case-map.md) — Deep use-case map from AI-Red-Teaming-Guide and related tools into exact RedThread workflow entrypoints, infrastructure changes, and anti-overkill boundaries.
 - [research/spiritual-spell-red-teaming-corpus.md](research/spiritual-spell-red-teaming-corpus.md) — Safe taxonomy and RedThread integration recommendation for the Spiritual-Spell-Red-Teaming jailbreak corpus.
 - [research/spiritual-spell-red-teaming-source-inventory.md](research/spiritual-spell-red-teaming-source-inventory.md) — Metadata-only source-path inventory for the Spiritual-Spell-Red-Teaming corpus.
+- [research/spiritual-spell-red-teaming-implementation-plan.md](research/spiritual-spell-red-teaming-implementation-plan.md) — Bounded implementation plan for turning the Spiritual-Spell-Red-Teaming corpus into a safe RedThread benchmark and workflow lane.
 - [research/tool-technology-incorporation-assessment.md](research/tool-technology-incorporation-assessment.md) — Honest assessment of which external AI red-teaming tool ideas RedThread should absorb natively versus keep external.
 - [research/tool-technology-incorporation-roadmap.md](research/tool-technology-incorporation-roadmap.md) — Detailed next-step roadmap for implementing RedThread-native plugin, strategy, detector-hint, scope, regression, and reporting concepts.
 - [research/tool-technology-slice-1-implementation-plan.md](research/tool-technology-slice-1-implementation-plan.md) — Exact Slice 1 implementation checklist for RedThread-native contracts, registries, built-ins, tests, and no execution wiring.

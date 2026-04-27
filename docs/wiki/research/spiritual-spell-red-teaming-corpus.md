@@ -41,6 +41,7 @@ Local research clone used for inventory: `/tmp/pi-github-repos/Goochbeater/Spiri
 Observed shape:
 
 Full source-path inventory: [spiritual-spell-red-teaming-source-inventory.md](spiritual-spell-red-teaming-source-inventory.md).
+Implementation plan: [spiritual-spell-red-teaming-implementation-plan.md](spiritual-spell-red-teaming-implementation-plan.md).
 
 | Area | Files | Notes |
 |---|---:|---|

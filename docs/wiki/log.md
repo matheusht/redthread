@@ -1,5 +1,21 @@
 # Wiki Log
 
+## [2026-04-26] research-pass | ingested ENI writer persona entity
+- added `entities/eni-writer-persona.md` covering limerence, CoT hijacking, and injection rebuttal
+- updated `docs/wiki/index.md`
+- grounded in the IjailbreakLLMs blog post breakdown
+
+## [2026-04-26] research-pass | ingested peeling onions concept
+- added `concepts/peeling-onions.md` covering plain language, distraction, and narrative embedding
+- updated `docs/wiki/index.md`
+- grounded in the IjailbreakLLMs blog post on the Spiritual Spell framework
+
+## [2026-04-26] planning | added Spiritual Spell benchmark implementation plan
+- created `research/spiritual-spell-red-teaming-implementation-plan.md` with the benchmark lane goal, safety invariant, fixture data contract, end-to-end workflow, implementation slices, CLI sketch, acceptance criteria, stop conditions, and next action
+- linked the implementation plan from `research/spiritual-spell-red-teaming-corpus.md`
+- updated `docs/wiki/index.md`
+- kept raw jailbreak prompt bodies out of the plan
+
 ## [2026-04-26] implementation | shipped tool technology incorporation slice 5
 - created `research/tool-technology-slice-5-implementation-plan.md` with exact checked implementation plan, data contract, safety invariant, tests, and next-slice guidance
 - added `redthread.core.regression_cases` helper module for converting JudgeAgent-confirmed `AttackResult` objects into durable `RegressionCase` artifacts
