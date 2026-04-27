@@ -13,6 +13,12 @@ from redthread.benchmarks.jailbreak_fixtures import (
     load_jailbreak_fixture_file,
     load_jailbreak_fixture_pack,
 )
+from redthread.benchmarks.material_review import (
+    MaterialImportResult,
+    MaterialReviewError,
+    approve_fixture_for_replay,
+    import_reviewed_material,
+)
 from redthread.benchmarks.material_vault import (
     BENCHMARK_MATERIAL_ROOT_ENV,
     MATERIAL_MANIFEST_SCHEMA_VERSION,
@@ -51,12 +57,16 @@ __all__ = [
     "PromptMaterialError",
     "JailbreakBenchmarkFixture",
     "JailbreakFixtureError",
+    "MaterialImportResult",
+    "MaterialReviewError",
     "MaterialVaultError",
     "build_benchmark_campaign_draft",
     "build_benchmark_run_report",
+    "approve_fixture_for_replay",
     "benchmark_material_root",
     "build_fixture_hint_profile",
     "build_fixture_hint_profiles",
+    "import_reviewed_material",
     "load_jailbreak_fixture_file",
     "load_material_manifest",
     "load_jailbreak_fixture_pack",
