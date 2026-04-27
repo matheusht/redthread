@@ -1,5 +1,12 @@
 # Wiki Log
 
+## [2026-04-27] implementation | shipped tool technology incorporation slice 7
+- created `research/tool-technology-testing-commands-and-takeaways.md` with focused and broader test command sets plus durable slice lessons
+- created `research/tool-technology-slice-7-implementation-plan.md` for report persistence, manifest files, transcript links, and import/export bridge prep
+- added standard campaign report directory persistence with Markdown, JSON, and `manifest.json`
+- added `operator_report_manifest` transcript summary linkage and optional `redthread run --report-dir`
+- preserved the weak-evidence boundary for future external imports: external evidence is not a finding until JudgeAgent confirms it
+
 ## [2026-04-27] implementation | shipped tool technology incorporation slice 6
 - created `research/tool-technology-slice-6-implementation-plan.md` with exact checked implementation plan, data contract, safety invariant, tests, and next-slice guidance
 - added `redthread.reporting` as a separate operator artifact/export layer instead of changing attack execution, JudgeAgent, or defense synthesis

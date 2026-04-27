@@ -11,6 +11,7 @@ from redthread.reporting.models import (
     FindingReport,
     JudgeVerdictSummary,
     OperatorArtifactBundle,
+    OperatorReportManifest,
     PRChecklist,
     RegressionPackSummary,
     RulesOfEngagementSummary,
@@ -19,12 +20,14 @@ from redthread.reporting.models import (
     StakeholderReadout,
     VulnerabilityReport,
 )
+from redthread.reporting.persistence import write_campaign_report_artifacts
 
 __all__ = [
     "DETECTOR_LIMITATION",
     "FindingReport",
     "JudgeVerdictSummary",
     "OperatorArtifactBundle",
+    "OperatorReportManifest",
     "PRChecklist",
     "RegressionPackSummary",
     "RulesOfEngagementSummary",
@@ -35,5 +38,6 @@ __all__ = [
     "build_operator_artifact_bundle",
     "operator_artifacts_to_json",
     "operator_artifacts_to_markdown",
+    "write_campaign_report_artifacts",
     "write_operator_artifacts",
 ]

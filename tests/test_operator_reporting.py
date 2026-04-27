@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
+from redthread.config.settings import RedThreadSettings
+from redthread.engine_transcript import write_transcript
 from redthread.models import (
     AttackResult,
     AttackTrace,
@@ -20,6 +23,7 @@ from redthread.reporting import (
     build_operator_artifact_bundle,
     operator_artifacts_to_json,
     operator_artifacts_to_markdown,
+    write_campaign_report_artifacts,
 )
 
 
@@ -151,3 +155,32 @@ def test_json_export_has_stable_shape() -> None:
     assert data["vulnerability_report"]["finding_count"] == 1
     assert data["vulnerability_report"]["findings"][0]["judge_verdict"] == "confirmed_jailbreak"
     assert data["regression_pack_summary"]["links"] == []
+
+
+def test_campaign_report_artifacts_persist_standard_manifest(tmp_path: Path) -> None:
+    bundle = build_operator_artifact_bundle(make_campaign())
+
+    manifest = write_campaign_report_artifacts(bundle, tmp_path / "reports")
+    manifest_path = Path(manifest.artifact_dir) / "manifest.json"
+
+    assert manifest.schema_version == "redthread.operator_report_manifest.v1"
+    assert Path(manifest.markdown_report).exists()
+    assert Path(manifest.json_report).exists()
+    assert manifest_path.exists()
+    assert "weak evidence" in " ".join(manifest.bridge_prep_notes)
+
+
+def test_transcript_summary_links_operator_report_manifest(tmp_path: Path) -> None:
+    campaign = make_campaign()
+    bundle = build_operator_artifact_bundle(campaign)
+    manifest = write_campaign_report_artifacts(bundle, tmp_path / "reports")
+    campaign.metadata["operator_report_manifest"] = manifest.model_dump(mode="json")
+    settings = RedThreadSettings(log_dir=tmp_path / "logs", memory_dir=tmp_path / "memory")
+    settings.log_dir.mkdir(parents=True, exist_ok=True)
+
+    write_transcript(settings, campaign)
+    first_line = (settings.log_dir / f"{campaign.id}.jsonl").read_text(encoding="utf-8").splitlines()[0]
+    summary = json.loads(first_line)
+
+    assert summary["operator_report_manifest"]["schema_version"] == "redthread.operator_report_manifest.v1"
+    assert summary["operator_report_manifest"]["campaign_id"] == campaign.id

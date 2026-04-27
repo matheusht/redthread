@@ -111,3 +111,14 @@ class OperatorArtifactBundle(BaseModel):
     stakeholder_readout: StakeholderReadout
     regression_pack_summary: RegressionPackSummary
     limitations: list[str]
+
+
+class OperatorReportManifest(BaseModel):
+    """Stable manifest for persisted operator report artifacts."""
+
+    schema_version: str = "redthread.operator_report_manifest.v1"
+    campaign_id: str
+    artifact_dir: str
+    markdown_report: str
+    json_report: str
+    bridge_prep_notes: list[str] = Field(default_factory=list)

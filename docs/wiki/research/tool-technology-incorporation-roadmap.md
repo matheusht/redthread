@@ -889,6 +889,42 @@ Implemented:
 
 See [Tool Technology Slice 6 Implementation Plan](tool-technology-slice-6-implementation-plan.md) for the exact checklist.
 
+## Seventh implementation slice
+
+```text
+Slice 7: Report persistence and import/export bridge prep
+```
+
+### Build
+
+- standard campaign report directory writer
+- operator report manifest with stable schema marker
+- transcript summary link to the manifest when report persistence is used
+- optional `redthread run --report-dir` flag
+- durable testing commands and key takeaways page
+
+### Definition of done
+
+- A caller can persist report artifacts under `<report-dir>/<campaign-id>/`.
+- The persisted directory contains Markdown, JSON, and `manifest.json`.
+- The manifest includes bridge-prep notes that preserve the weak-evidence boundary for future external imports.
+- Transcript summaries can point at the manifest without changing attack execution.
+
+## Slice 7 implementation status
+
+Slice 7 is shipped as of 2026-04-27.
+
+Implemented:
+
+- `redthread.reporting.models.OperatorReportManifest` with schema marker `redthread.operator_report_manifest.v1`.
+- `redthread.reporting.persistence.write_campaign_report_artifacts()` for standard campaign report directories.
+- Optional `redthread run --report-dir` output path.
+- `operator_report_manifest` field in transcript summaries when campaign metadata provides it.
+- Tests proving manifest persistence and transcript linkage.
+- Durable testing commands and takeaways in [Tool Technology Testing Commands and Takeaways](tool-technology-testing-commands-and-takeaways.md).
+
+See [Tool Technology Slice 7 Implementation Plan](tool-technology-slice-7-implementation-plan.md) for the exact checklist.
+
 ## Risk register
 
 | Risk | Why it matters | Mitigation |

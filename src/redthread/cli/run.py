@@ -8,12 +8,21 @@ from pathlib import Path
 import click
 from rich.console import Console
 
+from redthread.benchmarks.run_context import (
+    BenchmarkRunContextError,
+    apply_benchmark_fixture_context,
+)
 from redthread.cli.run_render import render_campaign_header, render_campaign_results
 from redthread.cli.shared import run_async_command, setup_logging
 from redthread.config.settings import AlgorithmType, RedThreadSettings
 from redthread.engine import RedThreadEngine
+from redthread.engine_transcript import write_transcript
 from redthread.models import CampaignConfig
-from redthread.reporting import build_operator_artifact_bundle, write_operator_artifacts
+from redthread.reporting import (
+    build_operator_artifact_bundle,
+    write_campaign_report_artifacts,
+    write_operator_artifacts,
+)
 
 
 def _apply_run_overrides(
@@ -66,8 +75,10 @@ def register_run_command(main: click.Group, console: Console) -> None:
     @click.option("--turns", "-t", type=int, default=None, help="Crescendo max conversation turns")
     @click.option("--simulations", type=int, default=None, help="GS-MCTS number of simulations (overrides mcts_simulations setting)")
     @click.option("--max-budget-tokens", type=int, default=None, help="GS-MCTS token budget ceiling for early stopping (heuristic: chars // 4)")
+    @click.option("--benchmark-fixture", multiple=True, help="Use safe metadata hints from a jailbreak benchmark fixture; may repeat.")
     @click.option("--report-md", type=click.Path(dir_okay=False), default=None, help="Write guide-style operator report as Markdown")
     @click.option("--report-json", type=click.Path(dir_okay=False), default=None, help="Write guide-style operator report as JSON")
+    @click.option("--report-dir", type=click.Path(file_okay=False), default=None, help="Write standard campaign report directory")
     def run(
         objective: str,
         system_prompt: str,
@@ -85,8 +96,10 @@ def register_run_command(main: click.Group, console: Console) -> None:
         turns: int | None,
         simulations: int | None,
         max_budget_tokens: int | None,
+        benchmark_fixture: tuple[str, ...],
         report_md: str | None,
         report_json: str | None,
+        report_dir: str | None,
     ) -> None:
         """Execute a red-team campaign against a target LLM."""
         setup_logging(console, verbose)
@@ -103,9 +116,22 @@ def register_run_command(main: click.Group, console: Console) -> None:
             simulations,
             max_budget_tokens,
         )
+        run_objective = objective
+        benchmark_context = None
+        if benchmark_fixture:
+            try:
+                benchmark_context = apply_benchmark_fixture_context(objective, benchmark_fixture)
+            except BenchmarkRunContextError as exc:
+                raise click.ClickException(str(exc)) from exc
+            run_objective = benchmark_context.objective
         render_campaign_header(console, settings, objective, personas)
+        if benchmark_context:
+            console.print("[bold]Benchmark fixture context[/bold]")
+            for line in benchmark_context.summary_lines:
+                console.print(line)
+            console.print()
         config = CampaignConfig(
-            objective=objective,
+            objective=run_objective,
             target_system_prompt=system_prompt,
             rubric_name=rubric,
             num_personas=personas,
@@ -117,10 +143,18 @@ def register_run_command(main: click.Group, console: Console) -> None:
             error_label="Campaign",
             verbose=verbose,
         )
-        if report_md or report_json:
-            write_operator_artifacts(
-                build_operator_artifact_bundle(result),
-                markdown_path=Path(report_md) if report_md else None,
-                json_path=Path(report_json) if report_json else None,
-            )
+        if benchmark_context:
+            result.metadata["benchmark_fixture_context"] = benchmark_context.metadata()
+        if report_md or report_json or report_dir:
+            bundle = build_operator_artifact_bundle(result)
+            if report_md or report_json:
+                write_operator_artifacts(
+                    bundle,
+                    markdown_path=Path(report_md) if report_md else None,
+                    json_path=Path(report_json) if report_json else None,
+                )
+            if report_dir:
+                manifest = write_campaign_report_artifacts(bundle, Path(report_dir))
+                result.metadata["operator_report_manifest"] = manifest.model_dump(mode="json")
+                write_transcript(settings, result)
         sys.exit(render_campaign_results(console, result))
