@@ -763,6 +763,24 @@ Slice 3: One strategy adapter path
 - Trace has plugin id and strategy id.
 - No defense/report changes yet.
 
+## Slice 3 implementation status
+
+Slice 3 is shipped as of 2026-04-26.
+
+Implemented:
+
+- Narrow `AttackStrategyRunner` protocol.
+- Minimal async `StrategyTarget` boundary.
+- `StrategyRunBudget` for prompt and turn budget propagation.
+- `StrategyExecutionError` for early adapter failure.
+- `StaticSeedReplayRunner` as the first strategy adapter path.
+- Planned campaign to `AttackTrace` smoke path using a fake target.
+- Trace metadata for risk plugin id, risk category, risk source, strategy id, strategy family, source policy id, scope target ids, target id, target system prompt, budget, and `judge_required`.
+- Scope check that blocks a supplied target id outside `AuthorizedScope.target_ids`.
+- Targeted tests for adapter execution, metadata lineage, custom policy source id, budget propagation, unplanned strategy rejection, and scope blocking.
+
+See [Tool Technology Slice 3 Implementation Plan](tool-technology-slice-3-implementation-plan.md) for the exact checklist.
+
 ## Fourth implementation slice
 
 ```text

@@ -1,5 +1,12 @@
 # Wiki Log
 
+## [2026-04-26] implementation | shipped tool technology incorporation slice 3
+- created `research/tool-technology-slice-3-implementation-plan.md` with exact checked implementation plan, data flow, metadata contract, acceptance criteria, and next-slice guidance
+- added narrow strategy runner contracts: `AttackStrategyRunner`, `StrategyTarget`, `StrategyRunBudget`, and `StrategyExecutionError`
+- added `StaticSeedReplayRunner` as the first strategy adapter path from `CampaignPlan` to existing `AttackTrace`
+- attached risk plugin id, strategy id, strategy family, source policy id, scope, budget, and judge-required metadata to traces
+- added fake-target smoke tests for planned campaign execution, metadata lineage, budget propagation, unplanned strategy rejection, and authorized-scope target blocking
+
 ## [2026-04-26] implementation | shipped tool technology incorporation slice 2
 - created `research/tool-technology-slice-2-implementation-plan.md` with exact checked implementation plan, scope boundaries, acceptance criteria, and follow-up slice
 - added deterministic campaign planning parser for legacy `CampaignConfig` and dict-style configs with `risks`, `strategies`, and `scope`
