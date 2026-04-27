@@ -115,6 +115,71 @@ redthread eval jailbreak-corpus \
 
 The regression handoff artifact stores fixture lineage, manifest ref, SHA-256, reviewer metadata, JudgeAgent verdict linkage, and redacted regression case metadata. It does not store raw reviewed prompts or target responses that may echo them. Safe local replay normally creates zero regression cases and records `verdict_not_jailbreak`; confirmed jailbreak verdicts become prompt-safe handoff rows for the private regression system.
 
+## How to test
+
+Run the prompt-safe benchmark and regression handoff checks:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src uv run python -m pytest \
+  tests/test_benchmark_regression_handoff.py \
+  tests/test_benchmark_replay.py \
+  tests/test_benchmark_eval_replay_cli.py
+```
+
+Run the broader benchmark CLI/regression suite:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src uv run python -m pytest \
+  tests/test_jailbreak_fixtures.py \
+  tests/test_spiritual_spell_fixtures.py \
+  tests/test_benchmark_campaigns.py \
+  tests/test_benchmark_static_replay_metadata.py \
+  tests/test_benchmark_reports.py \
+  tests/test_benchmark_prompt_materials.py \
+  tests/test_benchmark_material_vault.py \
+  tests/test_benchmark_material_review.py \
+  tests/test_benchmark_hints.py \
+  tests/test_benchmark_dry_run.py \
+  tests/test_benchmark_replay.py \
+  tests/test_benchmark_artifacts.py \
+  tests/test_benchmark_regression_handoff.py \
+  tests/test_benchmark_eval_cli.py \
+  tests/test_benchmark_eval_replay_cli.py \
+  tests/test_benchmark_materials_cli.py \
+  tests/test_run_benchmark_fixture_cli.py \
+  tests/test_static_seed_replay_runner.py \
+  tests/test_regression_cases.py \
+  tests/test_cli_shell.py
+```
+
+Run static checks for the touched benchmark and CLI paths:
+
+```bash
+uv run ruff check \
+  src/redthread/benchmarks \
+  src/redthread/cli/app.py \
+  src/redthread/cli/benchmark_eval.py \
+  src/redthread/cli/benchmark_materials.py \
+  src/redthread/cli/run.py \
+  src/redthread/core/strategies/static_seed_replay.py
+
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src uv run mypy \
+  src/redthread/benchmarks \
+  src/redthread/cli/app.py \
+  src/redthread/cli/benchmark_eval.py \
+  src/redthread/cli/benchmark_materials.py \
+  src/redthread/cli/run.py \
+  src/redthread/core/strategies/static_seed_replay.py
+```
+
+Check the CLI surface:
+
+```bash
+uv run redthread eval jailbreak-corpus --help
+```
+
+The help output should include `--regression-out`.
+
 `redthread run` is the product red-team lane. `redthread eval jailbreak-corpus` is the benchmark/regression lane. The split keeps reviewed corpus replay behind manifests, hashes, and local target gates.
 
 A normal product campaign may borrow metadata-only benchmark hints without loading raw prompt material:
