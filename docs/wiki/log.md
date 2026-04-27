@@ -7,6 +7,11 @@
 - added weak external evidence models and safe promptfoo, garak, and Strix dictionary mappers
 - preserved the finding boundary: imported evidence cannot claim confirmed-finding status and still requires JudgeAgent confirmation
 
+## [2026-04-26] implementation | slice R jailbreak benchmark regression handoff
+- added prompt-safe regression handoff artifacts for approved benchmark replay
+- added `--regression-out` to `redthread eval jailbreak-corpus --replay`
+- documented how handoff artifacts preserve fixture lineage and manifest hashes without raw prompt bodies
+
 ## [2026-04-26] implementation | restored jailbreak benchmark CLI and run-hint workflow
 - added `decisions/jailbreak-benchmark-material-vault.md` with dry-run, material import, approved replay, report artifact, and `redthread run --benchmark-fixture` command guidance
 - restored `redthread eval jailbreak-corpus` and `redthread eval jailbreak-material import` commands in the main worktree

@@ -44,10 +44,20 @@ from redthread.benchmarks.prompt_materials import (
     load_prompt_material,
     load_replay_seed_prompts,
 )
+from redthread.benchmarks.regression_handoff import (
+    BenchmarkRegressionCaseSummary,
+    BenchmarkRegressionHandoffArtifact,
+    BenchmarkRegressionHandoffError,
+    BenchmarkRegressionSkip,
+    build_benchmark_regression_handoff,
+    write_benchmark_regression_handoff_artifact,
+)
 from redthread.benchmarks.replay import (
+    ApprovedBenchmarkReplayBundle,
     BenchmarkReplayError,
     LocalBenchmarkTarget,
     run_approved_jailbreak_replay,
+    run_approved_jailbreak_replay_with_regression_handoff,
 )
 from redthread.benchmarks.reports import (
     BenchmarkRunReport,
@@ -74,6 +84,11 @@ __all__ = [
     "MATERIAL_MANIFEST_SCHEMA_VERSION",
     "BenchmarkHintProfile",
     "BenchmarkMaterialManifest",
+    "ApprovedBenchmarkReplayBundle",
+    "BenchmarkRegressionCaseSummary",
+    "BenchmarkRegressionHandoffArtifact",
+    "BenchmarkRegressionHandoffError",
+    "BenchmarkRegressionSkip",
     "BenchmarkReplayError",
     "BenchmarkRunContext",
     "BenchmarkRunContextError",
@@ -89,6 +104,7 @@ __all__ = [
     "MaterialReviewError",
     "MaterialVaultError",
     "build_benchmark_campaign_draft",
+    "build_benchmark_regression_handoff",
     "build_jailbreak_corpus_dry_run_report",
     "build_benchmark_run_report",
     "apply_benchmark_fixture_context",
@@ -98,6 +114,7 @@ __all__ = [
     "build_fixture_hint_profiles",
     "import_reviewed_material",
     "run_approved_jailbreak_replay",
+    "run_approved_jailbreak_replay_with_regression_handoff",
     "load_jailbreak_fixture_file",
     "load_material_manifest",
     "load_jailbreak_fixture_pack",
@@ -106,5 +123,6 @@ __all__ = [
     "resolve_reviewed_material",
     "load_spiritual_spell_fixtures",
     "spiritual_spell_fixture_pack_data",
+    "write_benchmark_regression_handoff_artifact",
     "write_benchmark_report_artifact",
 ]

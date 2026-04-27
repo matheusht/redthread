@@ -18,7 +18,16 @@ from redthread.benchmarks.dry_run import (
     BenchmarkSource,
     build_jailbreak_corpus_dry_run_report,
 )
-from redthread.benchmarks.replay import BenchmarkReplayError, run_approved_jailbreak_replay
+from redthread.benchmarks.regression_handoff import (
+    BenchmarkRegressionHandoffArtifact,
+    BenchmarkRegressionHandoffError,
+    write_benchmark_regression_handoff_artifact,
+)
+from redthread.benchmarks.replay import (
+    BenchmarkReplayError,
+    run_approved_jailbreak_replay,
+    run_approved_jailbreak_replay_with_regression_handoff,
+)
 from redthread.cli.benchmark_materials import register_benchmark_material_commands
 from redthread.cli.shared import run_async_command
 
@@ -46,6 +55,7 @@ def register_benchmark_eval_commands(main: click.Group, console: Console) -> Non
     @click.option("--limit", type=click.IntRange(min=1), default=25, show_default=True)
     @click.option("--show-hints", is_flag=True, default=False)
     @click.option("--report-out", default="", type=click.Path(exists=False), help="Write prompt-safe report JSON.")
+    @click.option("--regression-out", default="", type=click.Path(exists=False), help="Write prompt-safe regression handoff JSON for approved replay.")
     @click.option("--json", "as_json", is_flag=True, default=False)
     def jailbreak_corpus(
         source: str,
@@ -61,30 +71,56 @@ def register_benchmark_eval_commands(main: click.Group, console: Console) -> Non
         limit: int,
         show_hints: bool,
         report_out: str,
+        regression_out: str,
         as_json: bool,
     ) -> None:
         """Dry-run a reviewed jailbreak corpus benchmark plan without raw prompts."""
         benchmark_source = cast(BenchmarkSource, source)
+        if regression_out and not replay:
+            raise click.ClickException("regression handoff requires --replay")
         if replay:
             if len(fixture_id) != 1:
                 raise click.ClickException("approved replay requires exactly one --fixture-id")
             if not manifest_ref:
                 raise click.ClickException("approved replay requires --manifest-ref")
             try:
-                report = run_async_command(
-                    console,
-                    lambda: run_approved_jailbreak_replay(
-                        source=benchmark_source,
-                        fixture_id=fixture_id[0],
-                        manifest_ref=manifest_ref,
-                        objective=objective,
-                        target_system_prompt=system_prompt,
-                        material_root=material_root,
-                        target_id=target_id,
-                        allow_live_target=allow_live_target,
-                    ),
-                    error_label="Benchmark replay",
-                )
+                if regression_out:
+                    bundle = run_async_command(
+                        console,
+                        lambda: run_approved_jailbreak_replay_with_regression_handoff(
+                            source=benchmark_source,
+                            fixture_id=fixture_id[0],
+                            manifest_ref=manifest_ref,
+                            objective=objective,
+                            target_system_prompt=system_prompt,
+                            material_root=material_root,
+                            target_id=target_id,
+                            allow_live_target=allow_live_target,
+                        ),
+                        error_label="Benchmark replay",
+                    )
+                    report = bundle.report
+                    _write_regression_handoff_artifact(
+                        console,
+                        bundle.regression_handoff,
+                        regression_out,
+                        as_json,
+                    )
+                else:
+                    report = run_async_command(
+                        console,
+                        lambda: run_approved_jailbreak_replay(
+                            source=benchmark_source,
+                            fixture_id=fixture_id[0],
+                            manifest_ref=manifest_ref,
+                            objective=objective,
+                            target_system_prompt=system_prompt,
+                            material_root=material_root,
+                            target_id=target_id,
+                            allow_live_target=allow_live_target,
+                        ),
+                        error_label="Benchmark replay",
+                    )
             except BenchmarkReplayError as exc:
                 raise click.ClickException(str(exc)) from exc
             _write_report_artifact(console, report, report_out, as_json)
@@ -130,6 +166,22 @@ def _write_report_artifact(
         raise click.ClickException(str(exc)) from exc
     if not as_json:
         console.print(f"Report written: {result.path}")
+
+
+def _write_regression_handoff_artifact(
+    console: Console,
+    handoff: BenchmarkRegressionHandoffArtifact | None,
+    regression_out: str,
+    as_json: bool,
+) -> None:
+    if handoff is None:
+        raise click.ClickException("benchmark replay did not produce a regression handoff")
+    try:
+        path = write_benchmark_regression_handoff_artifact(handoff, regression_out)
+    except BenchmarkRegressionHandoffError as exc:
+        raise click.ClickException(str(exc)) from exc
+    if not as_json:
+        console.print(f"Regression handoff written: {path}")
 
 
 def _emit_report(

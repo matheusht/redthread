@@ -87,6 +87,54 @@ def test_cli_replay_writes_prompt_safe_report_artifact(tmp_path: Path) -> None:
     assert "toy approved cli replay seed" not in output_path.read_text(encoding="utf-8")
 
 
+def test_cli_replay_writes_prompt_safe_regression_handoff(tmp_path: Path) -> None:
+    manifest_ref = _manifest(tmp_path)
+    output_path = tmp_path / "regression-handoff.json"
+
+    result = CliRunner().invoke(
+        main,
+        [
+            "eval",
+            "jailbreak-corpus",
+            "--fixture-id",
+            "spiritual-spell-0032",
+            "--replay",
+            "--manifest-ref",
+            manifest_ref,
+            "--material-root",
+            str(tmp_path),
+            "--regression-out",
+            str(output_path),
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert "Regression handoff written:" in result.output
+    payload = json.loads(output_path.read_text(encoding="utf-8"))
+    assert payload["schema_version"] == "redthread.jailbreak_benchmark_regression_handoff.v1"
+    assert payload["fixture_id"] == "spiritual-spell-0032"
+    assert payload["created_cases"] == []
+    assert payload["skipped_results"][0]["reason"] == "verdict_not_jailbreak"
+    assert "toy approved cli replay seed" not in output_path.read_text(encoding="utf-8")
+
+
+def test_cli_dry_run_rejects_regression_handoff() -> None:
+    result = CliRunner().invoke(
+        main,
+        [
+            "eval",
+            "jailbreak-corpus",
+            "--fixture-id",
+            "spiritual-spell-0032",
+            "--regression-out",
+            "handoff.json",
+        ],
+    )
+
+    assert result.exit_code != 0
+    assert "regression handoff requires --replay" in result.output
+
+
 def test_cli_replay_json_report_is_prompt_safe(tmp_path: Path) -> None:
     manifest_ref = _manifest(tmp_path)
 

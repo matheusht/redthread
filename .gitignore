@@ -3,6 +3,7 @@
 
 # Campaign artifacts (potentially sensitive)
 logs/
+reports/
 autoresearch/runtime/
 
 .pi
