@@ -925,6 +925,41 @@ Implemented:
 
 See [Tool Technology Slice 7 Implementation Plan](tool-technology-slice-7-implementation-plan.md) for the exact checklist.
 
+## Eighth implementation slice
+
+```text
+Slice 8: Weak external evidence bridge prep
+```
+
+### Build
+
+- weak external evidence models
+- source labels for promptfoo, garak, Strix, and generic imports
+- candidate probe seed model
+- deterministic dictionary mappers
+- no-overclaim validation for imported evidence
+
+### Definition of done
+
+- External tool rows can be represented as RedThread-native weak evidence.
+- Imported evidence can carry detector hint context and candidate probe seeds.
+- Imported evidence cannot claim confirmed-finding status.
+- No external tool runtime is imported.
+
+## Slice 8 implementation status
+
+Slice 8 is shipped as of 2026-04-27.
+
+Implemented:
+
+- `redthread.reporting.external_evidence` for weak imported evidence bridge models.
+- `ExternalEvidenceBundle` with schema marker `redthread.external_evidence_bundle.v1`.
+- `promptfoo_result_to_evidence()`, `garak_result_to_evidence()`, and `strix_finding_to_evidence()` mapping helpers.
+- Validation that rejects imported evidence claiming confirmed-finding status or non-weak evidence strength.
+- Tests proving promptfoo, garak, Strix, generic bundle, and overclaim rejection behavior.
+
+See [Tool Technology Slice 8 Implementation Plan](tool-technology-slice-8-implementation-plan.md) for the exact checklist.
+
 ## Risk register
 
 | Risk | Why it matters | Mitigation |

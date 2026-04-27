@@ -66,6 +66,38 @@ Observed result for the Slice 6 ship pass:
 76 passed
 ```
 
+## Dry-run report persistence smoke test
+
+Campaign checked:
+
+```text
+campaign-7175a5a6
+```
+
+Artifacts checked:
+
+```text
+logs/campaign-7175a5a6.jsonl
+reports/campaign-7175a5a6/manifest.json
+reports/campaign-7175a5a6/operator-report.md
+reports/campaign-7175a5a6/operator-report.json
+```
+
+Result: success.
+
+Evidence:
+
+- `runtime_mode` was `sealed_dry_run`.
+- `telemetry_mode` was `skipped_in_dry_run`.
+- `error_count` was `0`.
+- `degraded_runtime` was `false`.
+- `operator_report_manifest` appeared in the transcript summary.
+- The report directory contained Markdown, JSON, and `manifest.json`.
+- The operator report showed `0` confirmed findings and `0.0%` attack success rate.
+- All three attack results were skipped dry-run traces with `is_jailbreak: false`.
+
+Takeaway: Slice 7 report persistence works for sealed dry runs. The only expected limitation was missing exact campaign-plan scope, so the report correctly said scope was inferred.
+
 ## Key takeaways
 
 - Keep new report/export logic pure and outside attack execution.

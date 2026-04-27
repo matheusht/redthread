@@ -1,5 +1,12 @@
 # Wiki Log
 
+## [2026-04-27] implementation | shipped tool technology incorporation slice 8
+- analyzed dry-run artifacts for `campaign-7175a5a6`; result was successful report persistence with `sealed_dry_run`, `error_count: 0`, transcript manifest linkage, and Markdown/JSON/manifest files present
+- updated `research/tool-technology-testing-commands-and-takeaways.md` with the dry-run smoke result and takeaways
+- created `research/tool-technology-slice-8-implementation-plan.md` for weak external evidence bridge prep
+- added weak external evidence models and safe promptfoo, garak, and Strix dictionary mappers
+- preserved the finding boundary: imported evidence cannot claim confirmed-finding status and still requires JudgeAgent confirmation
+
 ## [2026-04-26] implementation | restored jailbreak benchmark CLI and run-hint workflow
 - added `decisions/jailbreak-benchmark-material-vault.md` with dry-run, material import, approved replay, report artifact, and `redthread run --benchmark-fixture` command guidance
 - restored `redthread eval jailbreak-corpus` and `redthread eval jailbreak-material import` commands in the main worktree
