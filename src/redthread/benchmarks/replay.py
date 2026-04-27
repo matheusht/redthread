@@ -5,11 +5,17 @@ from __future__ import annotations
 from pathlib import Path
 from time import perf_counter
 
+from pydantic import BaseModel
+
 from redthread.benchmarks.campaigns import build_benchmark_campaign_draft
 from redthread.benchmarks.dry_run import BenchmarkSource
 from redthread.benchmarks.jailbreak_fixtures import JailbreakBenchmarkFixture
 from redthread.benchmarks.material_review import approve_fixture_for_replay
 from redthread.benchmarks.material_vault import load_material_manifest, resolve_reviewed_material
+from redthread.benchmarks.regression_handoff import (
+    BenchmarkRegressionHandoffArtifact,
+    build_benchmark_regression_handoff,
+)
 from redthread.benchmarks.reports import BenchmarkRunReport, build_benchmark_run_report
 from redthread.benchmarks.spiritual_spell import load_spiritual_spell_fixtures
 from redthread.core.strategies.static_seed_replay import StaticSeedReplayRunner
@@ -18,6 +24,13 @@ from redthread.models import AttackResult, JudgeVerdict
 
 class BenchmarkReplayError(ValueError):
     """Raised when an approved benchmark replay request is invalid."""
+
+
+class ApprovedBenchmarkReplayBundle(BaseModel):
+    """Replay report plus optional prompt-safe regression handoff."""
+
+    report: BenchmarkRunReport
+    regression_handoff: BenchmarkRegressionHandoffArtifact | None = None
 
 
 class LocalBenchmarkTarget:
@@ -43,6 +56,33 @@ async def run_approved_jailbreak_replay(
     allow_live_target: bool = False,
 ) -> BenchmarkRunReport:
     """Run one approved replay seed against the sealed local benchmark target."""
+    bundle = await run_approved_jailbreak_replay_with_regression_handoff(
+        source=source,
+        fixture_id=fixture_id,
+        manifest_ref=manifest_ref,
+        objective=objective,
+        target_system_prompt=target_system_prompt,
+        material_root=material_root,
+        target_id=target_id,
+        allow_live_target=allow_live_target,
+        include_regression_handoff=False,
+    )
+    return bundle.report
+
+
+async def run_approved_jailbreak_replay_with_regression_handoff(
+    *,
+    source: BenchmarkSource = "spiritual-spell",
+    fixture_id: str,
+    manifest_ref: str,
+    objective: str,
+    target_system_prompt: str,
+    material_root: str | Path | None = None,
+    target_id: str = "local-dev",
+    allow_live_target: bool = False,
+    include_regression_handoff: bool = True,
+) -> ApprovedBenchmarkReplayBundle:
+    """Run approved replay and optionally build a prompt-safe regression handoff."""
     if source != "spiritual-spell":
         msg = f"unsupported jailbreak corpus source: {source}"
         raise BenchmarkReplayError(msg)
@@ -88,7 +128,15 @@ async def run_approved_jailbreak_replay(
             "Live provider calls: not executed",
         ]
     )
-    return report
+    handoff = None
+    if include_regression_handoff:
+        handoff = build_benchmark_regression_handoff(
+            draft,
+            [result],
+            manifest=manifest,
+            manifest_ref=manifest_ref,
+        )
+    return ApprovedBenchmarkReplayBundle(report=report, regression_handoff=handoff)
 
 
 def _fixture_by_id(fixture_id: str) -> JailbreakBenchmarkFixture:

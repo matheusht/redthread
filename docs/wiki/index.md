@@ -16,7 +16,7 @@ This is the primary content map for the RedThread wiki.
 ## Decisions
 
 - [decisions/adopt-mempalace-plus-llm-wiki.md](decisions/adopt-mempalace-plus-llm-wiki.md) — Why RedThread uses MemPalace for retrieval and a markdown wiki for synthesis.
-- [decisions/jailbreak-benchmark-material-vault.md](decisions/jailbreak-benchmark-material-vault.md) — Why raw jailbreak benchmark material lives outside git behind reviewed manifests, hashes, approved-target gates, and metadata-only run hints.
+- [decisions/jailbreak-benchmark-material-vault.md](decisions/jailbreak-benchmark-material-vault.md) — Why raw jailbreak benchmark material lives outside git behind reviewed manifests, hashes, approved-target gates, metadata-only run hints, and prompt-safe regression handoff artifacts.
 
 ## Entities
 
