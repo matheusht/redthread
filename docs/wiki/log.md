@@ -1,5 +1,10 @@
 # Wiki Log
 
+## [2026-04-26] decision | accepted jailbreak benchmark material vault architecture
+- created `decisions/jailbreak-benchmark-material-vault.md` to record that raw jailbreak prompt bodies stay outside git behind a reviewed material root, manifests, hashes, and approved target gates
+- updated `docs/wiki/index.md`
+- reaffirmed that CLI work should follow the reviewed material workflow rather than bypass it
+
 ## [2026-04-26] implementation | shipped tool technology incorporation slice 5
 - created `research/tool-technology-slice-5-implementation-plan.md` with exact checked implementation plan, data contract, safety invariant, tests, and next-slice guidance
 - added `redthread.core.regression_cases` helper module for converting JudgeAgent-confirmed `AttackResult` objects into durable `RegressionCase` artifacts
