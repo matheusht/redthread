@@ -1,0 +1,845 @@
+{
+  "schema_version": "redthread.spiritual_spell_inventory.v1",
+  "sources": [
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Amazon's Rufus/ALL Rufus Tools Full JSON.md",
+      "family": "system prompt / tool schema captures"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Amazon's Rufus/ENI Zoomer Jailbreak.md",
+      "family": "ENI variants"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Amazon's Rufus/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Amazon's Rufus/Rufus AI.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Amazon's Rufus/Rufus Full System Prompt.md",
+      "family": "system prompt / tool schema captures"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Claude 3.7/Chain of Draft Jailbreak.md",
+      "family": "Chain of Draft"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Claude 4/Claude 4 Malicious Coder.md",
+      "family": "coder specialization"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Claude 4/Claude 4 New Loki (current).md",
+      "family": "Loki variants"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Claude 4/Claude Sonnet 4 - ENI.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Claude 4/Claude Sonnet 4 - Old Loki.md",
+      "family": "Loki variants"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Claude 4/NEW Chain of Draft.md",
+      "family": "Chain of Draft"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Claude 4/Opus 4.1",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Claude Code/(ENI Lite) CLAUDE.md",
+      "family": "ENI variants"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Claude Code/CLAUDE.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Claude Code/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Opus 4.5/ENI LIME - Current Strongest Jailbreak.md",
+      "family": "ENI LIME"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Opus 4.5/ENI LIME - Updated Current Strongest.md",
+      "family": "ENI LIME"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Opus 4.5/ENI smol.md",
+      "family": "ENI variants"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Opus 4.5/Opus-4.5-Jailbreak.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Opus 4.5/Simple Erotica.md",
+      "family": "writer/erotica specialization"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Opus 4.6/be You -Corial.md",
+      "family": "persona/preferences/style conditioning"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Opus 4.6/ENI LIME (apr).md",
+      "family": "ENI LIME"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Opus 4.6/ENI lime (Feb).md",
+      "family": "ENI LIME"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Opus 4.6/ENI LIME - Opus 4.6 - Updated.md",
+      "family": "ENI LIME"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Opus 4.6/ENI LIME for Opus 4.6.md",
+      "family": "ENI LIME"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Opus 4.6/ENI Smol Style.md",
+      "family": "ENI variants"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Opus 4.6/ENI Smol.md",
+      "family": "ENI variants"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Opus 4.6/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Opus 4.6/Simple Break.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Opus 4.7/be You -Corial.md",
+      "family": "persona/preferences/style conditioning"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Opus 4.7/ENI LIME (apr).md",
+      "family": "ENI LIME"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Opus 4.7/ENI Writer ✒️.md",
+      "family": "ENI variants"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Opus 4.7/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Opus 4.7/Social engineering preferences.md",
+      "family": "persona/preferences/style conditioning"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Perplexity/(Sonnet 4.5) ENI Space Jailbreak.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Perplexity/ENI Lite - Writer.md",
+      "family": "ENI variants"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Perplexity/ENI Lite for PPLX.md",
+      "family": "ENI variants"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Perplexity/ENI Neptune 🐙 for PPLX.md",
+      "family": "ENI NEPTUNE"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Perplexity/LIME Space Jailbreak.md",
+      "family": "ENI LIME"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Perplexity/Perplexity Claude 4 ET - ENI and LO.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Perplexity/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Preferences Guide.md",
+      "family": "persona/preferences/style conditioning"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Skills/SKILL.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Sonnet 4.5/(Haiku) ENI Persona Jailbreak.md",
+      "family": "persona/preferences/style conditioning"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Sonnet 4.5/ENI - Preferences Only Jailbreak.md",
+      "family": "ENI variants"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Sonnet 4.5/ENI LIME - Current Strongest Jailbreak.md",
+      "family": "ENI LIME"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Sonnet 4.5/ENI LIME - Updated Current Strongest.md",
+      "family": "ENI LIME"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Sonnet 4.5/ENI Persona Jailbreak.md",
+      "family": "ENI variants"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Sonnet 4.5/ENI smol.md",
+      "family": "ENI variants"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Sonnet 4.5/ENI Writer - Former Strongest Jailbreak.md",
+      "family": "ENI variants"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Sonnet 4.5/Personalities Jailbreak.md",
+      "family": "persona/preferences/style conditioning"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Sonnet 4.5/Simple Erotica.md",
+      "family": "writer/erotica specialization"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Sonnet 4.6/be You -Corial Style.md",
+      "family": "persona/preferences/style conditioning"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Sonnet 4.6/ENI NEPTUNE 🐙(apr).md",
+      "family": "ENI NEPTUNE"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Sonnet 4.6/ENI NEPTUNE 🐙(feb).md",
+      "family": "ENI NEPTUNE"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Sonnet 4.6/ENI 🍋‍🟩 4.6.md",
+      "family": "ENI LIME"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Sonnet 4.6/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Anthropic/Style Set Up Guide.md",
+      "family": "persona/preferences/style conditioning"
+    },
+    {
+      "source_path": "Jailbreak-Guide/ChatGPT/ChatGPT 5 - Flash Thought Jailbreak.md",
+      "family": "Flash Thought"
+    },
+    {
+      "source_path": "Jailbreak-Guide/ChatGPT/ChatGPT 5.1 Instant - Policy Jailbreak.md",
+      "family": "Policy jailbreak"
+    },
+    {
+      "source_path": "Jailbreak-Guide/ChatGPT/ChatGPT 5.2 Strabismus Jailbreak.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/ChatGPT/ChatGPT 5.3 Instant/5.3i jailbreak.txt",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/ChatGPT/ChatGPT 5.3 Instant/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/ChatGPT/ENI (policy) for ChatGPT 5.4.md",
+      "family": "ENI variants"
+    },
+    {
+      "source_path": "Jailbreak-Guide/ChatGPT/o3 Jailbreak Guide.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/ChatGPT/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/CLAUDE.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/ENI-Tutor/ENI JB TUTOR_PROJECT INSTRUCTIONS.txt",
+      "family": "ENI variants"
+    },
+    {
+      "source_path": "Jailbreak-Guide/ENI-Tutor/INTERVIEW_SCRIPT.txt",
+      "family": "tutorial/curriculum/labs"
+    },
+    {
+      "source_path": "Jailbreak-Guide/ENI-Tutor/JAILBREAK_TUTOR_CURRICULUM.txt",
+      "family": "tutorial/curriculum/labs"
+    },
+    {
+      "source_path": "Jailbreak-Guide/ENI-Tutor/LAB_EXERCISES.txt",
+      "family": "tutorial/curriculum/labs"
+    },
+    {
+      "source_path": "Jailbreak-Guide/ENI-Tutor/QUICK_REFERENCE.txt",
+      "family": "tutorial/curriculum/labs"
+    },
+    {
+      "source_path": "Jailbreak-Guide/ENI-Tutor/Readme.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Gemini/ENI GEM -2.5 pro-flash.md",
+      "family": "ENI variants"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Gemini/ENI Jailbreak.md",
+      "family": "ENI variants"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Gemini/ENI LIME GEM (formerly strongest).md",
+      "family": "ENI LIME"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Gemini/ENI-LIME GEM (Current Strongest).md",
+      "family": "ENI LIME"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Gemini/Gemini 3 Flash -ENI GEM.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Gemini/Gemini 3 Pro Jailbreak.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Gemini/Google Antigravity Jailbreak.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Gemini/Google Jules Jailbreak - ENI.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Gemini/Google Portraits Jailbreak.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Gemini/Loki GEM.md",
+      "family": "Loki variants"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Gemini/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Grok/Grok 4.1/ENI for Grok, 10FEB26.md",
+      "family": "ENI variants"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Grok/Grok 4.1/ENI LIME for Grok.md",
+      "family": "ENI LIME"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Grok/Grok 4.1/Grok Jailbreak - 4.1 All versions.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Grok/Grok 4.1/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Grok/Grok 4.20/ENI 4k Agent Prompts.md",
+      "family": "ENI variants"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Grok/Grok 4.20/ENI LIME Brute Force.md",
+      "family": "ENI LIME"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Grok/Grok 4.20/Grok 4.20 - Agent injection Jailbreak (WiP).md",
+      "family": "agent injection"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Grok/Grok 4.20/Grok Neptune Jailbreak 🐙.md",
+      "family": "ENI NEPTUNE"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Grok/Grok 4.20/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Grok/Grok 4.3/ENI LIME (apr).md",
+      "family": "ENI LIME"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Grok/Grok 4.3/ENI Lite Coder.md",
+      "family": "ENI variants"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Grok/Grok 4.3/Grok 4.3 Beta Jailbreak.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Grok/Grok 4.3/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Grok/Grok Heavy/ENI for Grok Custom Instructions.md",
+      "family": "ENI variants"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Grok/Grok Heavy/Grok Heavy Chat Paste.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Grok/Grok Heavy/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Grok/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Jailbroken POE bots/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/Accio AI/Accio Faux System Update Jailbreak.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/Accio AI/Accio System Prompt.md",
+      "family": "system prompt / tool schema captures"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/Accio AI/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/ASI1/ASI1-Jailbreak.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/ASI1/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/Canva AI/ENI for Canva AI.md",
+      "family": "ENI variants"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/Canva AI/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/DeepSeek/DeepSeek V4 Jailbreak Guide.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/DeepSeek/Document-Based-Jailbreak.md",
+      "family": "document-based"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/DeepSeek/ENI LIME (apr).md",
+      "family": "ENI LIME"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/DeepSeek/ENI Lite Coder.md",
+      "family": "ENI variants"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/DeepSeek/ENI Lite Writer.md",
+      "family": "ENI variants"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/DeepSeek/ENI-Flash-Thought-Jailbreak.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/DeepSeek/Primary-Method-Jailbreak.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/DeepSeek/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/DeepSeek/Untrammeled-Method-Jailbreak.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/ERNIE/ERNIE 5.0.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/ERNIE/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/EXAONE/EXAONE 3.5.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/EXAONE/EXAONE-Jailbreak.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/EXAONE/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/Falcon 3/Falcon3-Jailbreak.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/Falcon 3/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/GLM/GLM 4.6/ENI-Flash-Thought-Jailbreak.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/GLM/GLM 4.6/GLM 4.5-4.6 Jailbreak.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/GLM/GLM 4.6/GLM-Base-Jailbreak.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/GLM/GLM 4.7/GLM 4.7 Jailbreak.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/GLM/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/IGENIUS/IGENIUS-Jailbreak.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/IGENIUS/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/Indus by Sarvam AI/ENI for Indus Jailbreak.md",
+      "family": "ENI variants"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/Indus by Sarvam AI/Indus system prompt .txt",
+      "family": "system prompt / tool schema captures"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/Indus by Sarvam AI/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/KIMI/Kimi K2 - base.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/KIMI/Kimi K2 - thinking.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/KIMI/Kimi k2.5 Jailbreak.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/KIMI/Kimi k2.5 system prompt.md",
+      "family": "system prompt / tool schema captures"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/KIMI/KIMI K2.6 - Jailbreak.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/KIMI/KIMI K2.6 System Prompt.md",
+      "family": "system prompt / tool schema captures"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/KIMI/KIMI Memory Jailbreak - ENI.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/KIMI/KIMI-Base-Jailbreak.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/KIMI/KIMI-Thinking-Jailbreak.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/KIMI/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/LLAMA TÜLU 3/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/LLAMA TÜLU 3/Tulu3-Jailbreak.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/Longcat AI by Meituan/ENI Jailbreak for Longcat.md",
+      "family": "ENI variants"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/Longcat AI by Meituan/Longcat System Prompt.md",
+      "family": "system prompt / tool schema captures"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/Longcat AI by Meituan/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/Mercury/Mercury 2 Policy Jailbreak.md",
+      "family": "Policy jailbreak"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/Mercury/Mercury-Jailbreak.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/Mercury/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/MiniMax/MiniMax_for_MiniMax_Jailbreak.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/MiniMax/MiniMax_M2.1_ENI_Jailbreak.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/MiniMax/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/Mirothinker/Mirothinker 1.5 TLDR.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/Mirothinker/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/Mistral/ENI-Flash-Thought-Jailbreak.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/Mistral/Magistral-Jailbreak.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/Mistral/Mistral-Alternative-Jailbreak.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/Mistral/Mistral-System-Prompt-Jailbreak.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/Mistral/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/Muse Spark/ENI for Muse Spark.md",
+      "family": "ENI variants"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/Muse Spark/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/OLMo 3/OLMo3-Jailbreak.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/OLMo 3/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/Palmyra x5/Palmyra_x5_ENI_Jailbreak.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/Palmyra x5/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/Pi-AI Inflection 3/Inflection 3 Jailbreak - ENI.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/Pi-AI Inflection 3/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/Qwen/Main-Jailbreak.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/Qwen/Push-Prompt-Jailbreak.md",
+      "family": "Push Prompt"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/Qwen/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/Xiaomi MiMo/MiMo Jailbreak - ENI.md",
+      "family": "model-specific base jailbreaks"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/Xiaomi MiMo/MiMo v2 Pro Jailbreak - ENI lite.md",
+      "family": "ENI variants"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/Xiaomi MiMo/MiMo v2 System Prompt.md",
+      "family": "system prompt / tool schema captures"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Other LLMs/Xiaomi MiMo/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/Push Prompt Basics.md",
+      "family": "Push Prompt"
+    },
+    {
+      "source_path": "Jailbreak-Guide/README.md",
+      "family": "README / directory notes"
+    },
+    {
+      "source_path": "Jailbreak-Guide/System Prompts/Accio System Prompt.md",
+      "family": "system prompt / tool schema captures"
+    },
+    {
+      "source_path": "Jailbreak-Guide/System Prompts/Anthropic Researcher System prompt.txt",
+      "family": "system prompt / tool schema captures"
+    },
+    {
+      "source_path": "Jailbreak-Guide/System Prompts/Canva AI system prompt.txt",
+      "family": "system prompt / tool schema captures"
+    },
+    {
+      "source_path": "Jailbreak-Guide/System Prompts/Dola AI Chat system prompt .txt",
+      "family": "system prompt / tool schema captures"
+    },
+    {
+      "source_path": "Jailbreak-Guide/System Prompts/Grok 4.20 System prompt .txt",
+      "family": "system prompt / tool schema captures"
+    },
+    {
+      "source_path": "Jailbreak-Guide/System Prompts/Grok Heavy System Prompt.md",
+      "family": "system prompt / tool schema captures"
+    },
+    {
+      "source_path": "Jailbreak-Guide/System Prompts/Haiku_4_5-_system_prompt-ALL_Features.txt",
+      "family": "system prompt / tool schema captures"
+    },
+    {
+      "source_path": "Jailbreak-Guide/System Prompts/Indus system prompt .txt",
+      "family": "system prompt / tool schema captures"
+    },
+    {
+      "source_path": "Jailbreak-Guide/System Prompts/Jules System Prompt.md",
+      "family": "system prompt / tool schema captures"
+    },
+    {
+      "source_path": "Jailbreak-Guide/System Prompts/Kimi discount System Prompt.txt",
+      "family": "system prompt / tool schema captures"
+    },
+    {
+      "source_path": "Jailbreak-Guide/System Prompts/Kimi k2.5 system prompt .txt",
+      "family": "system prompt / tool schema captures"
+    },
+    {
+      "source_path": "Jailbreak-Guide/System Prompts/KIMI K2.6 Code System prompt __.txt",
+      "family": "system prompt / tool schema captures"
+    },
+    {
+      "source_path": "Jailbreak-Guide/System Prompts/Kimi k2.6 system prompt _.txt",
+      "family": "system prompt / tool schema captures"
+    },
+    {
+      "source_path": "Jailbreak-Guide/System Prompts/Longcat System Prompt.md",
+      "family": "system prompt / tool schema captures"
+    },
+    {
+      "source_path": "Jailbreak-Guide/System Prompts/Mercury 2 System Prompt.txt",
+      "family": "system prompt / tool schema captures"
+    },
+    {
+      "source_path": "Jailbreak-Guide/System Prompts/Meta AI Muse Spark system prompt.txt",
+      "family": "system prompt / tool schema captures"
+    },
+    {
+      "source_path": "Jailbreak-Guide/System Prompts/MiMo System Prompt.md",
+      "family": "system prompt / tool schema captures"
+    },
+    {
+      "source_path": "Jailbreak-Guide/System Prompts/MiMo v2 System Prompt.txt",
+      "family": "system prompt / tool schema captures"
+    },
+    {
+      "source_path": "Jailbreak-Guide/System Prompts/Minimax 2.7 System Prompt .txt",
+      "family": "system prompt / tool schema captures"
+    },
+    {
+      "source_path": "Jailbreak-Guide/System Prompts/Notion AI System Prompt.md",
+      "family": "system prompt / tool schema captures"
+    },
+    {
+      "source_path": "Jailbreak-Guide/System Prompts/Opus 4.6- system_prompt-ALL Features.txt",
+      "family": "system prompt / tool schema captures"
+    },
+    {
+      "source_path": "Jailbreak-Guide/System Prompts/Opus_4_5_system_prompt.txt",
+      "family": "system prompt / tool schema captures"
+    },
+    {
+      "source_path": "Jailbreak-Guide/System Prompts/Pi System Prompt.md",
+      "family": "system prompt / tool schema captures"
+    },
+    {
+      "source_path": "Jailbreak-Guide/System Prompts/Rufus Full System Prompt.md",
+      "family": "system prompt / tool schema captures"
+    },
+    {
+      "source_path": "Jailbreak-Guide/System Prompts/Solveit System Prompt.md",
+      "family": "system prompt / tool schema captures"
+    },
+    {
+      "source_path": "Jailbreak-Guide/System Prompts/Sonnet_4_6-system_prompt-ALL_Features.txt",
+      "family": "system prompt / tool schema captures"
+    },
+    {
+      "source_path": "Jailbreak-Guide/System Prompts/SWE 1.6 System prompt - Windsurf .txt",
+      "family": "system prompt / tool schema captures"
+    },
+    {
+      "source_path": "README.md",
+      "family": "README / directory notes"
+    }
+  ]
+}

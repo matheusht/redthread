@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
 from datetime import datetime, timezone
 
 from redthread.core.strategies.builtin import default_attack_strategy_registry
@@ -37,16 +38,24 @@ class StaticSeedReplayRunner:
         risk_plugin_id: str | None = None,
         budget: StrategyRunBudget | None = None,
         target_id: str | None = None,
+        benchmark_metadata: Mapping[str, object] | None = None,
+        seed_prompts: Sequence[str] | None = None,
     ) -> AttackTrace:
         """Execute static replay and return an unjudged AttackTrace."""
         run_budget = budget or StrategyRunBudget()
         planned_risk = self._select_risk(plan, risk_plugin_id)
         self._validate_scope(plan, target_id)
-        prompts = self._build_prompts(plan, planned_risk, run_budget)
+        prompts = self._build_prompts(plan, planned_risk, run_budget, seed_prompts)
         trace = AttackTrace(
             persona=self._build_persona(plan, planned_risk),
             algorithm=self.strategy_id,
-            metadata=self._metadata(plan, planned_risk, run_budget, target_id),
+            metadata=self._metadata(
+                plan,
+                planned_risk,
+                run_budget,
+                target_id,
+                benchmark_metadata,
+            ),
         )
         for index, prompt in enumerate(prompts, start=1):
             response = await target.send(
@@ -84,9 +93,10 @@ class StaticSeedReplayRunner:
         plan: CampaignPlan,
         planned_risk: PlannedRisk,
         budget: StrategyRunBudget,
+        seed_prompts: Sequence[str] | None,
     ) -> list[str]:
         plugin = planned_risk.plugin
-        seeds = plugin.examples or [
+        seeds = list(seed_prompts) if seed_prompts is not None else plugin.examples or [
             "\n".join(
                 [
                     f"RedThread authorized static replay for risk: {plugin.name}.",
@@ -117,9 +127,10 @@ class StaticSeedReplayRunner:
         planned_risk: PlannedRisk,
         budget: StrategyRunBudget,
         target_id: str | None,
+        benchmark_metadata: Mapping[str, object] | None,
     ) -> dict[str, object]:
         plugin = planned_risk.plugin
-        return {
+        metadata: dict[str, object] = {
             "trace_source": "strategy_adapter",
             "risk_plugin_id": plugin.id,
             "risk_plugin_name": plugin.name,
@@ -136,3 +147,6 @@ class StaticSeedReplayRunner:
             "budget_max_turns": budget.max_turns,
             "judge_required": True,
         }
+        if benchmark_metadata:
+            metadata.update(benchmark_metadata)
+        return metadata

@@ -1,5 +1,10 @@
 # Wiki Log
 
+## [2026-04-26] implementation | restored jailbreak benchmark CLI and run-hint workflow
+- added `decisions/jailbreak-benchmark-material-vault.md` with dry-run, material import, approved replay, report artifact, and `redthread run --benchmark-fixture` command guidance
+- restored `redthread eval jailbreak-corpus` and `redthread eval jailbreak-material import` commands in the main worktree
+- connected normal `redthread run` campaigns to metadata-only benchmark fixture hints without loading raw prompt material
+
 ## [2026-04-27] implementation | shipped tool technology incorporation slice 7
 - created `research/tool-technology-testing-commands-and-takeaways.md` with focused and broader test command sets plus durable slice lessons
 - created `research/tool-technology-slice-7-implementation-plan.md` for report persistence, manifest files, transcript links, and import/export bridge prep
