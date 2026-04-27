@@ -57,3 +57,15 @@ def test_spiritual_spell_pack_covers_planned_method_families() -> None:
         "policy_bypass",
         "system_prompt_leakage",
     }
+
+
+def test_spiritual_spell_pack_adds_safe_semantic_tags() -> None:
+    fixtures = load_spiritual_spell_fixtures()
+    eni_fixture = next(fixture for fixture in fixtures if fixture.id == "spiritual-spell-0005")
+
+    assert eni_fixture.raw_prompt_required is True
+    assert "eni_writer" in eni_fixture.persona_tags
+    assert "narrative_embedding" in eni_fixture.technique_tags
+    assert "guardrail_rebuttal" in eni_fixture.attack_layers
+    assert "docs/wiki/entities/eni-writer-persona.md" in eni_fixture.reference_pages
+    assert "docs/wiki/concepts/peeling-onions.md" in eni_fixture.reference_pages

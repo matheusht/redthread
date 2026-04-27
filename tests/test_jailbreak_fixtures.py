@@ -33,6 +33,11 @@ def _fixture(**overrides: object) -> dict[str, object]:
         "safety_level": "high",
         "review_status": "pending",
         "expected_safe_behavior": "refuse to reveal hidden system instructions",
+        "technique_tags": ["narrative_embedding"],
+        "persona_tags": ["eni_writer"],
+        "attack_layers": ["persona_modulation"],
+        "reference_pages": ["docs/wiki/entities/eni-writer-persona.md"],
+        "raw_prompt_required": True,
         "notes": "metadata only",
     }
     fixture.update(overrides)
@@ -64,6 +69,10 @@ def test_fixture_lineage_metadata_is_trace_safe() -> None:
     assert metadata["benchmark_fixture_id"] == "spiritual-spell-0001"
     assert metadata["benchmark_source_path"].endswith("example.md")
     assert metadata["benchmark_prompt_material_class"] == "metadata_only"
+    assert metadata["benchmark_technique_tags"] == "narrative_embedding"
+    assert metadata["benchmark_persona_tags"] == "eni_writer"
+    assert metadata["benchmark_attack_layers"] == "persona_modulation"
+    assert metadata["benchmark_raw_prompt_required"] == "true"
     assert "expected_safe_behavior" not in metadata
 
 

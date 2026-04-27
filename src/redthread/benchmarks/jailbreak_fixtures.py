@@ -44,6 +44,11 @@ class JailbreakBenchmarkFixture(BaseModel):
     safety_level: str = Field(min_length=1)
     review_status: ReviewStatus = "pending"
     expected_safe_behavior: str = Field(min_length=1)
+    technique_tags: list[str] = Field(default_factory=list)
+    persona_tags: list[str] = Field(default_factory=list)
+    attack_layers: list[str] = Field(default_factory=list)
+    reference_pages: list[str] = Field(default_factory=list)
+    raw_prompt_required: bool = False
     notes: str = ""
 
     @model_validator(mode="after")
@@ -80,6 +85,11 @@ class JailbreakBenchmarkFixture(BaseModel):
             "benchmark_family": self.family,
             "benchmark_prompt_material_class": self.prompt_material_class,
             "benchmark_review_status": self.review_status,
+            "benchmark_technique_tags": ",".join(self.technique_tags),
+            "benchmark_persona_tags": ",".join(self.persona_tags),
+            "benchmark_attack_layers": ",".join(self.attack_layers),
+            "benchmark_reference_pages": ",".join(self.reference_pages),
+            "benchmark_raw_prompt_required": str(self.raw_prompt_required).lower(),
         }
 
 

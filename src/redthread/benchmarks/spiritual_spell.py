@@ -107,7 +107,7 @@ def load_spiritual_spell_fixtures() -> list[JailbreakBenchmarkFixture]:
     return load_jailbreak_fixture_pack(spiritual_spell_fixture_pack_data())
 
 
-def _record(item: dict[str, str]) -> dict[str, str]:
+def _record(item: dict[str, str]) -> dict[str, Any]:
     return {
         "schema_version": JAILBREAK_FIXTURE_SCHEMA_VERSION,
         "source_repo": SPIRITUAL_SPELL_SOURCE_REPO,
@@ -117,6 +117,43 @@ def _record(item: dict[str, str]) -> dict[str, str]:
         "prompt_material_class": "metadata_only",
         "prompt_material_ref": "not-copied",
         "review_status": "pending",
+        "raw_prompt_required": True,
         "notes": "Metadata-only fixture; raw prompt body intentionally not copied.",
+        **_semantic_fields(item["family"], item["source_path"]),
         **item,
+    }
+
+
+def _semantic_fields(family: str, source_path: str) -> dict[str, list[str]]:
+    technique_tags: set[str] = set()
+    persona_tags: set[str] = set()
+    attack_layers: set[str] = set()
+    reference_pages: set[str] = set()
+    family_key = family.lower()
+    path_key = source_path.lower()
+    if "eni" in family_key or "eni" in path_key or "writer" in path_key:
+        persona_tags.add("eni_writer")
+        technique_tags.update(
+            {"persona_modulation", "reasoning_hijack_attempt", "injection_rebuttal"}
+        )
+        attack_layers.update({"persona", "reasoning", "guardrail_rebuttal"})
+        reference_pages.add("docs/wiki/entities/eni-writer-persona.md")
+    if "writer" in path_key or "persona" in family_key or "lime" in family_key:
+        technique_tags.update({"plain_language", "strategic_distraction", "narrative_embedding"})
+        attack_layers.add("narrative")
+        reference_pages.add("docs/wiki/concepts/peeling-onions.md")
+    if "system prompt" in path_key or "system_prompt" in family_key:
+        technique_tags.add("system_prompt_extraction")
+        attack_layers.add("instruction_hierarchy")
+    if "agent" in family_key or "injection" in family_key:
+        technique_tags.add("agent_instruction_injection")
+        attack_layers.add("tool_orchestration")
+    if "policy" in family_key:
+        technique_tags.add("policy_conflict_framing")
+        attack_layers.add("policy_boundary")
+    return {
+        "technique_tags": sorted(technique_tags),
+        "persona_tags": sorted(persona_tags),
+        "attack_layers": sorted(attack_layers),
+        "reference_pages": sorted(reference_pages),
     }
