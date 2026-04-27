@@ -1,6 +1,11 @@
 """Benchmark fixture helpers for RedThread."""
 
 from redthread.benchmarks.campaigns import BenchmarkCampaignDraft, build_benchmark_campaign_draft
+from redthread.benchmarks.dry_run import (
+    BenchmarkDryRunError,
+    BenchmarkDryRunReport,
+    build_jailbreak_corpus_dry_run_report,
+)
 from redthread.benchmarks.hints import (
     BenchmarkHintProfile,
     build_fixture_hint_profile,
@@ -46,6 +51,8 @@ from redthread.benchmarks.spiritual_spell import (
 
 __all__ = [
     "BenchmarkCampaignDraft",
+    "BenchmarkDryRunError",
+    "BenchmarkDryRunReport",
     "BENCHMARK_MATERIAL_ROOT_ENV",
     "MATERIAL_MANIFEST_SCHEMA_VERSION",
     "BenchmarkHintProfile",
@@ -61,6 +68,7 @@ __all__ = [
     "MaterialReviewError",
     "MaterialVaultError",
     "build_benchmark_campaign_draft",
+    "build_jailbreak_corpus_dry_run_report",
     "build_benchmark_run_report",
     "approve_fixture_for_replay",
     "benchmark_material_root",

@@ -8,6 +8,7 @@ import click
 from rich.console import Console
 
 from redthread import __version__
+from redthread.cli.benchmark_eval import register_benchmark_eval_commands
 from redthread.cli.dashboard import register_dashboard_command
 from redthread.cli.doctor import run_doctor
 from redthread.cli.home import render_home_screen
@@ -53,6 +54,7 @@ def doctor(env_file: str) -> None:
 
 
 register_run_command(main, console)
+register_benchmark_eval_commands(main, console)
 register_monitor_commands(main, console)
 register_test_commands(main, console)
 register_dashboard_command(main, console)
