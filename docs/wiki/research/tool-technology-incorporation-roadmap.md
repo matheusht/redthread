@@ -16,8 +16,8 @@ source_of_truth:
   - https://github.com/NVIDIA/garak
   - https://github.com/usestrix/strix
   - https://github.com/requie/AI-Red-Teaming-Guide
-updated_by: codex
-updated_at: 2026-04-26
+updated_by: pi
+updated_at: 2026-04-28
 ---
 
 # Tool Technology Incorporation Roadmap
@@ -1147,6 +1147,40 @@ Build:
 Status: shipped as of 2026-04-28.
 
 See [Tool Technology Slice 16 Adaptive Persona Weighting](tool-technology-slice-16-adaptive-persona-weighting.md).
+
+## Seventeenth implementation slice
+
+```text
+Slice 17: Persona weighting report artifacts
+```
+
+Build:
+
+- report bundle fields for weak persona telemetry and adaptive weighting plans
+- standard report sidecars: `persona-outcomes.json` and `adaptive-persona-weighting-plan.json`
+- manifest links to the sidecars when telemetry exists
+- Markdown wording that labels persona telemetry as weak metadata
+
+Status: shipped as of 2026-04-28.
+
+See [Tool Technology Slice 17 Persona Weighting Report Artifacts](tool-technology-slice-17-persona-weighting-report-artifacts.md).
+
+## Eighteenth implementation slice
+
+```text
+Slice 18: Persona weighting CLI reuse
+```
+
+Build:
+
+- validated `adaptive-persona-weighting-plan.json` loader
+- `redthread run --persona-weighting-plan PATH`
+- `CampaignConfig.persona_weighting_plan` CLI transport
+- raw prompt body key rejection at the file boundary
+
+Status: shipped as of 2026-04-28.
+
+See [Tool Technology Slice 18 Persona Weighting CLI Reuse](tool-technology-slice-18-persona-weighting-cli-reuse.md).
 
 ## Risk register
 

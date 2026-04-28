@@ -12,6 +12,10 @@ from redthread.benchmarks.run_context import (
     BenchmarkRunContextError,
     apply_benchmark_fixture_context,
 )
+from redthread.cli.persona_weighting import (
+    PersonaWeightingPlanFileError,
+    load_persona_weighting_plan_file,
+)
 from redthread.cli.run_render import render_campaign_header, render_campaign_results
 from redthread.cli.shared import run_async_command, setup_logging
 from redthread.config.settings import AlgorithmType, RedThreadSettings
@@ -76,6 +80,7 @@ def register_run_command(main: click.Group, console: Console) -> None:
     @click.option("--simulations", type=int, default=None, help="GS-MCTS number of simulations (overrides mcts_simulations setting)")
     @click.option("--max-budget-tokens", type=int, default=None, help="GS-MCTS token budget ceiling for early stopping (heuristic: chars // 4)")
     @click.option("--benchmark-fixture", multiple=True, help="Use safe metadata hints from a jailbreak benchmark fixture; may repeat.")
+    @click.option("--persona-weighting-plan", type=click.Path(exists=True, dir_okay=False), default=None, help="Use a safe adaptive persona weighting plan JSON artifact")
     @click.option("--report-md", type=click.Path(dir_okay=False), default=None, help="Write guide-style operator report as Markdown")
     @click.option("--report-json", type=click.Path(dir_okay=False), default=None, help="Write guide-style operator report as JSON")
     @click.option("--report-dir", type=click.Path(file_okay=False), default=None, help="Write standard campaign report directory")
@@ -97,6 +102,7 @@ def register_run_command(main: click.Group, console: Console) -> None:
         simulations: int | None,
         max_budget_tokens: int | None,
         benchmark_fixture: tuple[str, ...],
+        persona_weighting_plan: str | None,
         report_md: str | None,
         report_json: str | None,
         report_dir: str | None,
@@ -124,6 +130,14 @@ def register_run_command(main: click.Group, console: Console) -> None:
             except BenchmarkRunContextError as exc:
                 raise click.ClickException(str(exc)) from exc
             run_objective = benchmark_context.objective
+        weighting_plan_payload = {}
+        if persona_weighting_plan:
+            try:
+                weighting_plan_payload = load_persona_weighting_plan_file(
+                    Path(persona_weighting_plan)
+                )
+            except PersonaWeightingPlanFileError as exc:
+                raise click.ClickException(str(exc)) from exc
         render_campaign_header(console, settings, objective, personas)
         if benchmark_context:
             console.print("[bold]Benchmark fixture context[/bold]")
@@ -140,6 +154,7 @@ def register_run_command(main: click.Group, console: Console) -> None:
                 if benchmark_context
                 else {}
             ),
+            persona_weighting_plan=weighting_plan_payload,
         )
         engine = RedThreadEngine(settings, trace_all=trace_all)
         result = run_async_command(

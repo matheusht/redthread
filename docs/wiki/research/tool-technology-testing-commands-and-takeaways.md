@@ -11,11 +11,14 @@ source_of_truth:
   - docs/wiki/research/tool-technology-slice-13-persona-strategy-coverage-repair.md
   - docs/wiki/research/tool-technology-slice-14-persona-batch-layer-planning.md
   - docs/wiki/research/tool-technology-slice-15-persona-outcome-telemetry.md
+  - docs/wiki/research/tool-technology-slice-16-adaptive-persona-weighting.md
+  - docs/wiki/research/tool-technology-slice-17-persona-weighting-report-artifacts.md
+  - docs/wiki/research/tool-technology-slice-18-persona-weighting-cli-reuse.md
   - tests/test_operator_reporting.py
   - tests/test_regression_cases.py
   - tests/test_detector_hints.py
-updated_by: codex
-updated_at: 2026-04-27
+updated_by: pi
+updated_at: 2026-04-28
 ---
 
 # Tool Technology Testing Commands and Takeaways
@@ -302,6 +305,80 @@ focused mypy: Success: no issues found
 wiki-lint: OK
 ```
 
+## Slice 17 command set
+
+Use this after touching persona telemetry report sidecars or standard report persistence:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src uv run python -m pytest \
+  tests/test_persona_report_artifacts.py \
+  tests/test_operator_reporting.py \
+  tests/test_adaptive_persona_weighting.py -q
+
+uv run ruff check \
+  src/redthread/reporting \
+  src/redthread/personas \
+  tests/test_persona_report_artifacts.py \
+  tests/test_operator_reporting.py \
+  tests/test_adaptive_persona_weighting.py
+
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src uv run mypy \
+  src/redthread/reporting \
+  src/redthread/personas \
+  tests/test_persona_report_artifacts.py \
+  tests/test_operator_reporting.py \
+  tests/test_adaptive_persona_weighting.py
+
+python3 scripts/wiki_lint.py
+```
+
+Observed result for the Slice 17 ship pass:
+
+```text
+16 passed for focused report/persona tests
+focused ruff: All checks passed
+focused mypy: Success: no issues found
+wiki-lint: OK
+```
+
+## Slice 18 command set
+
+Use this after touching adaptive persona weighting CLI reuse:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src uv run python -m pytest \
+  tests/test_persona_weighting_cli.py \
+  tests/test_run_benchmark_fixture_cli.py \
+  tests/test_adaptive_persona_weighting.py -q
+
+uv run ruff check \
+  src/redthread/cli \
+  src/redthread/personas \
+  src/redthread/models.py \
+  tests/test_persona_weighting_cli.py \
+  tests/test_run_benchmark_fixture_cli.py \
+  tests/test_adaptive_persona_weighting.py
+
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src uv run mypy \
+  src/redthread/cli \
+  src/redthread/personas \
+  src/redthread/models.py \
+  tests/test_persona_weighting_cli.py \
+  tests/test_run_benchmark_fixture_cli.py \
+  tests/test_adaptive_persona_weighting.py
+
+python3 scripts/wiki_lint.py
+```
+
+Observed result for the Slice 18 ship pass:
+
+```text
+12 passed for focused CLI/persona tests
+focused ruff: All checks passed
+focused mypy: Success: no issues found
+wiki-lint: OK
+```
+
 ## Key takeaways
 
 - Keep new report/export logic pure and outside attack execution.
@@ -309,6 +386,8 @@ wiki-lint: OK
 - Keep JudgeAgent as the owner of confirmed findings.
 - Only `AttackResult.verdict.is_jailbreak == true` should enter finding-style report rows or regression memory flows.
 - Persona outcome telemetry can track near misses, skipped runs, and errors, but those labels stay weak run metadata.
+- Adaptive persona weighting plans can be persisted and reused, but they stay planning hints only.
+- Reject raw prompt body keys at file boundaries, not just inside generation code.
 - Use `CampaignPlan` when exact scope, risk, and strategy data are available; otherwise report inferred scope with a limitation.
 - Link regression cases through Slice 5 `finding_regression_link()` output instead of making the reporting layer create regression cases.
 - Run `wiki_lint.py` whenever adding or changing durable wiki pages.
@@ -322,6 +401,7 @@ src/redthread/reporting/__init__.py
 src/redthread/reporting/models.py
 src/redthread/reporting/artifacts.py
 src/redthread/reporting/exporters.py
+src/redthread/reporting/persona_artifacts.py
 ```
 
-Future slices should split before a reporting file crosses 200 lines.
+Future slices should split before a reporting file crosses 200 lines. `src/redthread/cli/run.py` is also close enough to watch before adding more CLI flags.

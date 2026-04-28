@@ -1,5 +1,12 @@
 # Wiki Log
 
+## [2026-04-28] implementation | shipped tool technology incorporation slices 17-18
+- created `research/tool-technology-slice-17-persona-weighting-report-artifacts.md` for weak persona telemetry and adaptive weighting report sidecars
+- added safe report sidecars for `persona-outcomes.json` and `adaptive-persona-weighting-plan.json` with manifest links
+- created `research/tool-technology-slice-18-persona-weighting-cli-reuse.md` for `redthread run --persona-weighting-plan`
+- added validated CLI reuse of adaptive weighting plans while rejecting malformed files, `raw_prompt_loaded=true`, and raw prompt body keys
+- preserved the gate that weak telemetry can guide exploration only; JudgeAgent-confirmed `AttackResult` objects remain the only durable regression evidence
+
 ## [2026-04-28] implementation | shipped tool technology incorporation slice 16
 - created `research/tool-technology-slice-16-adaptive-persona-weighting.md` for next-run adaptive persona weighting from weak telemetry
 - added `redthread.personas.adaptive_weighting` with planning-only layer weights and schema markers

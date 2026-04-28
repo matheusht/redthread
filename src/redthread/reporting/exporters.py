@@ -38,6 +38,7 @@ def operator_artifacts_to_markdown(bundle: OperatorArtifactBundle) -> str:
     lines.extend(_checklist_lines(bundle))
     lines.extend(_stakeholder_lines(bundle))
     lines.extend(_regression_pack_lines(bundle))
+    lines.extend(_persona_artifact_lines(bundle))
     lines.extend(_limitation_lines(bundle))
     return "\n".join(lines).rstrip() + "\n"
 
@@ -131,6 +132,23 @@ def _regression_pack_lines(bundle: OperatorArtifactBundle) -> list[str]:
             f"{link.get('regression_case_id', '(unknown regression)')}"
         )
     return [*lines, ""]
+
+
+def _persona_artifact_lines(bundle: OperatorArtifactBundle) -> list[str]:
+    if not bundle.persona_outcome_telemetry:
+        return []
+    plan = bundle.adaptive_persona_weighting_plan
+    return [
+        "## Persona Outcome Telemetry",
+        "- Evidence status: weak run metadata only; JudgeAgent owns findings.",
+        f"- Total persona runs: {bundle.persona_outcome_telemetry.get('total_runs', 0)}",
+        f"- Near misses: {bundle.persona_outcome_telemetry.get('near_misses', 0)}",
+        f"- Confirmed JudgeAgent jailbreaks: "
+        f"{bundle.persona_outcome_telemetry.get('confirmed_jailbreaks', 0)}",
+        f"- Adaptive weighting plan layers: {_join(plan.get('ordered_layers', []))}",
+        "- Regression evidence: only JudgeAgent-confirmed AttackResult objects qualify.",
+        "",
+    ]
 
 
 def _limitation_lines(bundle: OperatorArtifactBundle) -> list[str]:

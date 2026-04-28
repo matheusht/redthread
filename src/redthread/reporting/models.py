@@ -111,6 +111,8 @@ class OperatorArtifactBundle(BaseModel):
     stakeholder_readout: StakeholderReadout
     regression_pack_summary: RegressionPackSummary
     limitations: list[str]
+    persona_outcome_telemetry: dict[str, Any] = Field(default_factory=dict)
+    adaptive_persona_weighting_plan: dict[str, Any] = Field(default_factory=dict)
 
 
 class OperatorReportManifest(BaseModel):
@@ -121,4 +123,6 @@ class OperatorReportManifest(BaseModel):
     artifact_dir: str
     markdown_report: str
     json_report: str
+    persona_outcome_telemetry: str = ""
+    adaptive_persona_weighting_plan: str = ""
     bridge_prep_notes: list[str] = Field(default_factory=list)

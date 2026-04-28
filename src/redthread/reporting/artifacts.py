@@ -20,6 +20,7 @@ from redthread.reporting.models import (
     StakeholderReadout,
     VulnerabilityReport,
 )
+from redthread.reporting.persona_artifacts import persona_artifacts_from_metadata
 
 
 def build_operator_artifact_bundle(
@@ -40,6 +41,7 @@ def build_operator_artifact_bundle(
         for result in campaign.results
         if result.verdict.is_jailbreak
     ]
+    persona_artifacts = persona_artifacts_from_metadata(campaign.metadata)
     return OperatorArtifactBundle(
         campaign_id=campaign.id,
         rules_of_engagement=RulesOfEngagementSummary(
@@ -71,6 +73,8 @@ def build_operator_artifact_bundle(
         ),
         regression_pack_summary=RegressionPackSummary(case_count=len(links), links=links),
         limitations=limitations,
+        persona_outcome_telemetry=persona_artifacts["persona_outcome_telemetry"],
+        adaptive_persona_weighting_plan=persona_artifacts["adaptive_persona_weighting_plan"],
     )
 
 
