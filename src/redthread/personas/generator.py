@@ -7,6 +7,7 @@ from typing import Any, cast
 
 from redthread.config.settings import RedThreadSettings
 from redthread.models import MitreAtlasTactic, Persona, PsychologicalTrigger
+from redthread.personas.batch_planning import prompting_layer_profiles_for_batch
 from redthread.personas.generation_defaults import (
     build_dry_run_persona,
     default_trigger_sets,
@@ -19,6 +20,7 @@ from redthread.personas.generation_support import (
     render_prompting_layer_constraints,
 )
 from redthread.personas.prompt_layers import PromptingLayerProfile
+from redthread.personas.quality import repair_persona_strategy_coverage
 from redthread.pyrit_adapters.targets import (
     ExecutionMetadata,
     ExecutionRecorder,
@@ -75,7 +77,14 @@ class PersonaGenerator:
             prompting_layer_constraints=render_prompting_layer_constraints(prompting_layer_profile),
         )
         logger.info("Generating persona", extra={"tactic": tactic.value, "technique": technique.id})
-        return await self._generate_with_retries(prompt, tactic, triggers, technique.id, technique.name)
+        return await self._generate_with_retries(
+            prompt,
+            tactic,
+            triggers,
+            technique.id,
+            technique.name,
+            prompting_layer_profile,
+        )
 
     async def generate_batch(
         self,
@@ -92,6 +101,7 @@ class PersonaGenerator:
             ]
             tactics = (default_tactics * ((count // len(default_tactics)) + 1))[:count]
         personas = []
+        batch_profiles = prompting_layer_profiles_for_batch(prompting_layer_profile, count)
         for index, tactic in enumerate(tactics[:count]):
             trigger_sets = default_trigger_sets()
             triggers = trigger_sets[index % len(trigger_sets)]
@@ -99,7 +109,7 @@ class PersonaGenerator:
                 objective,
                 tactic,
                 triggers,
-                prompting_layer_profile,
+                batch_profiles[index],
             )
             personas.append(persona)
             logger.info("Generated persona %d/%d: %s", index + 1, count, persona.name)
@@ -118,6 +128,7 @@ class PersonaGenerator:
         triggers: list[PsychologicalTrigger],
         technique_id: str,
         technique_name: str,
+        prompting_layer_profile: PromptingLayerProfile | None,
     ) -> Persona:
         from redthread.core.mcts_helpers import derive_strategies
         from redthread.personas.live_authorization import build_persona_generation_action
@@ -155,7 +166,7 @@ class PersonaGenerator:
                 )
                 if not candidate.allowed_strategies:
                     candidate.allowed_strategies = derive_strategies(candidate)
-                return candidate
+                return repair_persona_strategy_coverage(candidate, prompting_layer_profile)
             except (ValueError, KeyError) as exc:
                 logger.warning(
                     "Persona generation attempt %d failed: %s | raw=%s",

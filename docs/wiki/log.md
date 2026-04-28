@@ -1,5 +1,13 @@
 # Wiki Log
 
+## [2026-04-27] implementation | shipped tool technology incorporation slices 12-14
+- created `research/tool-technology-slice-12-persona-quality-measurement.md` for weak persona strategy coverage measurement
+- created `research/tool-technology-slice-13-persona-strategy-coverage-repair.md` for deterministic safe repair of missing layer strategy hints
+- created `research/tool-technology-slice-14-persona-batch-layer-planning.md` for distributing enabled prompting layers across persona batches
+- added `redthread.personas.quality` and `redthread.personas.batch_planning`
+- kept all persona quality and batch planning outputs metadata-only; JudgeAgent remains the verdict owner
+- recorded the Slice 12-14 focused validation commands and observed results in `research/tool-technology-testing-commands-and-takeaways.md`
+
 ## [2026-04-27] implementation | shipped tool technology incorporation slice 11
 - created `research/tool-technology-slice-11-persona-prompting-layer-profiles.md` with RPI findings, the safe profile contract, implementation checklist, acceptance criteria, and gap check
 - added metadata-only `PromptingLayerProfile` transport from benchmark fixture tags into persona generation

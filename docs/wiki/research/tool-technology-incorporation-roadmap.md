@@ -1059,6 +1059,57 @@ Implemented:
 
 See [Tool Technology Slice 11 Persona Prompting Layer Profiles](tool-technology-slice-11-persona-prompting-layer-profiles.md) for the exact checklist.
 
+## Twelfth implementation slice
+
+```text
+Slice 12: Persona quality measurement
+```
+
+Build:
+
+- weak `PersonaStrategyCoverage` summaries
+- batch coverage summaries
+- explicit covered/missing layer lists
+- tests proving missing layer detection
+
+Status: shipped as of 2026-04-27.
+
+See [Tool Technology Slice 12 Persona Quality Measurement](tool-technology-slice-12-persona-quality-measurement.md).
+
+## Thirteenth implementation slice
+
+```text
+Slice 13: Persona strategy coverage repair
+```
+
+Build:
+
+- deterministic repair of missing safe layer hints
+- no live retry required
+- no rewriting of model-generated strategies
+- integration in live persona generation after parsing
+
+Status: shipped as of 2026-04-27.
+
+See [Tool Technology Slice 13 Persona Strategy Coverage Repair](tool-technology-slice-13-persona-strategy-coverage-repair.md).
+
+## Fourteenth implementation slice
+
+```text
+Slice 14: Persona batch layer planning
+```
+
+Build:
+
+- per-persona prompting-layer profile distribution
+- non-empty layer allocation for multi-persona batches
+- aggregate batch coverage tests
+- no new CLI flags
+
+Status: shipped as of 2026-04-27.
+
+See [Tool Technology Slice 14 Persona Batch Layer Planning](tool-technology-slice-14-persona-batch-layer-planning.md).
+
 ## Risk register
 
 | Risk | Why it matters | Mitigation |
