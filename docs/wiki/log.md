@@ -1,5 +1,17 @@
 # Wiki Log
 
+## [2026-04-28] implementation | shipped tool technology incorporation slice 16
+- created `research/tool-technology-slice-16-adaptive-persona-weighting.md` for next-run adaptive persona weighting from weak telemetry
+- added `redthread.personas.adaptive_weighting` with planning-only layer weights and schema markers
+- added optional weighted layer distribution to persona batch planning, `PersonaGenerator.generate_batch()` plan support, and `CampaignConfig.persona_weighting_plan` supervisor transport
+- preserved the gate that only JudgeAgent-confirmed `AttackResult` objects can become durable regression evidence
+
+## [2026-04-27] implementation | shipped tool technology incorporation slice 15
+- created `research/tool-technology-slice-15-persona-outcome-telemetry.md` for weak persona outcome telemetry
+- added `redthread.personas.outcomes` with persona-level and batch-level outcome records
+- attached `persona_outcome_telemetry` to campaign metadata during supervisor finalization
+- preserved JudgeAgent as verdict owner; telemetry labels cannot create findings, severity truth, or regression cases
+
 ## [2026-04-27] implementation | shipped tool technology incorporation slices 12-14
 - created `research/tool-technology-slice-12-persona-quality-measurement.md` for weak persona strategy coverage measurement
 - created `research/tool-technology-slice-13-persona-strategy-coverage-repair.md` for deterministic safe repair of missing layer strategy hints

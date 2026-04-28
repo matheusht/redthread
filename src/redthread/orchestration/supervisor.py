@@ -85,6 +85,7 @@ async def generate_personas_node(state: SupervisorState) -> dict[str, Any]:
     """Generate adversarial personas for the campaign objective."""
     from redthread.config.settings import RedThreadSettings
     from redthread.models import CampaignConfig
+    from redthread.personas.adaptive_weighting import AdaptivePersonaWeightingPlan
     from redthread.personas.generator import PersonaGenerator
     from redthread.personas.prompt_layers import PromptingLayerProfile
 
@@ -99,10 +100,16 @@ async def generate_personas_node(state: SupervisorState) -> dict[str, Any]:
         if config.prompting_layer_profile
         else None
     )
+    persona_weighting_plan = (
+        AdaptivePersonaWeightingPlan.model_validate(config.persona_weighting_plan)
+        if config.persona_weighting_plan
+        else None
+    )
     personas = await gen.generate_batch(
         objective=config.objective,
         count=config.num_personas,
         prompting_layer_profile=prompting_layer_profile,
+        persona_weighting_plan=persona_weighting_plan,
     )
 
     return {"persona_dicts": [p.model_dump(mode="json") for p in personas]}
@@ -269,8 +276,13 @@ async def finalize_node(state: SupervisorState) -> dict[str, Any]:
     """Assemble the final CampaignResult from all judged results."""
     from datetime import datetime, timezone
 
-    from redthread.models import AttackResult, CampaignConfig, CampaignResult
+    from redthread.models import AttackResult, CampaignConfig, CampaignResult, Persona
     from redthread.orchestration.runtime_summary import build_runtime_summary
+    from redthread.personas.outcomes import (
+        build_persona_outcome_telemetry,
+        persona_profiles_by_id,
+    )
+    from redthread.personas.prompt_layers import PromptingLayerProfile
 
     config = CampaignConfig.model_validate(state["config_dict"])
     results: list[AttackResult] = []
@@ -281,6 +293,16 @@ async def finalize_node(state: SupervisorState) -> dict[str, Any]:
         except Exception as exc:
             logger.warning("Failed to deserialize judged result: %s", exc)
 
+    personas = [Persona.model_validate(raw) for raw in state["persona_dicts"]]
+    prompting_layer_profile = (
+        PromptingLayerProfile.model_validate(config.prompting_layer_profile)
+        if config.prompting_layer_profile
+        else None
+    )
+    persona_outcome_telemetry = build_persona_outcome_telemetry(
+        results,
+        persona_profiles_by_id(personas, prompting_layer_profile),
+    )
     runtime_summary = build_runtime_summary(state)
     campaign = CampaignResult(
         config=config,
@@ -291,6 +313,7 @@ async def finalize_node(state: SupervisorState) -> dict[str, Any]:
             "agentic_security_report": state.get("agentic_security_report", {}),
             "degraded_runtime": runtime_summary["degraded_runtime"],
             "error_count": runtime_summary["error_count"],
+            "persona_outcome_telemetry": persona_outcome_telemetry.model_dump(mode="json"),
         },
     )
 

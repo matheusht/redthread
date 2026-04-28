@@ -10,6 +10,7 @@ source_of_truth:
   - docs/wiki/research/tool-technology-slice-12-persona-quality-measurement.md
   - docs/wiki/research/tool-technology-slice-13-persona-strategy-coverage-repair.md
   - docs/wiki/research/tool-technology-slice-14-persona-batch-layer-planning.md
+  - docs/wiki/research/tool-technology-slice-15-persona-outcome-telemetry.md
   - tests/test_operator_reporting.py
   - tests/test_regression_cases.py
   - tests/test_detector_hints.py
@@ -227,12 +228,87 @@ wiki-lint: OK
 
 Whole-repo `ruff check .` and `mypy src tests` still surface unrelated pre-existing issues in repo-wide scripts/tests, so the slice gate remains the focused command set above plus full pytest.
 
+## Slice 15 command set
+
+Use this after touching persona outcome telemetry or campaign metadata finalization:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src uv run python -m pytest \
+  tests/test_persona_outcomes.py \
+  tests/test_persona_quality.py \
+  tests/test_supervisor.py -q
+
+uv run ruff check \
+  src/redthread/personas \
+  src/redthread/orchestration/supervisor.py \
+  tests/test_persona_outcomes.py \
+  tests/test_persona_quality.py
+
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src uv run mypy \
+  src/redthread/personas \
+  src/redthread/orchestration/supervisor.py \
+  tests/test_persona_outcomes.py \
+  tests/test_persona_quality.py
+
+python3 scripts/wiki_lint.py
+```
+
+Observed result for the Slice 15 ship pass:
+
+```text
+18 passed for focused persona outcome/supervisor tests
+38 passed for broader persona/benchmark/supervisor tests
+468 passed, 1 skipped for full pytest
+focused ruff: All checks passed
+focused mypy: Success: no issues found
+wiki-lint: OK
+```
+
+## Slice 16 command set
+
+Use this after touching adaptive persona weighting, weighted batch planning, or persona outcome telemetry:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src uv run python -m pytest \
+  tests/test_adaptive_persona_weighting.py \
+  tests/test_persona_quality.py \
+  tests/test_persona_outcomes.py -q
+
+uv run ruff check \
+  src/redthread/personas \
+  src/redthread/models.py \
+  src/redthread/orchestration/supervisor.py \
+  tests/test_adaptive_persona_weighting.py \
+  tests/test_persona_quality.py \
+  tests/test_persona_outcomes.py
+
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src uv run mypy \
+  src/redthread/personas \
+  src/redthread/models.py \
+  src/redthread/orchestration/supervisor.py \
+  tests/test_adaptive_persona_weighting.py \
+  tests/test_persona_quality.py \
+  tests/test_persona_outcomes.py
+
+python3 scripts/wiki_lint.py
+```
+
+Observed result for the Slice 16 ship pass:
+
+```text
+14 passed for focused adaptive/persona tests
+focused ruff: All checks passed
+focused mypy: Success: no issues found
+wiki-lint: OK
+```
+
 ## Key takeaways
 
 - Keep new report/export logic pure and outside attack execution.
 - Keep detector hints framed as weak static signals, not proof.
 - Keep JudgeAgent as the owner of confirmed findings.
 - Only `AttackResult.verdict.is_jailbreak == true` should enter finding-style report rows or regression memory flows.
+- Persona outcome telemetry can track near misses, skipped runs, and errors, but those labels stay weak run metadata.
 - Use `CampaignPlan` when exact scope, risk, and strategy data are available; otherwise report inferred scope with a limitation.
 - Link regression cases through Slice 5 `finding_regression_link()` output instead of making the reporting layer create regression cases.
 - Run `wiki_lint.py` whenever adding or changing durable wiki pages.

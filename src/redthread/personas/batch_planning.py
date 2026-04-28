@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+
 from redthread.personas.prompt_layers import PromptingLayerProfile
 
 
 def prompting_layer_profiles_for_batch(
     profile: PromptingLayerProfile | None,
     count: int,
+    layer_weights: Mapping[str, float] | None = None,
 ) -> list[PromptingLayerProfile | None]:
     """Distribute enabled prompting layers across a persona batch.
 
@@ -21,7 +24,7 @@ def prompting_layer_profiles_for_batch(
     if profile is None or profile.is_empty:
         return [profile] * count
 
-    layers = profile.enabled_layers
+    layers = _weighted_layer_sequence(profile.enabled_layers, layer_weights)
     if count == 1 or len(layers) <= 1:
         return [profile] * count
 
@@ -33,6 +36,19 @@ def prompting_layer_profiles_for_batch(
             bucket.append(layers[index % len(layers)])
 
     return [_profile_with_layers(profile, bucket) for bucket in buckets]
+
+
+def _weighted_layer_sequence(
+    layers: list[str],
+    layer_weights: Mapping[str, float] | None,
+) -> list[str]:
+    if not layer_weights:
+        return layers
+    weighted: list[str] = []
+    for layer in sorted(layers, key=lambda item: (-layer_weights.get(item, 1.0), item)):
+        repeats = max(1, round(layer_weights.get(layer, 1.0)))
+        weighted.extend([layer] * repeats)
+    return weighted or layers
 
 
 def _profile_with_layers(

@@ -190,6 +190,7 @@ class CampaignConfig(BaseModel):
     rubric_name: str = "authorization_bypass"
     num_personas: int = 3
     prompting_layer_profile: dict[str, Any] = Field(default_factory=dict)
+    persona_weighting_plan: dict[str, Any] = Field(default_factory=dict)
 
 
 class CampaignResult(BaseModel):

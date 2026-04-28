@@ -7,6 +7,7 @@ from typing import Any, cast
 
 from redthread.config.settings import RedThreadSettings
 from redthread.models import MitreAtlasTactic, Persona, PsychologicalTrigger
+from redthread.personas.adaptive_weighting import AdaptivePersonaWeightingPlan
 from redthread.personas.batch_planning import prompting_layer_profiles_for_batch
 from redthread.personas.generation_defaults import (
     build_dry_run_persona,
@@ -92,6 +93,7 @@ class PersonaGenerator:
         count: int = 3,
         tactics: list[MitreAtlasTactic] | None = None,
         prompting_layer_profile: PromptingLayerProfile | None = None,
+        persona_weighting_plan: AdaptivePersonaWeightingPlan | None = None,
     ) -> list[Persona]:
         if tactics is None:
             default_tactics = [
@@ -101,7 +103,12 @@ class PersonaGenerator:
             ]
             tactics = (default_tactics * ((count // len(default_tactics)) + 1))[:count]
         personas = []
-        batch_profiles = prompting_layer_profiles_for_batch(prompting_layer_profile, count)
+        layer_weights = persona_weighting_plan.weights_by_layer() if persona_weighting_plan else None
+        batch_profiles = prompting_layer_profiles_for_batch(
+            prompting_layer_profile,
+            count,
+            layer_weights,
+        )
         for index, tactic in enumerate(tactics[:count]):
             trigger_sets = default_trigger_sets()
             triggers = trigger_sets[index % len(trigger_sets)]

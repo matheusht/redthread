@@ -1110,6 +1110,44 @@ Status: shipped as of 2026-04-27.
 
 See [Tool Technology Slice 14 Persona Batch Layer Planning](tool-technology-slice-14-persona-batch-layer-planning.md).
 
+## Fifteenth implementation slice
+
+```text
+Slice 15: Persona outcome telemetry
+```
+
+Build:
+
+- weak persona-level outcome records
+- aggregate persona outcome telemetry in campaign metadata
+- near-miss/skipped/error labels that are not findings
+- confirmed jailbreak count copied only from `JudgeVerdict.is_jailbreak`
+
+Status: shipped as of 2026-04-27.
+
+See [Tool Technology Slice 15 Persona Outcome Telemetry](tool-technology-slice-15-persona-outcome-telemetry.md).
+
+## Sixteenth implementation slice
+
+```text
+Slice 16: Adaptive persona weighting
+```
+
+Build:
+
+- planning-only `AdaptivePersonaWeightingPlan`
+- one deterministic weight per enabled prompting layer
+- stronger weighting for JudgeAgent-confirmed jailbreak layers
+- weaker exploration weighting for near-miss layers
+- optional weighted prompting-layer batch distribution
+- optional `PersonaGenerator.generate_batch()` plan support
+- optional `CampaignConfig.persona_weighting_plan` supervisor transport
+- regression evidence gate tests proving near misses do not create regression cases
+
+Status: shipped as of 2026-04-28.
+
+See [Tool Technology Slice 16 Adaptive Persona Weighting](tool-technology-slice-16-adaptive-persona-weighting.md).
+
 ## Risk register
 
 | Risk | Why it matters | Mitigation |
