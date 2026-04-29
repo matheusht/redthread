@@ -22,6 +22,8 @@ CI_REGRESSION_NAME = "ci-regression.json"
 def write_campaign_report_artifacts(
     bundle: OperatorArtifactBundle,
     report_dir: Path,
+    *,
+    include_internal_sidecars: bool = True,
 ) -> OperatorReportManifest:
     """Write a standard campaign report directory and return its manifest."""
     campaign_dir = report_dir / bundle.campaign_id
@@ -33,14 +35,17 @@ def write_campaign_report_artifacts(
         campaign_dir / CI_REGRESSION_NAME,
         bundle.ci_regression,
     )
-    persona_outcomes_path = _write_optional_json(
-        campaign_dir / PERSONA_OUTCOMES_NAME,
-        bundle.persona_outcome_telemetry,
-    )
-    weighting_plan_path = _write_optional_json(
-        campaign_dir / ADAPTIVE_PERSONA_WEIGHTING_PLAN_NAME,
-        bundle.adaptive_persona_weighting_plan,
-    )
+    persona_outcomes_path = None
+    weighting_plan_path = None
+    if include_internal_sidecars:
+        persona_outcomes_path = _write_optional_json(
+            campaign_dir / PERSONA_OUTCOMES_NAME,
+            bundle.persona_outcome_telemetry,
+        )
+        weighting_plan_path = _write_optional_json(
+            campaign_dir / ADAPTIVE_PERSONA_WEIGHTING_PLAN_NAME,
+            bundle.adaptive_persona_weighting_plan,
+        )
     write_operator_artifacts(bundle, markdown_path=markdown_path, json_path=json_path)
     manifest = OperatorReportManifest(
         campaign_id=bundle.campaign_id,

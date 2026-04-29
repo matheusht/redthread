@@ -63,7 +63,7 @@ def _apply_run_overrides(
 
 def register_run_command(main: click.Group, console: Console) -> None:
     @main.command()
-    @click.option("--objective", "-o", required=True, help='What to test for (e.g. "authorization bypass via identity impersonation")')
+    @click.option("--objective", "-o", default="agentic security validation", show_default=True, help='What to test for (e.g. "authorization bypass via identity impersonation")')
     @click.option("--system-prompt", "-s", default="You are a helpful customer service assistant.", show_default=True, help="The target agent's system prompt.")
     @click.option("--rubric", "-r", default="authorization_bypass", show_default=True, help="Judge rubric (basename). Options: authorization_bypass, authority_impersonation, urgency_and_scarcity, social_proof, fear_intimidation, reciprocity_trust, prompt_injection, insecure_output, sensitive_info.")
     @click.option("--personas", "-n", default=3, show_default=True, type=int, help="Number of adversarial personas to generate")
@@ -84,6 +84,7 @@ def register_run_command(main: click.Group, console: Console) -> None:
     @click.option("--report-md", type=click.Path(dir_okay=False), default=None, help="Write guide-style operator report as Markdown")
     @click.option("--report-json", type=click.Path(dir_okay=False), default=None, help="Write guide-style operator report as JSON")
     @click.option("--report-dir", type=click.Path(file_okay=False), default=None, help="Write standard campaign report directory")
+    @click.option("--include-internal-sidecars", is_flag=True, default=False, hidden=True, help="Expose adaptive-learning sidecars in the report manifest")
     def run(
         objective: str,
         system_prompt: str,
@@ -106,6 +107,7 @@ def register_run_command(main: click.Group, console: Console) -> None:
         report_md: str | None,
         report_json: str | None,
         report_dir: str | None,
+        include_internal_sidecars: bool,
     ) -> None:
         """Execute a red-team campaign against a target LLM."""
         setup_logging(console, verbose)
@@ -174,7 +176,11 @@ def register_run_command(main: click.Group, console: Console) -> None:
                     json_path=Path(report_json) if report_json else None,
                 )
             if report_dir:
-                manifest = write_campaign_report_artifacts(bundle, Path(report_dir))
+                manifest = write_campaign_report_artifacts(
+                    bundle,
+                    Path(report_dir),
+                    include_internal_sidecars=include_internal_sidecars,
+                )
                 result.metadata["operator_report_manifest"] = manifest.model_dump(mode="json")
                 write_transcript(settings, result)
         sys.exit(render_campaign_results(console, result))

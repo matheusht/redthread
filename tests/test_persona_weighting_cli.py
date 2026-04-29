@@ -41,6 +41,61 @@ def test_run_help_hides_persona_weighting_plan_from_normal_operator_flow() -> No
     assert "--persona-weighting-plan" not in result.output
 
 
+def test_run_cli_uses_default_objective_and_target_alias(monkeypatch: Any) -> None:
+    captured: dict[str, object] = {}
+
+    class FakeEngine:
+        def __init__(self, settings: object, trace_all: bool = False) -> None:
+            captured["target_model"] = getattr(settings, "target_model")
+
+        async def run(self, config: CampaignConfig) -> CampaignResult:
+            captured["objective"] = config.objective
+            return CampaignResult(config=config)
+
+    monkeypatch.setattr("redthread.cli.run.RedThreadEngine", FakeEngine)
+
+    result = CliRunner().invoke(main, ["run", "--target", "demo-target", "--dry-run"])
+
+    assert result.exit_code == 0
+    assert captured["objective"] == "agentic security validation"
+    assert captured["target_model"] == "demo-target"
+
+
+def test_run_cli_hides_internal_sidecars_from_report_manifest(
+    monkeypatch: Any,
+    tmp_path: Path,
+) -> None:
+    class FakeEngine:
+        def __init__(self, settings: object, trace_all: bool = False) -> None:
+            pass
+
+        async def run(self, config: CampaignConfig) -> CampaignResult:
+            return CampaignResult(
+                config=config,
+                metadata={
+                    "runtime_mode": "sealed_dry_run",
+                    "persona_outcome_telemetry": {
+                        "schema_version": "redthread.persona_outcome_telemetry.v1",
+                        "total_runs": 0,
+                    },
+                },
+            )
+
+    monkeypatch.setattr("redthread.cli.run.RedThreadEngine", FakeEngine)
+
+    result = CliRunner().invoke(
+        main,
+        ["run", "--dry-run", "--report-dir", str(tmp_path / "reports")],
+    )
+
+    assert result.exit_code == 0
+    manifest_path = next((tmp_path / "reports").glob("*/manifest.json"))
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    assert manifest["persona_outcome_telemetry"] == ""
+    assert manifest["adaptive_persona_weighting_plan"] == ""
+    assert manifest["hero_proof"]
+
+
 def test_run_cli_accepts_persona_weighting_plan_file(monkeypatch: Any, tmp_path: Path) -> None:
     captured: dict[str, object] = {}
     path = _write_plan(tmp_path / "adaptive-persona-weighting-plan.json")
