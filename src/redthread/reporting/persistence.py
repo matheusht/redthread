@@ -51,6 +51,7 @@ def write_campaign_report_artifacts(
         ci_regression=str(ci_regression_path) if ci_regression_path else "",
         persona_outcome_telemetry=str(persona_outcomes_path) if persona_outcomes_path else "",
         adaptive_persona_weighting_plan=str(weighting_plan_path) if weighting_plan_path else "",
+        evidence_labels=bundle.evidence_labels,
         bridge_prep_notes=[
             "Stable RedThread operator report artifacts are ready for future import/export mappers.",
             "External evidence must remain weak evidence until JudgeAgent confirms a finding.",

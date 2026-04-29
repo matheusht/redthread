@@ -7,6 +7,7 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 from redthread.models import AttackResult, CampaignResult
+from redthread.reporting.evidence_labels import normalize_evidence_label
 from redthread.reporting.models import OperatorArtifactBundle
 
 
@@ -69,7 +70,7 @@ def _attack_stage(campaign: CampaignResult) -> HeroProofStage:
     return HeroProofStage(
         name="attack",
         status="completed" if campaign.results else "empty",
-        evidence_label=str(campaign.metadata.get("runtime_mode", "unknown")),
+        evidence_label=normalize_evidence_label(str(campaign.metadata.get("runtime_mode", ""))),
         details={"result_count": len(campaign.results)},
     )
 
@@ -79,7 +80,7 @@ def _judge_stage(bundle: OperatorArtifactBundle) -> HeroProofStage:
     return HeroProofStage(
         name="judge",
         status="completed" if verdicts else "empty",
-        evidence_label="live_judge_or_sealed_eval",
+        evidence_label="live_judge",
         details={
             "verdict_count": len(verdicts),
             "confirmed_findings": bundle.vulnerability_report.finding_count,
@@ -92,7 +93,7 @@ def _defense_stage(records: list[dict[str, Any]]) -> HeroProofStage:
     return HeroProofStage(
         name="defense_control",
         status="validated" if deployed else "not_validated",
-        evidence_label=_first_evidence_label(records),
+        evidence_label=normalize_evidence_label(_first_evidence_label(records)),
         details={"defense_records": len(records), "validated_controls": deployed},
     )
 
@@ -102,7 +103,7 @@ def _replay_stage(records: list[dict[str, Any]]) -> HeroProofStage:
     return HeroProofStage(
         name="replay",
         status="passed" if passed else "not_reported",
-        evidence_label=_first_evidence_label(records),
+        evidence_label=normalize_evidence_label(_first_evidence_label(records)),
         details={"passed_replays": passed},
     )
 
@@ -112,7 +113,7 @@ def _benign_stage(records: list[dict[str, Any]]) -> HeroProofStage:
     return HeroProofStage(
         name="benign_check",
         status="passed" if passed else "not_reported",
-        evidence_label=_first_evidence_label(records),
+        evidence_label=normalize_evidence_label(_first_evidence_label(records)),
         details={"passed_benign_checks": passed},
     )
 
@@ -121,7 +122,7 @@ def _ci_stage(links: list[dict[str, Any]], ci_regression: dict[str, Any]) -> Her
     return HeroProofStage(
         name="ci_regression",
         status="ready" if links else "candidate_ready",
-        evidence_label="regression_artifact",
+        evidence_label="sealed",
         details=ci_regression,
     )
 

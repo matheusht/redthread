@@ -7,6 +7,8 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, Field, model_validator
 
+from redthread.reporting.evidence_labels import IMPORTED_WEAK_EVIDENCE
+
 WEAK_EVIDENCE: Literal["weak_imported_evidence"] = "weak_imported_evidence"
 
 
@@ -36,6 +38,7 @@ class ExternalEvidenceItem(BaseModel):
     title: str
     description: str = ""
     evidence_strength: Literal["weak_imported_evidence"] = WEAK_EVIDENCE
+    evidence_label: Literal["imported_weak_evidence"] = IMPORTED_WEAK_EVIDENCE
     is_confirmed_finding: Literal[False] = False
     requires_judge_confirmation: Literal[True] = True
     detector_hint_context: dict[str, Any] = Field(default_factory=dict)

@@ -110,6 +110,7 @@ def test_operator_artifact_bundle_includes_scope_risks_strategies_and_verdicts()
     assert bundle.vulnerability_report.finding_count == 1
     assert len(bundle.vulnerability_report.judge_verdicts) == 2
     assert bundle.security_card.attack_success_rate == 0.5
+    assert bundle.evidence_labels["sealed"] == "Sealed deterministic evidence"
 
 
 def test_regression_links_are_included_in_report_artifacts() -> None:
@@ -171,7 +172,9 @@ def test_campaign_report_artifacts_persist_standard_manifest(tmp_path: Path) -> 
     assert hero_path.exists()
     assert ci_path.exists()
     assert manifest_path.exists()
+    manifest_data = json.loads(manifest_path.read_text())
     assert json.loads(hero_path.read_text())["stages"][-1]["name"] == "ci_regression"
+    assert manifest_data["evidence_labels"]["sealed"] == "Sealed deterministic evidence"
     assert "redthread test golden" in ci_path.read_text()
     assert "weak evidence" in " ".join(manifest.bridge_prep_notes)
 

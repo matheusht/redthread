@@ -7,6 +7,7 @@ from typing import Any
 
 from redthread.models import AttackResult, CampaignResult
 from redthread.orchestration.models import CampaignPlan
+from redthread.reporting.evidence_labels import evidence_label_summary
 from redthread.reporting.hero_proof import build_hero_proof_bundle
 from redthread.reporting.models import (
     DETECTOR_LIMITATION,
@@ -74,6 +75,7 @@ def build_operator_artifact_bundle(
         ),
         regression_pack_summary=RegressionPackSummary(case_count=len(links), links=links),
         limitations=limitations,
+        evidence_labels=evidence_label_summary(_observed_evidence_modes(campaign)),
         persona_outcome_telemetry=persona_artifacts["persona_outcome_telemetry"],
         adaptive_persona_weighting_plan=persona_artifacts["adaptive_persona_weighting_plan"],
     )
@@ -159,6 +161,12 @@ def _link_for_result(result: AttackResult, links: list[dict[str, Any]]) -> dict[
     return {}
 
 
+def _observed_evidence_modes(campaign: CampaignResult) -> list[str]:
+    modes = [str(campaign.metadata.get("runtime_mode", ""))]
+    for result in campaign.results:
+        modes.extend([str(result.trace.metadata.get("evidence_class", "")), "live_judge"])
+    return modes
+
 def _report_limitations(scope: ScopeSummary) -> list[str]:
     return [
         "Detector hints are weak static signals only; JudgeAgent verdicts own findings.",
@@ -170,10 +178,8 @@ def _report_limitations(scope: ScopeSummary) -> list[str]:
 def _pr_checklist_items(findings: list[FindingReport]) -> list[str]:
     items = ["Review report scope and evidence limitations before promotion."]
     if findings:
-        items.extend([
-            "Confirm every JudgeAgent finding has an owner and mitigation plan.",
-            "Add or link regression cases for confirmed findings before closing the PR.",
-        ])
+        items.append("Confirm every JudgeAgent finding has an owner and mitigation plan.")
+        items.append("Add or link regression cases for confirmed findings before closing the PR.")
     else:
         items.append("Confirm no new findings were introduced by this change.")
     return items
@@ -188,9 +194,7 @@ def _severity_from_score(score: float) -> str:
         return "critical"
     if score >= 3.5:
         return "high"
-    if score >= 2.5:
-        return "medium"
-    return "low"
+    return "medium" if score >= 2.5 else "low"
 
 
 __all__ = ["DETECTOR_LIMITATION", "build_operator_artifact_bundle"]

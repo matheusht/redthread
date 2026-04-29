@@ -26,6 +26,7 @@ def test_promptfoo_result_maps_to_weak_external_evidence() -> None:
 
     assert evidence.source == ExternalEvidenceSource.PROMPTFOO
     assert evidence.evidence_strength == "weak_imported_evidence"
+    assert evidence.evidence_label == "imported_weak_evidence"
     assert evidence.is_confirmed_finding is False
     assert evidence.requires_judge_confirmation is True
     assert evidence.candidate_probe_seed is not None

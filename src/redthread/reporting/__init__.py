@@ -21,6 +21,11 @@ from redthread.reporting.external_evidence import (
     promptfoo_result_to_evidence,
     strix_finding_to_evidence,
 )
+from redthread.reporting.evidence_labels import (
+    CANONICAL_EVIDENCE_LABELS,
+    evidence_label_summary,
+    normalize_evidence_label,
+)
 from redthread.reporting.external_import import (
     external_evidence_from_payload,
     import_external_evidence_file,
@@ -43,6 +48,7 @@ from redthread.reporting.models import (
 from redthread.reporting.persistence import write_campaign_report_artifacts
 
 __all__ = [
+    "CANONICAL_EVIDENCE_LABELS",
     "DETECTOR_LIMITATION",
     "FindingReport",
     "HeroProofBundle",
@@ -66,10 +72,12 @@ __all__ = [
     "build_hero_proof_bundle",
     "build_operator_artifact_bundle",
     "campaign_candidates_from_external_evidence",
+    "evidence_label_summary",
     "external_evidence_bundle",
     "external_evidence_from_payload",
     "garak_result_to_evidence",
     "import_external_evidence_file",
+    "normalize_evidence_label",
     "operator_artifacts_to_json",
     "operator_artifacts_to_markdown",
     "promptfoo_result_to_evidence",
