@@ -12,7 +12,9 @@ from redthread.reporting import (
     ExternalEvidenceBundle,
     ExternalEvidenceSource,
     campaign_candidates_from_external_evidence,
+    compare_hero_proof_files,
     import_external_evidence_file,
+    write_adaptive_ab_report,
 )
 
 
@@ -64,6 +66,24 @@ def register_evidence_commands(main: click.Group, console: Console) -> None:
             f"Wrote {len(candidates.probe_seeds)} candidate probe seed(s) to {output}. "
             "JudgeAgent confirmation is still required."
         )
+
+    @evidence.command("compare-weighting")
+    @click.option("--baseline-hero-proof", type=click.Path(exists=True, dir_okay=False), required=True)
+    @click.option("--adaptive-hero-proof", type=click.Path(exists=True, dir_okay=False), required=True)
+    @click.option("--output", type=click.Path(dir_okay=False), default="adaptive-weighting-ab.json", show_default=True)
+    def compare_weighting_command(
+        baseline_hero_proof: str,
+        adaptive_hero_proof: str,
+        output: str,
+    ) -> None:
+        """Compare baseline vs adaptive persona weighting hero proof bundles."""
+        report = compare_hero_proof_files(
+            Path(baseline_hero_proof),
+            Path(adaptive_hero_proof),
+        )
+        write_adaptive_ab_report(report, Path(output))
+        verdict = "valid" if report["comparison_scope"]["valid_ab_scope"] else "not valid"
+        console.print(f"Wrote {verdict} adaptive weighting A/B proof to {output}.")
 
 
 __all__ = ["register_evidence_commands"]

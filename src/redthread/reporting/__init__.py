@@ -1,5 +1,10 @@
 """Operator reporting exports for RedThread."""
 
+from redthread.reporting.adaptive_ab import (
+    compare_hero_proof_bundles,
+    compare_hero_proof_files,
+    write_adaptive_ab_report,
+)
 from redthread.reporting.artifacts import build_operator_artifact_bundle
 from redthread.reporting.exporters import (
     operator_artifacts_to_json,
@@ -72,6 +77,8 @@ __all__ = [
     "build_hero_proof_bundle",
     "build_operator_artifact_bundle",
     "campaign_candidates_from_external_evidence",
+    "compare_hero_proof_bundles",
+    "compare_hero_proof_files",
     "evidence_label_summary",
     "external_evidence_bundle",
     "external_evidence_from_payload",
@@ -82,6 +89,7 @@ __all__ = [
     "operator_artifacts_to_markdown",
     "promptfoo_result_to_evidence",
     "strix_finding_to_evidence",
+    "write_adaptive_ab_report",
     "write_campaign_report_artifacts",
     "write_operator_artifacts",
 ]
