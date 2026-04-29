@@ -19,7 +19,7 @@ Stay in the **SMART ZONE** (≤40% of context window). Quality drops above 40%.
 
 1. **Reference by path** — never paste entire docs into context
 2. **Progressive Disclosure** — load high-level first, drill down only as needed:
-   - `docs/ARCHITECTURE.md` → domain doc → source files
+   - `docs/AGENT_DECISION_TREE.md` → domain doc → source files
 3. **Use subagents** to split work when context is heavy
 4. **Summarize before discarding** — keep findings, drop raw content
 

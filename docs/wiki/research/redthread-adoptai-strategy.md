@@ -667,11 +667,11 @@ Best path now:
 ## Sources
 
 Internal:
-- [README.md](../../README.md)
+- [README.md](../../../README.md)
 - [docs/TECH_STACK.md](../../TECH_STACK.md)
 - [docs/PHASE_REGISTRY.md](../../PHASE_REGISTRY.md)
 - [research/current-hardening-tracks.md](current-hardening-tracks.md)
-- [../../program.md](../../program.md)
+- [program.md](../../../program.md)
 
 External:
 - [Adopt AI Agent Builder docs](https://docs.adopt.ai/essentials/agent-builder)

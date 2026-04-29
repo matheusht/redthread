@@ -1,23 +1,25 @@
 # RedThread: Implementation Progress & Technical Ledger
 
-This document serves as the **historical source of truth** for the RedThread project. It documents the architectural evolution, critical "war stories" (problems and solutions), and mathematical verification benchmarks achieved across all phases.
+This document is the **historical technical ledger** for the RedThread project. It documents architectural evolution, critical "war stories" (problems and solutions), and verification benchmarks achieved across phases. For current phase status, use `docs/PHASE_REGISTRY.md`.
 
 ---
 
-## 🚀 Current Status: Phase 7 Complete (Bounded Autoresearch Era)
+## 🚀 Historical Status Snapshot: Phase 7 Complete (2026-04-08)
 
-As of **2026-04-08**, RedThread has completed both bounded autoresearch lanes inside Phase 7:
+As of **2026-04-08**, RedThread had completed both bounded autoresearch lanes inside Phase 7:
 - **7A / `research phase5`** for offense-side bounded source mutation
 - **7B / `research phase6`** for defense-side bounded prompt/template mutation
 
 Both lanes emit Phase 3 proposals, preserve research-plane acceptance state in their artifacts, and remain unable to bypass production promotion controls.
+
+> Current phase status has since moved to the Phase 7 + Phase 8 era. `docs/PHASE_REGISTRY.md` is the master registry and currently tracks Phases 1–8E as complete.
 
 > [!TIP]
 > **Key Achievement**: RedThread now has closed autoresearch paths for both offense and defense prompt improvement: generate patch → validate boundedness → evaluate on a research branch → review the resulting proposal artifacts → promote only after validation.
 
 ## 🎯 Next Finite Milestones
 
-The next steps are no longer “add another attack algorithm.”
+The next steps were no longer “add another attack algorithm,” and that direction still holds.
 
 The recent self-healing hardening tranche has now delivered:
 1. richer sealed replay suites with case-level replay evidence
@@ -25,10 +27,10 @@ The recent self-healing hardening tranche has now delivered:
 3. promotion-time utility-gate enforcement
 4. explicit protected surfaces for replay/reporting/utility-gate code
 
-So the next milestones are now:
+So the next milestones remain operational hardening work:
 1. validate the hardened path against more live scenarios and curated runtime replay fixtures
-2. keep operator inspection UX strong for deployment validation and promotion evidence
-3. align the historical docs with the current hardened runtime behavior before considering any broader mutable defense surface
+2. keep operator inspection UX strong for validation and promotion evidence
+3. keep historical docs aligned with current runtime behavior before considering any broader mutable defense surface
 
 ---
 
@@ -57,7 +59,7 @@ So the next milestones are now:
     *   *Solution*: Implemented **Aggressive Pruning**. The `tap.py` algorithm now uses a `tree_width` and "Pre-Query Pruning" based on Judge relevance scores, keeping the search focused and lean.
 
 ### Phase 4.5 & 5A: Defense Evolution (Self-Healing & Training)
-**Objective**: Close the loop with automated guardrail deployment and anti-hallucination baseline.
+**Objective**: Close the loop with guardrail synthesis, validation evidence, and anti-hallucination baseline.
 
 *   **Key Deliverables**: `defense_synthesis.py`, `Golden Dataset`, `test` CLI command.
 *   **⚠️ Problem: Hallucinated Guardrails (The "P0" Blocker)**.

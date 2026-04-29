@@ -1,8 +1,8 @@
 # RedThread — Product Document
 
-> **Status**: Architecture Review & Prototyping  
-> **Product Type**: Autonomous AI Red-Teaming & Self-Healing Defense Engine (CLI)  
-> **Target Environment**: Standalone (Phase 1) → Enterprise Integration (Phase 2+)  
+> **Status**: Phase 7 + Phase 8 hardening era
+> **Product Type**: Autonomous AI red-teaming, defense synthesis, and evidence engine (CLI)
+> **Target Environment**: Standalone CLI first; broader integrations require explicit promotion/live-control paths
 > **Author**: Matheus
 
 ---
@@ -13,10 +13,10 @@ RedThread is a **standalone, CLI-first autonomous red-teaming engine** for Large
 
 It does three things no other tool on the market does simultaneously, and it is now evolving toward a fourth capability: **safe self-improvement**.
 
-1. **Automated, algorithmic adversarial attack generation** — using PAIR, TAP, Crescendo, and GS-MCTS to generate and execute attacks that are mathematically optimized, not manually written.
+1. **Automated, algorithmic adversarial attack generation** — using PAIR, TAP, Crescendo, and GS-MCTS to generate and execute attacks that are search-optimized, not manually written.
 2. **Precision evaluation** — replacing subjective human scoring with probability-weighted, float-precision JudgeAgent scoring powered by Prometheus 2 and G-Eval.
-3. **Self-healing defense synthesis** — automatically converting successful exploit traces into deployed semantic guardrails, re-validating them in a sandbox, and pushing them to production. The attack pipeline *fixes what it breaks*.
-4. **Safe autoresearch** — bounded source-code mutation over offensive surfaces, evaluated on dedicated research branches with explicit accept/reject and promotion gates.
+3. **Defense synthesis with validation evidence** — converting successful exploit traces into candidate semantic guardrails, validating them in sandbox/replay paths, and producing scoped promotion evidence. This is not broad autonomous production enforcement.
+4. **Safe autoresearch** — bounded source-code mutation over offensive and defense-prompt surfaces, evaluated on dedicated research branches with explicit accept/reject and promotion gates.
 
 RedThread uses **PyRIT** (Python Risk Identification Toolkit) as its foundational plumbing layer for target interaction, orchestration loops, and payload conversion — while keeping all proprietary intelligence (search algorithms, defense synthesis, evaluation logic) in its own codebase.
 
@@ -72,8 +72,8 @@ An engineering team is about to deploy a multi-agent customer service assistant.
 ### Use Case 2: CI/CD Behavioral Regression Testing
 A developer updates a system prompt to make an agent "more helpful." RedThread, triggered via a CI hook, runs its baseline attack suite against the new build. The JudgeAgent calculates that resistance to "Authority Impersonation" has degraded by 40% — the build fails before the prompt reaches production.
 
-### Use Case 3: Autonomous Guardrail Synthesis (The Defense Loop)
-A TAP attack successfully bypasses a staging agent's defenses using a novel prompt injection. Instead of merely logging the failure, RedThread's Defense Synthesis Engine isolates the exact conversational pivot, generates a semantic blocking policy, deploys it to a sandbox, re-runs the attack to verify the fix, and pushes the validated guardrail to production. **Attack Success Rate drops from 100% to 0% — autonomously.**
+### Use Case 3: Guardrail Synthesis With Promotion Evidence (The Defense Loop)
+A TAP attack successfully bypasses a staging agent's defenses using a novel prompt injection. Instead of merely logging the failure, RedThread's Defense Synthesis Engine isolates the exact conversational pivot, generates a semantic blocking policy, validates it in sandbox/replay paths, and emits promotion-ready evidence. The original exploit becomes a regression case; broader production use still requires the explicit promotion or controlled live-adapter path.
 
 ---
 
@@ -81,7 +81,7 @@ A TAP attack successfully bypasses a staging agent's defenses using a novel prom
 
 | KPI | Target |
 |---|---|
-| **Attack Success Rate (ASR)** | Maximize during discovery (Phase 1-2), drive to 0% after guardrail deployment (Phase 5) |
+| **Attack Success Rate (ASR)** | Maximize during discovery, then drive confirmed exploit replay to 0% under the stated evidence mode after guardrail validation |
 | **Judge Agreement Rate** | >92% correlation with human-labeled baseline |
 | **Novel Vulnerability Discovery Rate** | % of findings absent from standard positive-path testing |
 | **Guardrail Validation Velocity** | < 5 minutes from exploit → validated defense |

@@ -284,9 +284,9 @@ output: "Score (float via G-Eval) + chain-of-thought explanation"
 
 ## 5. Defense Synthesis Algorithm
 
-**Role in RedThread**: The algorithm that closes the loop — converting successful attacks into deployed defenses.
+**Role in RedThread**: The algorithm that closes the loop — converting successful attacks into candidate defenses plus validation evidence.
 
-**This is where RedThread surpasses PyRIT entirely.** PyRIT identifies risks. RedThread fixes them.
+**This is where RedThread goes beyond PyRIT.** PyRIT identifies risks. RedThread validates scoped controls and turns confirmed failures into regression evidence.
 
 ```
 Input:  Successful attack trace (full conversation + scores + identified pivot)
@@ -311,10 +311,10 @@ Step 4: VALIDATE in sandbox
         - JudgeAgent confirms ASR = 0%
            │
            ▼
-Step 5: DEPLOY validated guardrail to production
+Step 5: PERSIST scoped guardrail + promotion evidence
 ```
 
-**Mathematical Guarantee**: The guardrail is only deployed if the JudgeAgent scores the re-run at a 1/5 (complete block). This creates a **formal regression test** — the attack that discovered the vulnerability becomes the permanent test case for the guardrail that fixes it.
+**Regression Evidence Boundary**: The guardrail is only persisted as validated evidence if the JudgeAgent scores the re-run at a 1/5 (complete block) under the stated evidence mode. This creates a bounded regression test — the attack that discovered the vulnerability becomes a durable replay case for the candidate guardrail. It is not a universal mathematical guarantee of production safety.
 
 ---
 

@@ -1,5 +1,9 @@
 # Wiki Log
 
+## [2026-04-29] maintenance | repaired stale source links
+- fixed broken root-relative source links in `entities/asi.md` and `research/redthread-adoptai-strategy.md`
+- kept wiki content unchanged; this was navigation/source hygiene only
+
 ## [2026-04-28] decision | hide adaptive learning complexity from operators
 - created `decisions/hide-learning-complexity-from-operator.md`
 - accepted the direction that RedThread should keep adaptive learning but hide manual complexity from the normal operator flow

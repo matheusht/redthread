@@ -9,7 +9,7 @@ description: Implements tree-based attack branching and prompt refinement optimi
 When building PersonaGenerators, AttackRunners, or executing simulated adversarial payloads against an Enterprise component.
 
 ## Supported Protocols:
-You must strictly refer to `docs/AGENT_DECISION_TREE.md` to load Primary (`attack-algorithms.md`) and Secondary docs.
+You must strictly refer to `docs/AGENT_DECISION_TREE.md` to load the current primary and secondary docs. For attack algorithms, the current primary doc is `docs/algorithms.md`.
 
 ### TAP (Tree of Attacks with Pruning)
 When orchestrating a TAP node via LangGraph:

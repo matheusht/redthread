@@ -87,13 +87,14 @@ Priority 1 (Always Loaded):
 
 Priority 2 (Load on Task Start):
   AGENTS.md                           ← agent/subagent definitions
-  docs/ARCHITECTURE.md                ← system overview
+  docs/AGENT_DECISION_TREE.md         ← task-to-doc routing
 
 Priority 3 (Load on Demand):
+  README.md                           ← product quickstart and operator notes
+  docs/product.md                     ← product identity and scope
   docs/TECH_STACK.md                  ← when touching services/config
   docs/RPI_METHODOLOGY.md             ← when planning complex changes
-  docs/SPEAKER_ATTRIBUTION.md         ← when touching speaker pipeline
-  docs/TESTING.md                     ← when writing/running tests
+  docs/PHASE_REGISTRY.md              ← phase status and roadmap truth
 
 Priority 4 (Load via Skill):
   .agent/skills/*/SKILL.md            ← only the skill matching the intent
@@ -116,7 +117,7 @@ Priority 4 (Load via Skill):
 
 | MCP | Purpose | Documented In |
 |-----|---------|---------------|
-| **Context7** | Fetch up-to-date library/framework docs | `.agent/skills/context7/SKILL.md` |
+| **Context7** | Fetch up-to-date library/framework docs | `.agent/skills/context7-mcp/SKILL.md` |
 | **MemPalace** | Persistent retrieval and session memory via Codex MCP | `docs/MEMPALACE_SETUP.md` |
 
 ### When to Use MCP vs Docs

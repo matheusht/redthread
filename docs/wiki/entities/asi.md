@@ -60,4 +60,4 @@ It is one of the main outputs operators see, but it should always be read togeth
 
 - [../../PHASE_REGISTRY.md](../../PHASE_REGISTRY.md)
 - [../../DEFENSE_PIPELINE.md](../../DEFENSE_PIPELINE.md)
-- [../../README.md](../../README.md)
+- [../../../README.md](../../../README.md)

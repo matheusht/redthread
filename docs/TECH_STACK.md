@@ -138,7 +138,7 @@ Every task gets a deterministic ID (prefixed by type), tracks `start_time`/`end_
 | **Rubric Source** | OWASP Top 10 for LLMs + MITRE ATLAS | Structured failure taxonomies for security-specific evaluation |
 | **CI/CD Evaluation** | DeepEval (Pytest-native) | Regression gates: faithfulness ≥ 0.92, hallucination rate ≤ 0.08 |
 | **Golden Dataset** | 30 curated traces | 10 jailbreak + 10 safe + 10 guardrail validation test cases |
-| **Observability** | LangSmith (planned Phase 5D) | First-party LangGraph tracing, prompt playground, regression monitoring |
+| **Observability** | Targeted LangSmith hooks | First-party LangGraph tracing for selected JudgeAgent and DefenseSynthesis paths |
 
 ### 6.1 Rubric Registry (`src/redthread/evaluation/rubrics/`)
 
@@ -164,7 +164,7 @@ The Defense Architect is **decoupled from the Attacker model** as a critical ant
 | `defense_architect_backend` | `openai` | API access to frontier models |
 | `defense_architect_temperature` | `0.1` | Near-deterministic for grounded guardrail synthesis |
 
-**Rule**: Never use an uncensored or instruction-loose model for guardrail synthesis. The Defense Architect produces security policies that directly affect production systems.
+**Rule**: Never use an uncensored or instruction-loose model for guardrail synthesis. The Defense Architect produces security policies that may enter promotion paths and must remain grounded.
 
 ### Per-Role Temperature Matrix
 

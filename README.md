@@ -2,9 +2,9 @@
 
 [![CI](https://github.com/matheusht/redthread/actions/workflows/ci.yml/badge.svg)](https://github.com/matheusht/redthread/actions/workflows/ci.yml)
 
-**RedThread** is a standalone, CLI-first orchestration framework for the adversarial testing and automated fortification of Large Language Model (LLM) deployments. 
+**RedThread** is a standalone, CLI-first orchestration framework for the adversarial testing and automated fortification of Large Language Model (LLM) deployments.
 
-Unlike traditional red-teaming tools that merely identify vulnerabilities, RedThread implements a **closed-loop feedback system**: it autonomously discovers exploits, synthesizes semantic guardrails to block them, and validates the fix in a sandbox before deployment.
+Unlike traditional red-teaming tools that merely identify vulnerabilities, RedThread implements a **closed-loop evidence system**: it discovers exploits, synthesizes candidate semantic guardrails, validates them in sandbox/replay paths, and emits promotion-ready evidence. Broad production enforcement still requires an explicit promotion or controlled live-adapter path.
 
 ---
 
@@ -22,15 +22,15 @@ Built on **LangGraph**, RedThread uses a supervisor-worker architecture to manag
 - **Attack Workers:** Execute independent, multi-turn adversarial sessions in parallel.
 - **Judge Workers:** Perform high-precision evaluation using G-Eval/CoT rubrics.
 - **Defense Architect:** Synthesizes guardrails using a dedicated frontier model (GPT-4o, temperature=0.1).
-- **Defense Workers:** Validate patches in sandbox before deployment.
+- **Defense Workers:** Validate candidate patches in sandbox/replay paths before promotion.
 
-### 3. Self-Healing Defense Synthesis (Phase 4.5)
-When a jailbreak is confirmed, RedThread triggers a 5-step automated pipeline:
+### 3. Defense Synthesis With Validation Evidence (Phase 4.5)
+When a jailbreak is confirmed, RedThread triggers a 5-step gated pipeline:
 1.  **Isolate:** Extract the minimal attack segment from the trace.
 2.  **Classify:** Map the vulnerability to OWASP LLM Top-10 / MITRE ATLAS categories.
 3.  **Generate:** A "Defense Architect" model synthesizes a specific system-prompt guardrail.
-4.  **Validate:** Replay the attack against a patched target in a sandbox.
-5.  **Deploy:** Persist the validated guardrail to `MEMORY.md`.
+4.  **Validate:** Replay the attack against a patched target in a sandbox/replay path.
+5.  **Persist:** Save the scoped validated guardrail and evidence to `MEMORY.md` for promotion and future campaigns.
 
 ### 4. Telemetry & Drift Detection (Phase 5B)
 Composite Agent Stability Index (ASI) monitors target model health in real time:
@@ -51,7 +51,7 @@ Autonomous background monitoring that polls model health every 5 minutes and aut
 
 ### 7. CI/CD Integration (Phase 5D)
 - **GitHub Actions:** Automated lint + typecheck + unit tests + offline golden regression on every PR
-- **LangSmith:** Targeted observability on JudgeAgent and DefenseSynthesis nodes
+- **LangSmith:** Targeted observability hooks for JudgeAgent and DefenseSynthesis nodes
 - **Campaign Dashboard:** Rich CLI table showing historical campaign health metrics
 
 ### 8. Bounded Autoresearch (Phase 7)
@@ -76,7 +76,7 @@ Autonomous background monitoring that polls model health every 5 minutes and aut
 ### Prerequisites
 1.  **Ollama**: Ensure `ollama serve` is running.
 2.  **Models**: `ollama pull DeepHat/DeepHat-V1-7B` (default Attacker) and `ollama pull dolphin-llama3:8b` (recommended Target).
-3.  **Environment**: 
+3.  **Environment**:
     ```bash
     cp .env.example .env
     # Set your REDTHREAD_OPENAI_API_KEY

@@ -17,21 +17,22 @@ ALWAYS LOADED (Priority 1 — rules):
 
 ON TASK START (Priority 2):
   AGENTS.md                           ← agent roles & subagent definitions
-  docs/ARCHITECTURE.md                ← full system overview
+  docs/AGENT_DECISION_TREE.md         ← task-to-doc routing
 
 ON DEMAND (Priority 3):
-  docs/TECH_STACK.md                  ← services, ports, env vars, commands
+  README.md                           ← product quickstart and operator notes
+  docs/product.md                     ← product identity and scope
+  docs/TECH_STACK.md                  ← services, stack, and architecture patterns
   docs/RPI_METHODOLOGY.md             ← detailed RPI steps + context budget
   docs/AGENT_ARCHITECTURE.md          ← agent/subagent architecture deep-dive
-  docs/SPEAKER_ATTRIBUTION.md         ← speaker identification pipeline
-  docs/TESTING.md                     ← test scenarios + commands
+  docs/PHASE_REGISTRY.md              ← current phase registry and roadmap truth
 
 VIA SKILL (Priority 4):
-  .agent/skills/research/SKILL.md     ← deep research (Opus 4.6)
-  .agent/skills/plan/SKILL.md         ← planning (Plan Mode)
+  .agent/skills/research/SKILL.md     ← deep research
+  .agent/skills/plan/SKILL.md         ← planning
   .agent/skills/implement/SKILL.md    ← implementation via subagents
   .agent/skills/gap-check/SKILL.md    ← plan gap analysis
-  .agent/skills/context7/SKILL.md     ← library docs via Context7 MCP
+  .agent/skills/context7-mcp/SKILL.md ← library docs via Context7 MCP
 ```
 
 ## Decision Tree: What to Do
@@ -40,7 +41,7 @@ VIA SKILL (Priority 4):
 USER REQUEST
   │
   ├─ Multi-file change or architectural? → Follow RPI (see rpi-workflow rule)
-  ├─ Need library/framework docs?       → Use context7 skill
+  ├─ Need library/framework docs?       → Use context7-mcp skill
   ├─ Need to explore codebase?          → Use research skill
   ├─ Need a detailed plan?              → Use plan skill
   ├─ Ready to code (plan approved)?     → Use implement skill

@@ -10,7 +10,7 @@ This document dictates the behavior and orchestration of the Antigravity Agent w
 * **Default Response Style:** Use full caveman mode by default unless the user asks for a different style. That means simple words, short direct sentences, practical structure, low fluff, and clear "what this is / why it matters / what next" guidance.
 
 ## 2. The Orchestration Workflow (Principal vs Subagents)
-Antigravity operates as the **Principal Agent** inside the RedThread ecosystem. It acts identically to the LangGraph supervisor defined in Phase 1 of `phases.md`—it manages the task graph while delegating execution.
+Antigravity operates as the **Principal Agent** inside the RedThread ecosystem. It acts identically to the LangGraph supervisor documented in `docs/PHASE_REGISTRY.md` and `docs/AGENT_ARCHITECTURE.md`—it manages the task graph while delegating execution.
 
 ### The Principal Agent Must:
 1. Clarify intent.
@@ -92,7 +92,7 @@ If a change would push a file past the limit, extract sub-components, hooks, or 
 ## Start here
 - Start implementation tasks at root [README.md](README.md) and [docs/TECH_STACK.md](docs/TECH_STACK.md).
 - Open the matching repo-local skill before implementation work:
-  - New features, architecture changes, multi-file work, or unclear impact → `.agent/skills/feature-rpi/SKILL.md`
+  - New features, architecture changes, multi-file work, or unclear impact → `.agent/skills/plan/SKILL.md` then `.agent/skills/implement/SKILL.md`
   - Small tweaks, isolated bugfixes, copy edits, or low-blast-radius polish → `.agent/skills/mini-rpi/SKILL.md`
 - Read only the most relevant focused doc after the index:
   - `docs/TECH_STACK.md`
@@ -126,5 +126,4 @@ If a change would push a file past the limit, extract sub-components, hooks, or 
 - `Plan`: state the intended change, impact surface, and quick verification.
 - `Implement`: patch only the minimal affected slice.
 - Escalate from mini-RPI to full RPI whenever the tweak crosses subsystem boundaries, changes data flow, or risks regressions.
- risks regressions
 

@@ -17,7 +17,7 @@ This phase keeps the existing safety boundaries intact:
 
 This phase reuses the bounded source mutation worker, but with a defense-only policy and validator.
 
-The explicit mutable/protected split is documented in [docs/DEFENSE_MUTATION_BOUNDARIES.md](docs/DEFENSE_MUTATION_BOUNDARIES.md).
+The explicit mutable/protected split is documented in [docs/DEFENSE_MUTATION_BOUNDARIES.md](DEFENSE_MUTATION_BOUNDARIES.md).
 
 Allowed mutation surface:
 - `src/redthread/core/defense_assets.py`

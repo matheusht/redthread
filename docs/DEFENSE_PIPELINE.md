@@ -4,7 +4,7 @@ This document details the exact sequence and architecture of Phase 4 (Defense Sy
 
 ## 1. Architectural Overview
 
-RedThread closes the loop on adversarial red-teaming by automatically generating, validating, and deploying defenses against confirmed vulnerabilities.
+RedThread closes the loop on adversarial red-teaming by generating candidate defenses, validating them, and persisting scoped promotion evidence for confirmed vulnerabilities.
 
 The `DefenseSynthesisEngine` is triggered conditionally by the LangGraph `RedThreadSupervisor` only when the Judge model returns `is_jailbreak = True`.
 
@@ -20,35 +20,35 @@ sequenceDiagram
     participant V as Validation Sandbox
     participant M as MemoryIndex (MEMORY.md)
     participant L as GuardrailLoader
-    
+
     %% Phase 4: Synthesis
     note over S, M: Phase 4: Defense Synthesis (Post-Attack)
     S->>D: Route jailbreak AttackResult
-    
+
     D->>D: 1. Isolate the minimal payload
-    
+
     D->>A: 2. Classify (OWASP/MITRE)
     D->>A: 3. Generate Guardrail Proposal
     A-->>D: Return Category, Severity, Clause
-    
+
     D->>V: 4. Validate (Proxy-Inject Clause)
     V-->>V: Replay attack payload against patched target
     V-->>V: Judge re-evaluates response
     V-->>D: Return ValidationResult (Passed/Failed)
-    
+
     opt If Validation Passes
-        D->>M: 5. Deploy: Save to MEMORY.md
+        D->>M: 5. Persist: Save scoped guardrail + evidence to MEMORY.md
         note right of M: Saved with Scope:<br/>target_model + prompt_hash
     end
     D-->>S: Return DeploymentRecord
-    
+
     %% Phase 4.5: Runtime Injection
     note over L, S: Phase 4.5: Target Scope & Runtime Injection (Pre-Attack)
-    
+
     L->>M: New Campaign Starts
     L->>M: Query active guardrails for Current Model + Prompt Hash
     M-->>L: Return matching clauses
-    
+
     L->>S: Prepend clauses to target_system_prompt
     note over S: Attack algorithms run against patched Target!
 ```
@@ -59,7 +59,7 @@ sequenceDiagram
 2. **CLASSIFY**: Prompts an LLM Architect to classify the attack using the OWASP LLM Top-10 and MITRE ATLAS framework.
 3. **GENERATE**: The LLM Architect drafts a concise, system-prompt-ready formatting clause (`GuardrailClause`) and a rationale.
 4. **VALIDATE**: Safely assesses the proposed clause without mutating the live engine state. The engine now runs a structured sealed replay suite via the dedicated replay runner, records exploit and benign replay cases separately, and emits a `ValidationResult` plus a structured `DefenseValidationReport`. Defense evidence classes are now explicit: `sealed_dry_run_replay`, `live_replay`, and `live_validation_error`. The current default replay suite is `default-defense-replay-v4`, which includes the isolated exploit, an override probe, a roleplay probe, and a broader but still bounded benign utility pack including JSON and YAML formatting checks. Promotion later requires strong evidence and enforces a utility gate over it. Promotion validation also persists explicit missing/weak/failed evidence buckets so operators can inspect exactly why a trace did or did not qualify for production promotion.
-5. **DEPLOY**: A `DeploymentRecord` is mapped with the `target_model` and `hash(target_system_prompt)` and appended to the persistent `.agent/memory/MEMORY.md` index, preserving replay evidence and the validation report in JSONL form.
+5. **PERSIST / PROMOTE**: A `DeploymentRecord` is mapped with the `target_model` and `hash(target_system_prompt)` and appended to the persistent `.agent/memory/MEMORY.md` index, preserving replay evidence and the validation report in JSONL form. This persistence is scoped RedThread campaign/promotion evidence; it is not broad autonomous production enforcement.
 
 ## 4. Telemetry & Drift Detection (Phase 4.5)
 

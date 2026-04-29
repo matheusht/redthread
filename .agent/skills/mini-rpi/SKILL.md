@@ -31,7 +31,7 @@ Use this skill to keep small changes fast without skipping repo rules or opening
 
 - Patch the smallest affected slice.
 - Keep the changed files under the 200-line limit.
-- Stop and escalate to [`feature-rpi`](../feature-rpi/SKILL.md) if the change stops being local.
+- Stop and escalate to `.agent/skills/plan/SKILL.md` and `.agent/skills/implement/SKILL.md` if the change stops being local.
 - Run the smallest meaningful verification for the touched behavior.
 
 ## Escalate To Feature RPI When

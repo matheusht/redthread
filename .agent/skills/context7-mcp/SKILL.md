@@ -11,4 +11,4 @@ When a task explicitly requests cross-referencing external databases, third-part
 ## Execution constraints:
 1. **Strictly isolate calls**: Only query the MCP capabilities when specifically requested or when you lack the necessary codebase context.
 2. Formulate explicit queries to the MCP server endpoint so the subagents or system can return context-rich external documentation.
-3. Do not rely on Context7 for purely local coding tasks (e.g. debugging a unit test on `phases.md`).
+3. Do not rely on Context7 for purely local coding tasks (e.g. debugging a unit test tied to `docs/PHASE_REGISTRY.md`).

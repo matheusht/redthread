@@ -2,6 +2,8 @@
 
 Date: 2026-04-09
 
+> **Historical snapshot**: This audit records repository truth as observed on 2026-04-09. Some findings have since been superseded by later work, including Phase 8 runtime integration and sealed offline dry-run behavior. For current phase status, use `docs/PHASE_REGISTRY.md`; for current runtime evidence boundaries, use `docs/AGENTIC_SECURITY_RUNTIME.md`; for current operator notes, use `README.md`.
+
 ## Purpose
 
 This document answers four practical questions:
@@ -11,7 +13,7 @@ This document answers four practical questions:
 3. Is the end-to-end workflow present and working?
 4. What should we stop building, and what should we harden next?
 
-This is a reality check against the live repository, not just the roadmap.
+This was a reality check against the live repository on the audit date, not just the roadmap. Preserve the dated findings as history; do not treat every statement below as current truth without checking the current source docs named above.
 
 ---
 
