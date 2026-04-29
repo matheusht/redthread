@@ -6,6 +6,11 @@ from redthread.reporting.adaptive_ab import (
     write_adaptive_ab_report,
 )
 from redthread.reporting.artifacts import build_operator_artifact_bundle
+from redthread.reporting.competitive_demo import (
+    build_competitive_demo_artifact,
+    build_competitive_demo_from_files,
+    write_competitive_demo_artifact,
+)
 from redthread.reporting.exporters import (
     operator_artifacts_to_json,
     operator_artifacts_to_markdown,
@@ -75,6 +80,8 @@ __all__ = [
     "ExternalEvidenceItem",
     "ExternalEvidenceSource",
     "build_hero_proof_bundle",
+    "build_competitive_demo_artifact",
+    "build_competitive_demo_from_files",
     "build_operator_artifact_bundle",
     "campaign_candidates_from_external_evidence",
     "compare_hero_proof_bundles",
@@ -91,5 +98,6 @@ __all__ = [
     "strix_finding_to_evidence",
     "write_adaptive_ab_report",
     "write_campaign_report_artifacts",
+    "write_competitive_demo_artifact",
     "write_operator_artifacts",
 ]

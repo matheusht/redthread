@@ -11,10 +11,12 @@ from rich.console import Console
 from redthread.reporting import (
     ExternalEvidenceBundle,
     ExternalEvidenceSource,
+    build_competitive_demo_from_files,
     campaign_candidates_from_external_evidence,
     compare_hero_proof_files,
     import_external_evidence_file,
     write_adaptive_ab_report,
+    write_competitive_demo_artifact,
 )
 
 
@@ -84,6 +86,17 @@ def register_evidence_commands(main: click.Group, console: Console) -> None:
         write_adaptive_ab_report(report, Path(output))
         verdict = "valid" if report["comparison_scope"]["valid_ab_scope"] else "not valid"
         console.print(f"Wrote {verdict} adaptive weighting A/B proof to {output}.")
+
+    @evidence.command("demo")
+    @click.option("--weak-evidence", type=click.Path(exists=True, dir_okay=False), required=True)
+    @click.option("--hero-proof", type=click.Path(exists=True, dir_okay=False), required=True)
+    @click.option("--output", type=click.Path(dir_okay=False), default="competitive-demo.json", show_default=True)
+    def demo_command(weak_evidence: str, hero_proof: str, output: str) -> None:
+        """Build a demo: weak scanner signal → finding → defense → regression."""
+        artifact = build_competitive_demo_from_files(Path(weak_evidence), Path(hero_proof))
+        write_competitive_demo_artifact(artifact, Path(output))
+        status = "ready" if artifact["demo_ready"] else "needs more proof"
+        console.print(f"Wrote {status} competitive demo artifact to {output}.")
 
 
 __all__ = ["register_evidence_commands"]
