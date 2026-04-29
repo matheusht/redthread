@@ -126,6 +126,7 @@ async def test_supervisor_passes_prompting_layer_profile_to_persona_generator(
             objective: str,
             count: int,
             prompting_layer_profile: PromptingLayerProfile | None = None,
+            persona_weighting_plan: object | None = None,
         ) -> list[Persona]:
             captured["objective"] = objective
             captured["count"] = count
