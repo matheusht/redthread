@@ -67,7 +67,7 @@ def register_run_command(main: click.Group, console: Console) -> None:
     @click.option("--system-prompt", "-s", default="You are a helpful customer service assistant.", show_default=True, help="The target agent's system prompt.")
     @click.option("--rubric", "-r", default="authorization_bypass", show_default=True, help="Judge rubric (basename). Options: authorization_bypass, authority_impersonation, urgency_and_scarcity, social_proof, fear_intimidation, reciprocity_trust, prompt_injection, insecure_output, sensitive_info.")
     @click.option("--personas", "-n", default=3, show_default=True, type=int, help="Number of adversarial personas to generate")
-    @click.option("--target-model", default=None, help="Override target model from settings")
+    @click.option("--target", "--target-model", "target_model", default=None, help="Target model to test")
     @click.option("--dry-run", is_flag=True, default=False, help="Generate personas but skip actual attack execution")
     @click.option("--verbose", "-v", is_flag=True, default=False, help="Enable debug logging")
     @click.option("--env-file", type=click.Path(exists=False), default=".env", help="Path to .env file")

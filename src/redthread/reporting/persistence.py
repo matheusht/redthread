@@ -15,6 +15,8 @@ from redthread.reporting.persona_artifacts import (
 REPORT_MARKDOWN_NAME = "operator-report.md"
 REPORT_JSON_NAME = "operator-report.json"
 REPORT_MANIFEST_NAME = "manifest.json"
+HERO_PROOF_NAME = "hero-proof.json"
+CI_REGRESSION_NAME = "ci-regression.json"
 
 
 def write_campaign_report_artifacts(
@@ -26,6 +28,11 @@ def write_campaign_report_artifacts(
     markdown_path = campaign_dir / REPORT_MARKDOWN_NAME
     json_path = campaign_dir / REPORT_JSON_NAME
     manifest_path = campaign_dir / REPORT_MANIFEST_NAME
+    hero_proof_path = _write_optional_json(campaign_dir / HERO_PROOF_NAME, bundle.hero_proof)
+    ci_regression_path = _write_optional_json(
+        campaign_dir / CI_REGRESSION_NAME,
+        bundle.ci_regression,
+    )
     persona_outcomes_path = _write_optional_json(
         campaign_dir / PERSONA_OUTCOMES_NAME,
         bundle.persona_outcome_telemetry,
@@ -40,6 +47,8 @@ def write_campaign_report_artifacts(
         artifact_dir=str(campaign_dir),
         markdown_report=str(markdown_path),
         json_report=str(json_path),
+        hero_proof=str(hero_proof_path) if hero_proof_path else "",
+        ci_regression=str(ci_regression_path) if ci_regression_path else "",
         persona_outcome_telemetry=str(persona_outcomes_path) if persona_outcomes_path else "",
         adaptive_persona_weighting_plan=str(weighting_plan_path) if weighting_plan_path else "",
         bridge_prep_notes=[
@@ -60,6 +69,8 @@ def _write_optional_json(path: Path, payload: dict[str, object]) -> Path | None:
 
 
 __all__ = [
+    "CI_REGRESSION_NAME",
+    "HERO_PROOF_NAME",
     "REPORT_JSON_NAME",
     "REPORT_MANIFEST_NAME",
     "REPORT_MARKDOWN_NAME",

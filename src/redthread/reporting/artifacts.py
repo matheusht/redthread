@@ -7,6 +7,7 @@ from typing import Any
 
 from redthread.models import AttackResult, CampaignResult
 from redthread.orchestration.models import CampaignPlan
+from redthread.reporting.hero_proof import build_hero_proof_bundle
 from redthread.reporting.models import (
     DETECTOR_LIMITATION,
     FindingReport,
@@ -42,7 +43,7 @@ def build_operator_artifact_bundle(
         if result.verdict.is_jailbreak
     ]
     persona_artifacts = persona_artifacts_from_metadata(campaign.metadata)
-    return OperatorArtifactBundle(
+    bundle = OperatorArtifactBundle(
         campaign_id=campaign.id,
         rules_of_engagement=RulesOfEngagementSummary(
             objective=campaign.config.objective,
@@ -76,6 +77,10 @@ def build_operator_artifact_bundle(
         persona_outcome_telemetry=persona_artifacts["persona_outcome_telemetry"],
         adaptive_persona_weighting_plan=persona_artifacts["adaptive_persona_weighting_plan"],
     )
+    hero_proof = build_hero_proof_bundle(campaign, bundle)
+    bundle.hero_proof = hero_proof.model_dump(mode="json")
+    bundle.ci_regression = hero_proof.ci_regression
+    return bundle
 
 
 def _scope_summary(campaign: CampaignResult, plan: CampaignPlan | None) -> ScopeSummary:

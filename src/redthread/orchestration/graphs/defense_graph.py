@@ -10,6 +10,7 @@ Only called for confirmed jailbreaks (is_jailbreak=True from JudgeWorker).
 from __future__ import annotations
 
 import logging
+from dataclasses import asdict
 from typing import Any
 
 from typing_extensions import TypedDict
@@ -65,6 +66,7 @@ async def run_defense_worker(state: DefenseWorkerState) -> DefenseWorkerState:
                 **state,
                 "defense_deployed": True,
                 "guardrail_clause": record.guardrail_clause,
+                "record_dict": asdict(record),
                 "error": None,
             }
         else:
@@ -77,6 +79,7 @@ async def run_defense_worker(state: DefenseWorkerState) -> DefenseWorkerState:
                 **state,
                 "defense_deployed": False,
                 "guardrail_clause": record.guardrail_clause,  # Still return clause for inspection
+                "record_dict": asdict(record),
                 "error": None,
             }
 

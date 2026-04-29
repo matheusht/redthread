@@ -25,6 +25,7 @@ from redthread.reporting.external_import import (
     external_evidence_from_payload,
     import_external_evidence_file,
 )
+from redthread.reporting.hero_proof import HeroProofBundle, HeroProofStage, build_hero_proof_bundle
 from redthread.reporting.models import (
     DETECTOR_LIMITATION,
     FindingReport,
@@ -44,6 +45,8 @@ from redthread.reporting.persistence import write_campaign_report_artifacts
 __all__ = [
     "DETECTOR_LIMITATION",
     "FindingReport",
+    "HeroProofBundle",
+    "HeroProofStage",
     "JudgeVerdictSummary",
     "OperatorArtifactBundle",
     "OperatorReportManifest",
@@ -60,6 +63,7 @@ __all__ = [
     "ExternalEvidenceCampaignCandidates",
     "ExternalEvidenceItem",
     "ExternalEvidenceSource",
+    "build_hero_proof_bundle",
     "build_operator_artifact_bundle",
     "campaign_candidates_from_external_evidence",
     "external_evidence_bundle",

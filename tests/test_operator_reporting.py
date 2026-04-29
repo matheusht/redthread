@@ -162,12 +162,36 @@ def test_campaign_report_artifacts_persist_standard_manifest(tmp_path: Path) -> 
 
     manifest = write_campaign_report_artifacts(bundle, tmp_path / "reports")
     manifest_path = Path(manifest.artifact_dir) / "manifest.json"
+    hero_path = Path(manifest.hero_proof)
+    ci_path = Path(manifest.ci_regression)
 
     assert manifest.schema_version == "redthread.operator_report_manifest.v1"
     assert Path(manifest.markdown_report).exists()
     assert Path(manifest.json_report).exists()
+    assert hero_path.exists()
+    assert ci_path.exists()
     assert manifest_path.exists()
+    assert json.loads(hero_path.read_text())["stages"][-1]["name"] == "ci_regression"
+    assert "redthread test golden" in ci_path.read_text()
     assert "weak evidence" in " ".join(manifest.bridge_prep_notes)
+
+
+def test_hero_proof_bundle_tracks_attack_judge_and_regression_stages() -> None:
+    bundle = build_operator_artifact_bundle(make_campaign())
+
+    proof = bundle.hero_proof
+
+    assert proof["schema_version"] == "redthread.hero_proof.v1"
+    assert [stage["name"] for stage in proof["stages"]] == [
+        "attack",
+        "judge",
+        "defense_control",
+        "replay",
+        "benign_check",
+        "ci_regression",
+    ]
+    assert proof["metrics"]["confirmed_findings"] == 1
+    assert proof["ci_regression"]["recommended_command"] == "redthread test golden"
 
 
 def test_transcript_summary_links_operator_report_manifest(tmp_path: Path) -> None:

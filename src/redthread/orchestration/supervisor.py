@@ -253,10 +253,12 @@ async def defense_synthesis_node(state: SupervisorState) -> dict[str, Any]:
             "error": None,
         })
 
-        records.append({
+        record = {
             "defense_deployed": worker_output["defense_deployed"],
             "guardrail_clause": worker_output.get("guardrail_clause"),
-        })
+        }
+        record.update(worker_output.get("record_dict") or {})
+        records.append(record)
         if worker_output.get("defense_deployed"):
             defense_deployments += 1
         if worker_output.get("error"):
@@ -314,6 +316,7 @@ async def finalize_node(state: SupervisorState) -> dict[str, Any]:
             "degraded_runtime": runtime_summary["degraded_runtime"],
             "error_count": runtime_summary["error_count"],
             "persona_outcome_telemetry": persona_outcome_telemetry.model_dump(mode="json"),
+            "defense_records": state.get("defense_records", []),
         },
     )
 
