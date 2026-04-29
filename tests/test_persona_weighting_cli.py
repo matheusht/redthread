@@ -34,6 +34,13 @@ def test_load_persona_weighting_plan_file_validates_plan(tmp_path: Path) -> None
     assert payload["ordered_layers"] == ["plain_language"]
 
 
+def test_run_help_hides_persona_weighting_plan_from_normal_operator_flow() -> None:
+    result = CliRunner().invoke(main, ["run", "--help"])
+
+    assert result.exit_code == 0
+    assert "--persona-weighting-plan" not in result.output
+
+
 def test_run_cli_accepts_persona_weighting_plan_file(monkeypatch: Any, tmp_path: Path) -> None:
     captured: dict[str, object] = {}
     path = _write_plan(tmp_path / "adaptive-persona-weighting-plan.json")

@@ -80,7 +80,7 @@ def register_run_command(main: click.Group, console: Console) -> None:
     @click.option("--simulations", type=int, default=None, help="GS-MCTS number of simulations (overrides mcts_simulations setting)")
     @click.option("--max-budget-tokens", type=int, default=None, help="GS-MCTS token budget ceiling for early stopping (heuristic: chars // 4)")
     @click.option("--benchmark-fixture", multiple=True, help="Use safe metadata hints from a jailbreak benchmark fixture; may repeat.")
-    @click.option("--persona-weighting-plan", type=click.Path(exists=True, dir_okay=False), default=None, help="Use a safe adaptive persona weighting plan JSON artifact")
+    @click.option("--persona-weighting-plan", type=click.Path(exists=True, dir_okay=False), default=None, hidden=True, help="Use a safe adaptive persona weighting plan JSON artifact")
     @click.option("--report-md", type=click.Path(dir_okay=False), default=None, help="Write guide-style operator report as Markdown")
     @click.option("--report-json", type=click.Path(dir_okay=False), default=None, help="Write guide-style operator report as JSON")
     @click.option("--report-dir", type=click.Path(file_okay=False), default=None, help="Write standard campaign report directory")

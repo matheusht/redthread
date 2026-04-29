@@ -1,5 +1,11 @@
 # Wiki Log
 
+## [2026-04-28] decision | hide adaptive learning complexity from operators
+- created `decisions/hide-learning-complexity-from-operator.md`
+- accepted the direction that RedThread should keep adaptive learning but hide manual complexity from the normal operator flow
+- recorded that future features, slices, flags, artifacts, and operator-facing concepts should consult the `redthread-cto` subagent before implementation
+- set the next adaptive-learning gate as an end-to-end proof before more artifact or CLI plumbing
+
 ## [2026-04-28] implementation | shipped tool technology incorporation slices 17-18
 - created `research/tool-technology-slice-17-persona-weighting-report-artifacts.md` for weak persona telemetry and adaptive weighting report sidecars
 - added safe report sidecars for `persona-outcomes.json` and `adaptive-persona-weighting-plan.json` with manifest links
