@@ -35,12 +35,14 @@ This is the primary content map for the RedThread wiki.
 ## Concepts
 
 - [concepts/README.md](concepts/README.md) — Index rules and scope for concept pages.
+- [concepts/indirect-prompt-injections.md](concepts/indirect-prompt-injections.md) — Catalog of techniques for hiding malicious instructions in ingested data.
 - [concepts/peeling-onions.md](concepts/peeling-onions.md) — Jailbreak framework using plain language, distraction, and narrative embedding.
 - [concepts/confused-deputy-llm.md](concepts/confused-deputy-llm.md) — Privilege escalation in multi-agent systems via indirect prompt injection.
 - [concepts/pre-action-authorization.md](concepts/pre-action-authorization.md) — Deterministic, policy-based enforcement before LLM tool call execution.
 - [concepts/agentic-attack-trees-operational.md](concepts/agentic-attack-trees-operational.md) — Agentic AI Attack Trees and Operational Controls Mapping.
 - [concepts/ai-security-frameworks.md](concepts/ai-security-frameworks.md) — External frameworks relevant to AI security and RedThread threat modeling.
 - [concepts/ai-red-teaming-tooling-landscape.md](concepts/ai-red-teaming-tooling-landscape.md) — Survey of the AI red teaming tooling ecosystem.
+
 
 ## Research
 

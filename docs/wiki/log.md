@@ -1,5 +1,10 @@
 # Wiki Log
 
+## [2026-04-29] research-pass | ingested indirect prompt injection techniques
+- added concept page `concepts/indirect-prompt-injections.md` covering 15 techniques scraped from IjailbreakLLMs
+- updated `docs/wiki/index.md`
+- grounded in the "Indirect Prompt Injection 101" blog post
+
 ## [2026-04-29] maintenance | repaired stale source links
 - fixed broken root-relative source links in `entities/asi.md` and `research/redthread-adoptai-strategy.md`
 - kept wiki content unchanged; this was navigation/source hygiene only
