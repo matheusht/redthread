@@ -8,7 +8,7 @@ Unlike traditional red-teaming tools that merely identify vulnerabilities, RedTh
 
 ---
 
-## ⚡ Core Capabilities
+## Core Capabilities
 
 ### 1. Advanced Offense Algorithms
 - **TAP (Tree of Attacks with Pruning):** An state-of-the-art search algorithm that explores a horizontal tree of adversarial prompts, using a "Judge" LLM to prune unpromising branches and guide depth-first discovery.
@@ -16,7 +16,7 @@ Unlike traditional red-teaming tools that merely identify vulnerabilities, RedTh
 - **Crescendo:** A multi-turn escalation loop that exploits context-window accumulation and conversational coherence pressure.
 - **GS-MCTS:** A planning-oriented search algorithm that explores conversational next moves under a bounded rollout budget.
 
-### 2. Multi-Agent Orchestration (Phase 4)
+### 2. Multi-Agent Orchestration
 Built on **LangGraph**, RedThread uses a supervisor-worker architecture to manage the campaign lifecycle:
 - **Supervisor:** Orchestrates the flow from persona generation to parallel attack fan-out.
 - **Attack Workers:** Execute independent, multi-turn adversarial sessions in parallel.
@@ -24,7 +24,7 @@ Built on **LangGraph**, RedThread uses a supervisor-worker architecture to manag
 - **Defense Architect:** Synthesizes guardrails using a dedicated frontier model (GPT-4o, temperature=0.1).
 - **Defense Workers:** Validate candidate patches in sandbox/replay paths before promotion.
 
-### 3. Defense Synthesis With Validation Evidence (Phase 4.5)
+### 3. Defense Synthesis With Validation Evidence
 When a jailbreak is confirmed, RedThread triggers a 5-step gated pipeline:
 1.  **Isolate:** Extract the minimal attack segment from the trace.
 2.  **Classify:** Map the vulnerability to OWASP LLM Top-10 / MITRE ATLAS categories.
@@ -32,36 +32,36 @@ When a jailbreak is confirmed, RedThread triggers a 5-step gated pipeline:
 4.  **Validate:** Replay the attack against a patched target in a sandbox/replay path.
 5.  **Persist:** Save the scoped validated guardrail and evidence to `MEMORY.md` for promotion and future campaigns.
 
-### 4. Telemetry & Drift Detection (Phase 5B)
+### 4. Telemetry & Drift Detection
 Composite Agent Stability Index (ASI) monitors target model health in real time:
 - **ARIMA:** Time-series anomaly detection on latency, tokens, and response length
 - **Semantic Drift:** K-Core-Distance embedding drift from baseline
 - **Response Consistency:** Canary probe variance measurement
 - **Behavioral Stability:** Token distribution stability
 
-### 5. Anti-Hallucination SOP (Phase 5A)
+### 5. Anti-Hallucination SOP 
 A comprehensive engineering standard ensuring all LLM outputs are grounded, verifiable, and regression-tested:
 - **Decoupled Defense Architect** — guardrail synthesis uses a dedicated frontier model (GPT-4o), not the uncensored Attacker
 - **Golden Dataset** — 30 curated traces for sealed regression gates and optional live judge validation
 - **DeepEval Pipeline** — Pytest-native faithfulness checks (≥ 0.92 threshold) with explicit evidence modes for sealed heuristic, live judge, and live-judge fallback scoring
 - **Per-Role Temperature Control** — deterministic evaluation (0.0), near-deterministic defense (0.1), creative attacks (0.8)
 
-### 6. Security Guard Daemon (Phase 5C)
+### 6. Security Guard Daemon
 Autonomous background monitoring that polls model health every 5 minutes and auto-triggers campaigns when ASI drops below threshold.
 
-### 7. CI/CD Integration (Phase 5D)
+### 7. CI/CD Integration
 - **GitHub Actions:** Automated lint + typecheck + unit tests + offline golden regression on every PR
 - **LangSmith:** Targeted observability hooks for JudgeAgent and DefenseSynthesis nodes
 - **Campaign Dashboard:** Rich CLI table showing historical campaign health metrics
 
-### 8. Bounded Autoresearch (Phase 7)
+### 8. Bounded Autoresearch 
 - **`research phase5`** optimizes bounded offense source patches under explicit proposal and promotion gates.
 - **`research phase6`** optimizes bounded defense prompt assets under a sealed pre-apply validation gate.
 - **Promotion Boundary:** Neither lane can bypass production promotion validation, and both continue to emit Phase 3 proposal artifacts for review.
 
 ---
 
-## 🛠️ The Technology Stack
+## The Technology Stack
 
 - **Model Agnostic Orchestration:** Supports local models via **Ollama** and frontier models via **OpenAI/Azure**.
 - **Foundational Infrastructure:** Built on **PyRIT** (Python Risk Identification Toolkit) for robust target interaction and payload conversion.
@@ -71,7 +71,7 @@ Autonomous background monitoring that polls model health every 5 minutes and aut
 
 ---
 
-## 🚀 Quickstart
+## Quickstart
 
 ### Prerequisites
 1.  **Ollama**: Ensure `ollama serve` is running.
@@ -136,7 +136,7 @@ make test-then-ci PYTEST_ARGS="tests/test_evaluation_truth.py -q"  # run focused
 
 ---
 
-## 🧠 Knowledge System
+## Knowledge System
 
 RedThread now uses a two-layer knowledge system for durable recall and durable synthesis:
 
@@ -153,7 +153,7 @@ Use these docs to navigate it:
 - `docs/wiki/SCHEMA.md` — wiki page types, update rules, index/log contract, and guardrails
 - `docs/wiki/index.md` — current wiki map
 
-## 📂 Project Structure
+## Project Structure
 - `src/redthread/orchestration/`: LangGraph supervisor and worker nodes.
 - `src/redthread/core/`: Implementation of TAP, PAIR, and Defense Synthesis.
 - `src/redthread/memory/`: Persistent threat-knowledge indexing (MEMORY.md).
@@ -170,7 +170,7 @@ Use these docs to navigate it:
 
 ---
 
-## 🛡️ Identity & Scope
+## Identity & Scope
 RedThread guardrails are **scoped**. A fix generated for an HR bot (based on a hash of its system prompt) will *not* be injected into a Creative Writing bot, ensuring that safety measures are contextual and non-restrictive to legitimate use cases.
 
 ---
