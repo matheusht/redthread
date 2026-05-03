@@ -1,5 +1,10 @@
 # Wiki Log
 
+## [2026-05-03] research-pass | ingested task-feature specialization concept
+- added concept page `concepts/task-feature-specialization.md` based on Arxiv research on task arithmetic
+- updated `docs/wiki/index.md`
+- grounded in the paper "Understanding and Enforcing Weight Disentanglement in Task Arithmetic"
+
 ## [2026-04-29] research-pass | ingested indirect prompt injection techniques
 - added concept page `concepts/indirect-prompt-injections.md` covering 15 techniques scraped from IjailbreakLLMs
 - updated `docs/wiki/index.md`

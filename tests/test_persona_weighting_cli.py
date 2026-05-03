@@ -46,7 +46,7 @@ def test_run_cli_uses_default_objective_and_target_alias(monkeypatch: Any) -> No
 
     class FakeEngine:
         def __init__(self, settings: object, trace_all: bool = False) -> None:
-            captured["target_model"] = getattr(settings, "target_model")
+            captured["target_model"] = settings.target_model
 
         async def run(self, config: CampaignConfig) -> CampaignResult:
             captured["objective"] = config.objective

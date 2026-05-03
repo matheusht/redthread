@@ -11,6 +11,11 @@ from redthread.reporting.competitive_demo import (
     build_competitive_demo_from_files,
     write_competitive_demo_artifact,
 )
+from redthread.reporting.evidence_labels import (
+    CANONICAL_EVIDENCE_LABELS,
+    evidence_label_summary,
+    normalize_evidence_label,
+)
 from redthread.reporting.exporters import (
     operator_artifacts_to_json,
     operator_artifacts_to_markdown,
@@ -30,11 +35,6 @@ from redthread.reporting.external_evidence import (
     garak_result_to_evidence,
     promptfoo_result_to_evidence,
     strix_finding_to_evidence,
-)
-from redthread.reporting.evidence_labels import (
-    CANONICAL_EVIDENCE_LABELS,
-    evidence_label_summary,
-    normalize_evidence_label,
 )
 from redthread.reporting.external_import import (
     external_evidence_from_payload,

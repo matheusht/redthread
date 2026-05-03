@@ -6,7 +6,6 @@ import json
 from pathlib import Path
 from typing import Any
 
-
 _METRICS = (
     "confirmed_findings",
     "risk_coverage_count",

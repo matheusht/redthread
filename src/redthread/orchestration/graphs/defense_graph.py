@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import asdict
-from typing import Any
+from typing import Any, NotRequired
 
 from typing_extensions import TypedDict
 
@@ -27,6 +27,7 @@ class DefenseWorkerState(TypedDict):
     result_dict: dict[str, Any]             # Serialized (judged) AttackResult
     defense_deployed: bool                  # True if guardrail was validated + indexed
     guardrail_clause: str | None            # The deployed clause (if successful)
+    record_dict: NotRequired[dict[str, Any]] # Serialized GuardrailRecord
     error: str | None
 
 

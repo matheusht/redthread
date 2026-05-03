@@ -35,6 +35,7 @@ This is the primary content map for the RedThread wiki.
 ## Concepts
 
 - [concepts/README.md](concepts/README.md) — Index rules and scope for concept pages.
+- [concepts/task-feature-specialization.md](concepts/task-feature-specialization.md) — How distinct internal features enable weight disentanglement and orthogonality in task arithmetic.
 - [concepts/indirect-prompt-injections.md](concepts/indirect-prompt-injections.md) — Catalog of techniques for hiding malicious instructions in ingested data.
 - [concepts/peeling-onions.md](concepts/peeling-onions.md) — Jailbreak framework using plain language, distraction, and narrative embedding.
 - [concepts/confused-deputy-llm.md](concepts/confused-deputy-llm.md) — Privilege escalation in multi-agent systems via indirect prompt injection.
