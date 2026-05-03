@@ -63,14 +63,21 @@ def _build_pyrit_target(
     if backend == TargetBackend.OLLAMA:
         return _build_ollama_target(openai_chat_target_cls, model, base_url, max_tokens)
     if backend == TargetBackend.OPENAI:
+        is_new_model = any(model.startswith(prefix) for prefix in ("o1", "o3", "gpt-5"))
+        kwargs: dict[str, Any] = {
+            "model_name": model,
+            "endpoint": "https://api.openai.com/v1",
+            "api_key": api_key,
+        }
+        if is_new_model:
+            kwargs["max_completion_tokens"] = max_tokens
+            kwargs["max_tokens"] = None
+        else:
+            kwargs["max_tokens"] = max_tokens
+            
         return cast(
             PromptChatTarget,
-            openai_chat_target_cls(
-                model_name=model,
-                endpoint="https://api.openai.com/v1",
-                api_key=api_key,
-                max_tokens=max_tokens,
-            ),
+            openai_chat_target_cls(**kwargs),
         )
     if backend == TargetBackend.LLAMA_CPP:
         return cast(

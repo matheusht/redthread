@@ -48,19 +48,23 @@ class RedThreadEngine:
                 elif self.settings.telemetry_enabled:
                     campaign.metadata["telemetry_mode"] = telemetry_runtime_mode(self.settings)
             self._attach_execution_truth(campaign, execution_records)
-            campaign_task.complete(result={"asr": campaign.attack_success_rate})
-            logger.info(
-                "✅ Campaign complete | id=%s | ASR=%.1f%% | avg_score=%.2f | runs=%d",
-                campaign.id,
-                campaign.attack_success_rate * 100,
-                campaign.average_score,
-                len(campaign.results),
-            )
-            write_transcript(self.settings, campaign)
         except Exception as exc:
             campaign_task.fail(str(exc))
             logger.exception("💥 Campaign failed: %s", exc)
             raise
+
+        campaign_task.complete(result={"asr": campaign.attack_success_rate})
+        logger.info(
+            "✅ Campaign complete | id=%s | ASR=%.1f%% | avg_score=%.2f | runs=%d",
+            campaign.id,
+            campaign.attack_success_rate * 100,
+            campaign.average_score,
+            len(campaign.results),
+        )
+        try:
+            write_transcript(self.settings, campaign)
+        except Exception as exc:
+            logger.warning("⚠️ Transcript write failed (campaign already complete): %s", exc)
         return campaign
 
     def _attach_execution_truth(

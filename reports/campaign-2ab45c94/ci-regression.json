@@ -1,0 +1,7 @@
+{
+  "links": [],
+  "recommended_command": "redthread test golden",
+  "regression_case_count": 0,
+  "schema_version": "redthread.ci_regression.v1",
+  "validated_control_count": 0
+}

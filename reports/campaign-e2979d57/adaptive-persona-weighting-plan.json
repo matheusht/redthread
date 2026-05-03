@@ -1,0 +1,13 @@
+{
+  "durable_regression_evidence_policy": "only JudgeAgent-confirmed AttackResult objects can become durable regression evidence",
+  "layer_weights": [],
+  "notes": [
+    "adaptive persona weighting is a next-run planning hint, not evidence",
+    "near misses may raise exploration weight but cannot create findings",
+    "durable regression evidence still requires JudgeAgent-confirmed AttackResult objects"
+  ],
+  "ordered_layers": [],
+  "raw_prompt_loaded": false,
+  "schema_version": "redthread.adaptive_persona_weighting_plan.v1",
+  "source_telemetry_schema_version": "redthread.persona_outcome_telemetry.v1"
+}

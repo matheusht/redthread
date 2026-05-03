@@ -1,10 +1,24 @@
 from __future__ import annotations
 
 import json
+from typing import Any
+
+from pydantic import BaseModel
 
 from redthread.config.settings import RedThreadSettings
 from redthread.models import CampaignResult
 from redthread.runtime_modes import campaign_runtime_mode, telemetry_runtime_mode
+
+
+def _safe_default(obj: Any) -> Any:
+    """Fallback encoder for Pydantic models and other non-JSON types."""
+    if isinstance(obj, BaseModel):
+        return obj.model_dump(mode="json")
+    return str(obj)
+
+
+def _safe_dumps(obj: Any) -> str:
+    return json.dumps(obj, default=_safe_default)
 
 
 def write_transcript(settings: RedThreadSettings, campaign: CampaignResult) -> None:
@@ -12,9 +26,9 @@ def write_transcript(settings: RedThreadSettings, campaign: CampaignResult) -> N
     with transcript_path.open("w", encoding="utf-8") as handle:
         _write_summary_line(settings, campaign, handle)
         for result in campaign.results:
-            handle.write(json.dumps(_build_attack_result_line(result)) + "\n")
+            handle.write(_safe_dumps(_build_attack_result_line(result)) + "\n")
         if campaign.metadata.get("asi_report"):
-            handle.write(json.dumps(_build_asi_line(campaign)) + "\n")
+            handle.write(_safe_dumps(_build_asi_line(campaign)) + "\n")
 
 
 def _write_summary_line(settings: RedThreadSettings, campaign: CampaignResult, handle: object) -> None:
@@ -42,7 +56,7 @@ def _write_summary_line(settings: RedThreadSettings, campaign: CampaignResult, h
         "started_at": campaign.started_at.isoformat(),
         "ended_at": campaign.ended_at.isoformat() if campaign.ended_at else None,
     }
-    handle.write(json.dumps(summary) + "\n")
+    handle.write(_safe_dumps(summary) + "\n")
 
 
 def _build_attack_result_line(result: object) -> dict[str, object]:
@@ -112,22 +126,36 @@ def _build_mcts_line(result: object) -> dict[str, object]:
 
 def _build_asi_line(campaign: CampaignResult) -> dict[str, object]:
     report = campaign.metadata["asi_report"]
+    score = float(report.get("overall_score", 0.0))
+    # health_tier is a computed @property — not in model_dump() output
+    if score >= 90:
+        tier = "EXCELLENT"
+    elif score >= 70:
+        tier = "GOOD"
+    elif score >= 50:
+        tier = "WARNING"
+    elif score >= 30:
+        tier = "DEGRADED"
+    else:
+        tier = "CRITICAL"
+    meta = report.get("metadata") or {}
+    anomalies = report.get("anomalies") or []
     return {
         "type": "asi_report",
         "campaign_id": campaign.id,
-        "asi_score": report["overall_score"],
-        "health_tier": report["health_tier"],
-        "is_alert": report["is_alert"],
-        "response_consistency": report["response_consistency"],
-        "semantic_drift": report["semantic_drift"],
-        "operational_health": report["operational_health"],
-        "behavioral_stability": report["behavioral_stability"],
-        "anomaly_count": sum(1 for anomaly in report["anomalies"] if anomaly["is_anomaly"]),
-        "organic_records": report["metadata"].get("organic_records", 0),
-        "canary_records": report["metadata"].get("canary_records", 0),
-        "baseline_fitted": report["metadata"].get("baseline_fitted", False),
-        "semantic_drift_mode": report["metadata"].get("semantic_drift_mode", "unknown"),
-        "response_consistency_mode": report["metadata"].get("response_consistency_mode", "unknown"),
-        "evidence_warnings": report["metadata"].get("evidence_warnings", []),
-        "recommendation": report["recommendation"],
+        "asi_score": score,
+        "health_tier": tier,
+        "is_alert": report.get("is_alert", False),
+        "response_consistency": report.get("response_consistency", 0.0),
+        "semantic_drift": report.get("semantic_drift", 0.0),
+        "operational_health": report.get("operational_health", 0.0),
+        "behavioral_stability": report.get("behavioral_stability", 0.0),
+        "anomaly_count": sum(1 for a in anomalies if isinstance(a, dict) and a.get("is_anomaly")),
+        "organic_records": meta.get("organic_records", 0),
+        "canary_records": meta.get("canary_records", 0),
+        "baseline_fitted": meta.get("baseline_fitted", False),
+        "semantic_drift_mode": meta.get("semantic_drift_mode", "unknown"),
+        "response_consistency_mode": meta.get("response_consistency_mode", "unknown"),
+        "evidence_warnings": meta.get("evidence_warnings", []),
+        "recommendation": report.get("recommendation", ""),
     }

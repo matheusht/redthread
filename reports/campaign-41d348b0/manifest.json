@@ -1,0 +1,18 @@
+{
+  "adaptive_persona_weighting_plan": "reports/campaign-41d348b0/adaptive-persona-weighting-plan.json",
+  "artifact_dir": "reports/campaign-41d348b0",
+  "bridge_prep_notes": [
+    "Stable RedThread operator report artifacts are ready for future import/export mappers.",
+    "External evidence must remain weak evidence until JudgeAgent confirms a finding."
+  ],
+  "campaign_id": "campaign-41d348b0",
+  "ci_regression": "reports/campaign-41d348b0/ci-regression.json",
+  "evidence_labels": {
+    "live_judge": "Live JudgeAgent evidence"
+  },
+  "hero_proof": "reports/campaign-41d348b0/hero-proof.json",
+  "json_report": "reports/campaign-41d348b0/operator-report.json",
+  "markdown_report": "reports/campaign-41d348b0/operator-report.md",
+  "persona_outcome_telemetry": "reports/campaign-41d348b0/persona-outcomes.json",
+  "schema_version": "redthread.operator_report_manifest.v1"
+}

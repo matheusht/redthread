@@ -182,5 +182,8 @@ def register_run_command(main: click.Group, console: Console) -> None:
                     include_internal_sidecars=include_internal_sidecars,
                 )
                 result.metadata["operator_report_manifest"] = manifest.model_dump(mode="json")
-                write_transcript(settings, result)
+                try:
+                    write_transcript(settings, result)
+                except Exception as exc:
+                    console.print(f"[yellow]⚠️ Transcript re-write skipped: {exc}[/yellow]")
         sys.exit(render_campaign_results(console, result))
