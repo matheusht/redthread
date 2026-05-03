@@ -71,7 +71,6 @@ def _build_pyrit_target(
         }
         if is_new_model:
             kwargs["max_completion_tokens"] = max_tokens
-            kwargs["max_tokens"] = None
         else:
             kwargs["max_tokens"] = max_tokens
             
