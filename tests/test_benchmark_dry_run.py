@@ -36,6 +36,19 @@ def test_filters_dry_run_by_fixture_id_and_family() -> None:
     assert any("eni_variants" in line for line in report.summary_lines)
 
 
+def test_builds_jailbreakbench_metadata_only_dry_run() -> None:
+    report = build_jailbreak_corpus_dry_run_report(source="jailbreakbench", limit=2)
+
+    assert report.source == "jailbreakbench"
+    assert report.total_fixture_count == 6
+    assert report.selected_fixture_ids == ["jailbreakbench-0001", "jailbreakbench-0002"]
+    assert report.executable_fixture_ids == []
+    assert report.blocked_fixture_ids == report.selected_fixture_ids
+    assert report.scorecard is not None
+    assert report.scorecard.not_scored_reason == "dry_run_no_execution"
+    assert "Raw prompt bodies: not loaded" in report.summary_lines
+
+
 def test_dry_run_can_include_safe_hint_profiles() -> None:
     report = build_jailbreak_corpus_dry_run_report(
         fixture_ids=["spiritual-spell-0032"],

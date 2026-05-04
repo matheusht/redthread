@@ -30,7 +30,12 @@ def register_jailbreak_eval_command(eval_group: click.Group, console: Console) -
     """Register `redthread eval jailbreak-corpus`."""
 
     @eval_group.command(name="jailbreak-corpus")
-    @click.option("--source", default="spiritual-spell", show_default=True)
+    @click.option(
+        "--source",
+        type=click.Choice(["spiritual-spell", "jailbreakbench"]),
+        default="spiritual-spell",
+        show_default=True,
+    )
     @click.option("--fixture-id", multiple=True, help="Fixture id to include; may repeat.")
     @click.option("--family", multiple=True, help="Fixture family slug to include; may repeat.")
     @click.option("--target", "target_id", default="local-dev", show_default=True)

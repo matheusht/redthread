@@ -23,6 +23,10 @@ from redthread.benchmarks.jailbreak_fixtures import (
     load_jailbreak_fixture_file,
     load_jailbreak_fixture_pack,
 )
+from redthread.benchmarks.jailbreakbench import (
+    jailbreakbench_fixture_pack_data,
+    load_jailbreakbench_fixtures,
+)
 from redthread.benchmarks.material_review import (
     MaterialImportResult,
     MaterialReviewError,
@@ -138,11 +142,13 @@ __all__ = [
     "build_fixture_hint_profiles",
     "evidence_mode_score_cap",
     "import_reviewed_material",
+    "jailbreakbench_fixture_pack_data",
     "run_approved_jailbreak_replay",
     "run_approved_jailbreak_replay_with_regression_handoff",
     "load_jailbreak_fixture_file",
     "load_material_manifest",
     "load_jailbreak_fixture_pack",
+    "load_jailbreakbench_fixtures",
     "load_prompt_material",
     "load_replay_seed_prompts",
     "resolve_reviewed_material",

@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 
 from redthread.benchmarks.hints import BenchmarkHintProfile, build_fixture_hint_profiles
 from redthread.benchmarks.jailbreak_fixtures import JailbreakBenchmarkFixture
+from redthread.benchmarks.jailbreakbench import load_jailbreakbench_fixtures
 from redthread.benchmarks.models import (
     BenchmarkEvidenceMode,
     BenchmarkLane,
@@ -20,7 +21,7 @@ from redthread.benchmarks.models import (
 from redthread.benchmarks.scoring import build_unscored_scorecard
 from redthread.benchmarks.spiritual_spell import load_spiritual_spell_fixtures
 
-BenchmarkSource = Literal["spiritual-spell"]
+BenchmarkSource = Literal["spiritual-spell", "jailbreakbench"]
 
 
 class BenchmarkDryRunError(ValueError):
@@ -58,7 +59,7 @@ def build_jailbreak_corpus_dry_run_report(
     include_hints: bool = False,
 ) -> BenchmarkDryRunReport:
     """Build a metadata-only dry-run report for a jailbreak benchmark source."""
-    if source != "spiritual-spell":
+    if source not in {"spiritual-spell", "jailbreakbench"}:
         msg = f"unsupported jailbreak corpus source: {source}"
         raise BenchmarkDryRunError(msg)
     if not allow_live_target and target_id != "local-dev":
@@ -67,7 +68,7 @@ def build_jailbreak_corpus_dry_run_report(
     if limit < 1:
         msg = "benchmark dry-run limit must be at least 1"
         raise BenchmarkDryRunError(msg)
-    fixtures = load_spiritual_spell_fixtures()
+    fixtures = _load_source_fixtures(source)
     selected = _filter_fixtures(fixtures, fixture_ids=fixture_ids, families=families)[:limit]
     if not selected:
         msg = "no benchmark fixtures matched the dry-run filters"
@@ -107,6 +108,12 @@ def build_jailbreak_corpus_dry_run_report(
             include_hints=include_hints,
         ),
     )
+
+
+def _load_source_fixtures(source: BenchmarkSource) -> list[JailbreakBenchmarkFixture]:
+    if source == "jailbreakbench":
+        return load_jailbreakbench_fixtures()
+    return load_spiritual_spell_fixtures()
 
 
 def _filter_fixtures(

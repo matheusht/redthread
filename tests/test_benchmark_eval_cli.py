@@ -26,6 +26,19 @@ def test_jailbreak_corpus_cli_dry_run_prints_safe_summary() -> None:
     assert "spiritual-spell-0032" in result.output
 
 
+def test_jailbreak_corpus_cli_supports_jailbreakbench_metadata_source() -> None:
+    result = CliRunner().invoke(
+        main,
+        ["eval", "jailbreak-corpus", "--source", "jailbreakbench", "--limit", "2"],
+    )
+
+    assert result.exit_code == 0
+    assert "Source: jailbreakbench" in result.output
+    assert "Selected fixtures: 2 / 6" in result.output
+    assert "jailbreakbench-0001" in result.output
+    assert "Raw prompt bodies: not loaded" in result.output
+
+
 def test_jailbreak_corpus_cli_json_output_is_machine_readable() -> None:
     result = CliRunner().invoke(
         main,
