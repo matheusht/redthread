@@ -9,6 +9,7 @@ import click
 from rich.console import Console
 
 from redthread.benchmarks.jailbreak_fixtures import JailbreakBenchmarkFixture
+from redthread.benchmarks.jailbreakbench import load_jailbreakbench_fixtures
 from redthread.benchmarks.material_review import (
     MaterialReviewError,
     ReviewableMaterialClass,
@@ -25,7 +26,12 @@ def register_benchmark_material_commands(eval_group: click.Group, console: Conso
         """Reviewed jailbreak benchmark material tools."""
 
     @material_group.command(name="import")
-    @click.option("--source", default="spiritual-spell", show_default=True)
+    @click.option(
+        "--source",
+        type=click.Choice(["spiritual-spell", "jailbreakbench"]),
+        default="spiritual-spell",
+        show_default=True,
+    )
     @click.option("--fixture-id", required=True)
     @click.option("--source-material", required=True, type=click.Path(exists=True, dir_okay=False))
     @click.option("--material-root", required=True, type=click.Path(exists=True, file_okay=False))
@@ -39,7 +45,7 @@ def register_benchmark_material_commands(eval_group: click.Group, console: Conso
         show_default=True,
     )
     @click.option("--allowed-target", "allowed_targets", multiple=True)
-    @click.option("--collection-id", default="spiritual-spell", show_default=True)
+    @click.option("--collection-id", default=None, help="Vault collection id; defaults to --source.")
     @click.option("--allow-nonlocal-targets", is_flag=True, default=False)
     @click.option("--json", "as_json", is_flag=True, default=False)
     def import_material(
@@ -52,14 +58,12 @@ def register_benchmark_material_commands(eval_group: click.Group, console: Conso
         material_class: str,
         reviewers: tuple[str, ...],
         allowed_targets: tuple[str, ...],
-        collection_id: str,
+        collection_id: str | None,
         allow_nonlocal_targets: bool,
         as_json: bool,
     ) -> None:
         """Copy one human-reviewed material file into the private vault."""
-        if source != "spiritual-spell":
-            raise click.ClickException(f"unsupported jailbreak corpus source: {source}")
-        fixture = _fixture_by_id(fixture_id)
+        fixture = _fixture_by_id(source, fixture_id)
         try:
             result = import_reviewed_material(
                 fixture,
@@ -70,7 +74,7 @@ def register_benchmark_material_commands(eval_group: click.Group, console: Conso
                 reviewer_ids=list(reviewers) or None,
                 material_class=cast(ReviewableMaterialClass, material_class),
                 allowed_target_ids=list(allowed_targets) or None,
-                collection_id=collection_id,
+                collection_id=collection_id or source,
                 allow_nonlocal_targets=allow_nonlocal_targets,
             )
         except MaterialReviewError as exc:
@@ -88,8 +92,14 @@ def register_benchmark_material_commands(eval_group: click.Group, console: Conso
         console.print("Raw prompt body: copied to private vault; not printed")
 
 
-def _fixture_by_id(fixture_id: str) -> JailbreakBenchmarkFixture:
-    for fixture in load_spiritual_spell_fixtures():
+def _fixture_by_id(source: str, fixture_id: str) -> JailbreakBenchmarkFixture:
+    for fixture in _fixtures_for_source(source):
         if fixture.id == fixture_id:
             return fixture
     raise click.ClickException(f"unknown jailbreak benchmark fixture id: {fixture_id}")
+
+
+def _fixtures_for_source(source: str) -> list[JailbreakBenchmarkFixture]:
+    if source == "jailbreakbench":
+        return load_jailbreakbench_fixtures()
+    return load_spiritual_spell_fixtures()
