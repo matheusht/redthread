@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Iterable
 from pathlib import Path
 
 from pydantic import BaseModel, Field
@@ -42,6 +43,9 @@ class BenchmarkMaterialInventory(BaseModel):
     manifest_count: int = 0
     verified_hash_count: int = 0
     invalid_hash_count: int = 0
+    material_class_counts: dict[str, int] = Field(default_factory=dict)
+    hash_status_counts: dict[str, int] = Field(default_factory=dict)
+    allowed_target_counts: dict[str, int] = Field(default_factory=dict)
     manifests: list[BenchmarkMaterialInventoryRow] = Field(default_factory=list)
     raw_prompt_policy: str = "raw prompt bodies stay in the private benchmark vault and are not read"
 
@@ -86,8 +90,19 @@ def list_benchmark_material_manifests(
         manifest_count=len(rows),
         verified_hash_count=sum(1 for row in rows if row.hash_status == "verified"),
         invalid_hash_count=sum(1 for row in rows if row.hash_status in {"mismatch", "missing"}),
+        material_class_counts=_count_values(row.material_class for row in rows),
+        hash_status_counts=_count_values(row.hash_status for row in rows),
+        allowed_target_counts=_count_values(target for row in rows for target in row.allowed_target_ids),
         manifests=rows,
     )
+
+
+def _count_values(values: Iterable[str]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for value in values:
+        key = str(value)
+        counts[key] = counts.get(key, 0) + 1
+    return counts
 
 
 def _matches_filters(

@@ -46,6 +46,9 @@ def test_lists_material_manifests_without_prompt_bodies(tmp_path: Path) -> None:
     assert inventory.manifests[0].hash_status == "not_checked"
     assert inventory.verified_hash_count == 0
     assert inventory.invalid_hash_count == 0
+    assert inventory.material_class_counts == {"approved_replay_seed": 1}
+    assert inventory.hash_status_counts == {"not_checked": 1}
+    assert inventory.allowed_target_counts == {"local-dev": 1}
     assert "toy inventory helper body" not in rendered
     assert "not read" in inventory.raw_prompt_policy
 
@@ -135,6 +138,8 @@ def test_material_inventory_cli_text_is_prompt_safe(tmp_path: Path) -> None:
     assert "REDTHREAD BENCHMARK MATERIAL INVENTORY" in result.output
     assert "Manifest count: 1" in result.output
     assert "Hash check: not checked" in result.output
+    assert "Material classes: {'approved_replay_seed': 1}" in result.output
+    assert "Hash statuses: {'not_checked': 1}" in result.output
     assert "Raw prompt bodies: not read" in result.output
     assert "spiritual-spell-0032" in result.output
     assert "toy inventory text body" not in result.output

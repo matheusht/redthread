@@ -160,6 +160,8 @@ def register_benchmark_material_commands(eval_group: click.Group, console: Conso
         if allowed_target_id is not None:
             console.print(f"Allowed target filter: {allowed_target_id}")
         console.print(f"Hash check: {'enabled' if verify_hashes or require_valid_hashes else 'not checked'}")
+        console.print(f"Material classes: {inventory.material_class_counts}")
+        console.print(f"Hash statuses: {inventory.hash_status_counts}")
         console.print("Raw prompt bodies: not read")
         for row in inventory.manifests:
             console.print(
