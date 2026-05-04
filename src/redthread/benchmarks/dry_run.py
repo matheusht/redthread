@@ -9,6 +9,15 @@ from pydantic import BaseModel, Field
 
 from redthread.benchmarks.hints import BenchmarkHintProfile, build_fixture_hint_profiles
 from redthread.benchmarks.jailbreak_fixtures import JailbreakBenchmarkFixture
+from redthread.benchmarks.models import (
+    BenchmarkEvidenceMode,
+    BenchmarkLane,
+    BenchmarkNotScoredReason,
+    BenchmarkPromotionImpact,
+    BenchmarkRunMode,
+    BenchmarkScorecard,
+)
+from redthread.benchmarks.scoring import build_unscored_scorecard
 from redthread.benchmarks.spiritual_spell import load_spiritual_spell_fixtures
 
 BenchmarkSource = Literal["spiritual-spell"]
@@ -24,11 +33,16 @@ class BenchmarkDryRunReport(BaseModel):
     schema_version: str = "redthread.jailbreak_benchmark_dry_run.v1"
     source: BenchmarkSource
     target_id: str
+    evidence_mode: BenchmarkEvidenceMode = BenchmarkEvidenceMode.METADATA_ONLY
+    run_mode: BenchmarkRunMode = BenchmarkRunMode.DRY_RUN
+    promotion_impact: BenchmarkPromotionImpact = BenchmarkPromotionImpact.NONE
+    not_scored_reason: BenchmarkNotScoredReason = BenchmarkNotScoredReason.DRY_RUN_NO_EXECUTION
     total_fixture_count: int
     selected_fixture_ids: list[str] = Field(default_factory=list)
     executable_fixture_ids: list[str] = Field(default_factory=list)
     blocked_fixture_ids: list[str] = Field(default_factory=list)
     hint_profiles: list[BenchmarkHintProfile] = Field(default_factory=list)
+    scorecard: BenchmarkScorecard | None = None
     summary_lines: list[str] = Field(default_factory=list)
     raw_prompt_policy: str = "raw prompt bodies are not loaded during dry-run"
 
@@ -61,6 +75,19 @@ def build_jailbreak_corpus_dry_run_report(
     hints = build_fixture_hint_profiles(selected) if include_hints else []
     executable_ids = [fixture.id for fixture in selected if fixture.is_executable]
     blocked_ids = [fixture.id for fixture in selected if not fixture.is_executable]
+    scorecard = build_unscored_scorecard(
+        lane=BenchmarkLane.JAILBREAK,
+        source=source,
+        target_id=target_id,
+        evidence_mode=BenchmarkEvidenceMode.METADATA_ONLY,
+        run_mode=BenchmarkRunMode.DRY_RUN,
+        promotion_impact=BenchmarkPromotionImpact.NONE,
+        not_scored_reason=BenchmarkNotScoredReason.DRY_RUN_NO_EXECUTION,
+        fixture_ids=[fixture.id for fixture in selected],
+        denominator=len(selected),
+        blocked_count=len(blocked_ids),
+        limitations=["Dry-run uses fixture metadata only and does not execute target calls."],
+    )
     return BenchmarkDryRunReport(
         source=source,
         target_id=target_id,
@@ -69,6 +96,7 @@ def build_jailbreak_corpus_dry_run_report(
         executable_fixture_ids=executable_ids,
         blocked_fixture_ids=blocked_ids,
         hint_profiles=hints,
+        scorecard=scorecard,
         summary_lines=_summary_lines(
             source=source,
             target_id=target_id,
@@ -114,8 +142,11 @@ def _summary_lines(
         f"Selected fixtures: {len(selected)} / {total_count}",
         f"Executable fixtures: {executable_count}",
         f"Blocked fixtures: {blocked_count}",
+        "Evidence mode: metadata_only",
         "Raw prompt bodies: not loaded",
         "Target calls: not executed",
+        "Scorecard: not scored (dry_run_no_execution)",
+        "Promotion impact: none",
     ]
     for fixture in selected:
         status = "executable" if fixture.is_executable else "blocked"

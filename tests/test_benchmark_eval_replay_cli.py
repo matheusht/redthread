@@ -54,8 +54,11 @@ def test_cli_runs_approved_replay_without_printing_seed(tmp_path: Path) -> None:
 
     assert result.exit_code == 0
     assert "REDTHREAD JAILBREAK BENCHMARK REPLAY" in result.output
+    assert "Evidence mode: sealed_local_replay" in result.output
     assert "Replay mode: sealed local target harness" in result.output
     assert "Live provider calls: not executed" in result.output
+    assert "Scorecard: not scored (sealed_local_smoke_only)" in result.output
+    assert "not live target safety proof" in result.output
     assert "toy approved cli replay seed" not in result.output
 
 
@@ -84,6 +87,9 @@ def test_cli_replay_writes_prompt_safe_report_artifact(tmp_path: Path) -> None:
     assert "Report written:" in result.output
     payload = json.loads(output_path.read_text(encoding="utf-8"))
     assert payload["tested_fixture_ids"] == ["spiritual-spell-0032"]
+    assert payload["evidence_mode"] == "sealed_local_replay"
+    assert payload["not_scored_reason"] == "sealed_local_smoke_only"
+    assert payload["scorecard"]["not_scored_reason"] == "sealed_local_smoke_only"
     assert "toy approved cli replay seed" not in output_path.read_text(encoding="utf-8")
 
 
@@ -157,6 +163,8 @@ def test_cli_replay_json_report_is_prompt_safe(tmp_path: Path) -> None:
     assert result.exit_code == 0
     payload = json.loads(result.output)
     assert payload["tested_fixture_ids"] == ["spiritual-spell-0032"]
+    assert payload["evidence_mode"] == "sealed_local_replay"
+    assert payload["not_scored_reason"] == "sealed_local_smoke_only"
     assert payload["verdicts"][0]["is_jailbreak"] is False
     assert "toy approved cli replay seed" not in result.output
 

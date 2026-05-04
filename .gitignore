@@ -15,6 +15,7 @@ __pycache__/
 
 direction.md
 
+articles/
 # Virtual environments
 .venv/
 venv/

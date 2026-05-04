@@ -38,6 +38,15 @@ from redthread.benchmarks.material_vault import (
     load_material_manifest,
     resolve_reviewed_material,
 )
+from redthread.benchmarks.models import (
+    BenchmarkEvidenceMode,
+    BenchmarkLane,
+    BenchmarkNotScoredReason,
+    BenchmarkPromotionImpact,
+    BenchmarkRunMode,
+    BenchmarkScorecard,
+    BenchmarkScoreDimension,
+)
 from redthread.benchmarks.prompt_materials import (
     PromptMaterial,
     PromptMaterialError,
@@ -69,6 +78,12 @@ from redthread.benchmarks.run_context import (
     BenchmarkRunContextError,
     apply_benchmark_fixture_context,
 )
+from redthread.benchmarks.scoring import (
+    SCORE_DIMENSION_WEIGHTS,
+    build_unscored_scorecard,
+    evidence_mode_score_cap,
+    score_confirmed_benchmark,
+)
 from redthread.benchmarks.spiritual_spell import (
     load_spiritual_spell_fixtures,
     spiritual_spell_fixture_pack_data,
@@ -84,6 +99,13 @@ __all__ = [
     "MATERIAL_MANIFEST_SCHEMA_VERSION",
     "BenchmarkHintProfile",
     "BenchmarkMaterialManifest",
+    "BenchmarkEvidenceMode",
+    "BenchmarkLane",
+    "BenchmarkNotScoredReason",
+    "BenchmarkPromotionImpact",
+    "BenchmarkRunMode",
+    "BenchmarkScorecard",
+    "BenchmarkScoreDimension",
     "ApprovedBenchmarkReplayBundle",
     "BenchmarkRegressionCaseSummary",
     "BenchmarkRegressionHandoffArtifact",
@@ -103,6 +125,7 @@ __all__ = [
     "MaterialImportResult",
     "MaterialReviewError",
     "MaterialVaultError",
+    "SCORE_DIMENSION_WEIGHTS",
     "build_benchmark_campaign_draft",
     "build_benchmark_regression_handoff",
     "build_jailbreak_corpus_dry_run_report",
@@ -110,8 +133,10 @@ __all__ = [
     "apply_benchmark_fixture_context",
     "approve_fixture_for_replay",
     "benchmark_material_root",
+    "build_unscored_scorecard",
     "build_fixture_hint_profile",
     "build_fixture_hint_profiles",
+    "evidence_mode_score_cap",
     "import_reviewed_material",
     "run_approved_jailbreak_replay",
     "run_approved_jailbreak_replay_with_regression_handoff",
@@ -122,6 +147,7 @@ __all__ = [
     "load_replay_seed_prompts",
     "resolve_reviewed_material",
     "load_spiritual_spell_fixtures",
+    "score_confirmed_benchmark",
     "spiritual_spell_fixture_pack_data",
     "write_benchmark_regression_handoff_artifact",
     "write_benchmark_report_artifact",

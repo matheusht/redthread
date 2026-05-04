@@ -86,6 +86,8 @@ def test_benchmark_report_summarizes_result_and_blocked_fixture() -> None:
     assert report.verdicts[0].fixture_id == approved.id
     assert report.verdicts[0].is_jailbreak is False
     assert report.regression_links == []
+    assert report.evidence_mode == "judge_confirmed_sandbox"
+    assert any("Scorecard:" in line for line in report.summary_lines)
     assert any("Detector hints are weak signals" in line for line in report.summary_lines)
 
 

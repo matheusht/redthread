@@ -142,7 +142,7 @@ def register_run_command(main: click.Group, console: Console) -> None:
                 raise click.ClickException(str(exc)) from exc
         render_campaign_header(console, settings, objective, personas)
         if benchmark_context:
-            console.print("[bold]Benchmark fixture context[/bold]")
+            console.print("[bold]Benchmark Fixture Context[/bold]")
             for line in benchmark_context.summary_lines:
                 console.print(line)
             console.print()

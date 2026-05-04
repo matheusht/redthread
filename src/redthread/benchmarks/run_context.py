@@ -40,6 +40,7 @@ class BenchmarkRunContext(BaseModel):
             "attack_layers": sorted({layer for fixture in self.fixtures for layer in fixture.attack_layers}),
             "prompting_layer_profile": self.prompting_layer_profile.model_dump(mode="json"),
             "raw_prompt_loaded": False,
+            "benchmark_score_emitted": False,
             "raw_prompt_policy": "fixture context uses metadata only; raw prompt bodies are not loaded",
         }
 
@@ -116,11 +117,13 @@ def _summary_lines(
         }
     )
     lines = [
-        "Benchmark fixture context: metadata only",
+        "Benchmark Fixture Context: metadata only",
         f"Fixtures: {', '.join(fixture.id for fixture in fixtures)}",
         f"Suggested run algorithms: {', '.join(strategy_ids) if strategy_ids else '(none)'}",
         "Prompting layers: "
         f"{', '.join(prompting_layer_profile.enabled_layers) if prompting_layer_profile.enabled_layers else '(none)'}",
         "Raw prompt bodies: not loaded",
+        "Benchmark score: not emitted",
+        "Use redthread eval ... for benchmark evidence.",
     ]
     return lines

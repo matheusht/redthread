@@ -19,8 +19,10 @@ def test_jailbreak_corpus_cli_dry_run_prints_safe_summary() -> None:
     assert result.exit_code == 0
     assert "REDTHREAD JAILBREAK BENCHMARK DRY-RUN" in result.output
     assert "Selected fixtures: 1 / 210" in result.output
+    assert "Evidence mode: metadata_only" in result.output
     assert "Raw prompt bodies: not loaded" in result.output
     assert "Target calls: not executed" in result.output
+    assert "Scorecard: not scored (dry_run_no_execution)" in result.output
     assert "spiritual-spell-0032" in result.output
 
 
@@ -35,6 +37,9 @@ def test_jailbreak_corpus_cli_json_output_is_machine_readable() -> None:
     assert payload["schema_version"] == "redthread.jailbreak_benchmark_dry_run.v1"
     assert payload["selected_fixture_ids"] == ["spiritual-spell-0032"]
     assert payload["blocked_fixture_ids"] == ["spiritual-spell-0032"]
+    assert payload["evidence_mode"] == "metadata_only"
+    assert payload["not_scored_reason"] == "dry_run_no_execution"
+    assert payload["scorecard"]["not_scored_reason"] == "dry_run_no_execution"
     assert payload["raw_prompt_policy"] == "raw prompt bodies are not loaded during dry-run"
 
 

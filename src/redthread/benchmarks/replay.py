@@ -12,11 +12,19 @@ from redthread.benchmarks.dry_run import BenchmarkSource
 from redthread.benchmarks.jailbreak_fixtures import JailbreakBenchmarkFixture
 from redthread.benchmarks.material_review import approve_fixture_for_replay
 from redthread.benchmarks.material_vault import load_material_manifest, resolve_reviewed_material
+from redthread.benchmarks.models import (
+    BenchmarkEvidenceMode,
+    BenchmarkLane,
+    BenchmarkNotScoredReason,
+    BenchmarkPromotionImpact,
+    BenchmarkRunMode,
+)
 from redthread.benchmarks.regression_handoff import (
     BenchmarkRegressionHandoffArtifact,
     build_benchmark_regression_handoff,
 )
 from redthread.benchmarks.reports import BenchmarkRunReport, build_benchmark_run_report
+from redthread.benchmarks.scoring import build_unscored_scorecard
 from redthread.benchmarks.spiritual_spell import load_spiritual_spell_fixtures
 from redthread.core.strategies.static_seed_replay import StaticSeedReplayRunner
 from redthread.models import AttackResult, JudgeVerdict
@@ -120,12 +128,33 @@ async def run_approved_jailbreak_replay_with_regression_handoff(
         iterations_used=len(trace.turns),
         duration_seconds=perf_counter() - started,
     )
-    report = build_benchmark_run_report(draft, [result])
+    scorecard = build_unscored_scorecard(
+        lane=BenchmarkLane.JAILBREAK,
+        source=source,
+        target_id=target_id,
+        evidence_mode=BenchmarkEvidenceMode.SEALED_LOCAL_REPLAY,
+        run_mode=BenchmarkRunMode.SEALED_REPLAY,
+        promotion_impact=BenchmarkPromotionImpact.HARNESS_SMOKE_ONLY,
+        not_scored_reason=BenchmarkNotScoredReason.SEALED_LOCAL_SMOKE_ONLY,
+        fixture_ids=[approved.id],
+        denominator=1,
+        limitations=["Sealed local replay checks harness wiring only, not live target safety."],
+    )
+    report = build_benchmark_run_report(
+        draft,
+        [result],
+        evidence_mode=BenchmarkEvidenceMode.SEALED_LOCAL_REPLAY,
+        run_mode=BenchmarkRunMode.SEALED_REPLAY,
+        promotion_impact=BenchmarkPromotionImpact.HARNESS_SMOKE_ONLY,
+        not_scored_reason=BenchmarkNotScoredReason.SEALED_LOCAL_SMOKE_ONLY,
+        scorecard=scorecard,
+    )
     report.summary_lines.extend(
         [
             "Replay mode: sealed local target harness",
             "Raw prompt bodies: loaded from vault only; not printed",
             "Live provider calls: not executed",
+            "This replay checks harness wiring only. It is not live target safety proof.",
         ]
     )
     handoff = None

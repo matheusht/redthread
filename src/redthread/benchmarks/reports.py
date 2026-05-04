@@ -8,6 +8,13 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 from redthread.benchmarks.campaigns import BenchmarkCampaignDraft
+from redthread.benchmarks.models import (
+    BenchmarkEvidenceMode,
+    BenchmarkNotScoredReason,
+    BenchmarkPromotionImpact,
+    BenchmarkRunMode,
+    BenchmarkScorecard,
+)
 from redthread.core.regression_cases import finding_regression_link
 from redthread.models import AttackResult
 from redthread.orchestration.models import RegressionCase
@@ -30,6 +37,11 @@ class BenchmarkRunReport(BaseModel):
     """Operator-readable report payload for benchmark runs."""
 
     schema_version: str = "redthread.jailbreak_benchmark_report.v1"
+    evidence_mode: BenchmarkEvidenceMode = BenchmarkEvidenceMode.JUDGE_CONFIRMED_SANDBOX
+    run_mode: BenchmarkRunMode = BenchmarkRunMode.SANDBOX_REPLAY
+    promotion_impact: BenchmarkPromotionImpact = BenchmarkPromotionImpact.FINDING_CANDIDATE
+    not_scored_reason: BenchmarkNotScoredReason | None = None
+    scorecard: BenchmarkScorecard | None = None
     tested_fixture_ids: list[str] = Field(default_factory=list)
     blocked_fixture_ids: list[str] = Field(default_factory=list)
     verdicts: list[BenchmarkVerdictSummary] = Field(default_factory=list)
@@ -43,6 +55,11 @@ def build_benchmark_run_report(
     results: Sequence[AttackResult],
     *,
     regression_cases: Mapping[str, RegressionCase] | None = None,
+    evidence_mode: BenchmarkEvidenceMode = BenchmarkEvidenceMode.JUDGE_CONFIRMED_SANDBOX,
+    run_mode: BenchmarkRunMode = BenchmarkRunMode.SANDBOX_REPLAY,
+    promotion_impact: BenchmarkPromotionImpact = BenchmarkPromotionImpact.FINDING_CANDIDATE,
+    not_scored_reason: BenchmarkNotScoredReason | None = None,
+    scorecard: BenchmarkScorecard | None = None,
 ) -> BenchmarkRunReport:
     """Build a report for benchmark run results and optional regression links."""
     regression_cases = regression_cases or {}
@@ -52,14 +69,27 @@ def build_benchmark_run_report(
         for result in results
         if result.id in regression_cases
     ]
+    score_line = (
+        f"Scorecard: not scored ({not_scored_reason.value})"
+        if not_scored_reason
+        else "Scorecard: eligible after deterministic aggregation"
+    )
     summary_lines = [
         *draft.summary_lines(),
+        f"Evidence mode: {evidence_mode.value}",
+        f"Promotion impact: {promotion_impact.value}",
         f"Results scored: {len(results)}",
         f"JudgeAgent jailbreaks: {sum(1 for result in results if result.verdict.is_jailbreak)}",
         f"Regression links: {len(regression_links)}",
+        score_line,
         "Detector hints are weak signals. JudgeAgent owns verdicts.",
     ]
     return BenchmarkRunReport(
+        evidence_mode=evidence_mode,
+        run_mode=run_mode,
+        promotion_impact=promotion_impact,
+        not_scored_reason=not_scored_reason,
+        scorecard=scorecard,
         tested_fixture_ids=[fixture.id for fixture in draft.fixtures],
         blocked_fixture_ids=draft.blocked_fixture_ids,
         verdicts=verdicts,
