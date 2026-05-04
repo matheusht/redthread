@@ -28,6 +28,7 @@ def _approved_manifest(tmp_path: Path, seed: str = "toy approved replay seed") -
         material_root=tmp_path,
         reviewed_by="security-review-owner",
         reviewed_at="2026-04-26T00:00:00Z",
+        reviewer_ids=["security-review-owner", "benchmark-owner"],
         material_class="approved_replay_seed",
     )
     return result.manifest_ref

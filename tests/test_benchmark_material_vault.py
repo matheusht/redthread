@@ -64,6 +64,7 @@ def _write_manifest(root: Path, **overrides: object) -> None:
         "review_status": "approved_replay_seed",
         "reviewed_by": "security-reviewer",
         "reviewed_at": "2026-04-26T00:00:00Z",
+        "reviewers": ["security-reviewer", "benchmark-owner"],
         "allowed_target_ids": ["local-dev"],
         "source_path": "Jailbreak-Guide/Anthropic/Opus 4.7/ENI Writer ✒️.md",
         "source_commit": "pin-before-use",
@@ -112,6 +113,16 @@ def test_resolves_reviewed_material_when_manifest_hash_matches(tmp_path: Path) -
 
     assert material.text == "toy reviewed local-only seed"
     assert material.may_execute is True
+
+
+def test_blocks_approved_manifest_without_two_reviewers(tmp_path: Path) -> None:
+    _write_manifest(tmp_path, reviewers=["security-reviewer"])
+
+    with pytest.raises(MaterialVaultError, match="invalid benchmark material manifest"):
+        load_material_manifest(
+            "spiritual-spell/manifests/spiritual-spell-0032.json",
+            material_root=tmp_path,
+        )
 
 
 def test_blocks_material_hash_mismatch(tmp_path: Path) -> None:

@@ -98,6 +98,7 @@ def test_approves_fixture_for_replay_from_approved_manifest(tmp_path: Path) -> N
         material_root=tmp_path,
         reviewed_by="security-reviewer",
         reviewed_at="2026-04-26T00:00:00Z",
+        reviewer_ids=["security-reviewer", "benchmark-owner"],
         material_class="approved_replay_seed",
     )
 
@@ -111,7 +112,39 @@ def test_approves_fixture_for_replay_from_approved_manifest(tmp_path: Path) -> N
 
     assert approved.is_executable is True
     assert approved.prompt_material_ref == result.material_ref
+    assert result.manifest.reviewers == ["benchmark-owner", "security-reviewer"]
     assert material.text == "toy reviewed local-only seed"
+
+
+def test_rejects_approved_replay_seed_without_two_reviewers(tmp_path: Path) -> None:
+    fixture = _fixture()
+    source = _source_file(tmp_path)
+
+    with pytest.raises(MaterialReviewError, match="two distinct reviewers"):
+        import_reviewed_material(
+            fixture,
+            source_material_path=source,
+            material_root=tmp_path,
+            reviewed_by="security-reviewer",
+            reviewed_at="2026-04-26T00:00:00Z",
+            material_class="approved_replay_seed",
+        )
+
+
+def test_rejects_duplicate_approved_replay_seed_reviewer(tmp_path: Path) -> None:
+    fixture = _fixture()
+    source = _source_file(tmp_path)
+
+    with pytest.raises(MaterialReviewError, match="two distinct reviewers"):
+        import_reviewed_material(
+            fixture,
+            source_material_path=source,
+            material_root=tmp_path,
+            reviewed_by="security-reviewer",
+            reviewed_at="2026-04-26T00:00:00Z",
+            reviewer_ids=["security-reviewer"],
+            material_class="approved_replay_seed",
+        )
 
 
 def test_rejects_nonlocal_target_import_without_override(tmp_path: Path) -> None:
@@ -125,6 +158,7 @@ def test_rejects_nonlocal_target_import_without_override(tmp_path: Path) -> None
             material_root=tmp_path,
             reviewed_by="security-reviewer",
             reviewed_at="2026-04-26T00:00:00Z",
+            reviewer_ids=["security-reviewer", "benchmark-owner"],
             material_class="approved_replay_seed",
             allowed_target_ids=["prod-model"],
         )

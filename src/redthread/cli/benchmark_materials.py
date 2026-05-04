@@ -31,6 +31,7 @@ def register_benchmark_material_commands(eval_group: click.Group, console: Conso
     @click.option("--material-root", required=True, type=click.Path(exists=True, file_okay=False))
     @click.option("--reviewed-by", required=True)
     @click.option("--reviewed-at", required=True)
+    @click.option("--reviewer", "reviewers", multiple=True, help="Reviewer id; repeat for approved replay seeds.")
     @click.option(
         "--material-class",
         type=click.Choice(["redacted", "approved_replay_seed"]),
@@ -49,6 +50,7 @@ def register_benchmark_material_commands(eval_group: click.Group, console: Conso
         reviewed_by: str,
         reviewed_at: str,
         material_class: str,
+        reviewers: tuple[str, ...],
         allowed_targets: tuple[str, ...],
         collection_id: str,
         allow_nonlocal_targets: bool,
@@ -65,6 +67,7 @@ def register_benchmark_material_commands(eval_group: click.Group, console: Conso
                 material_root=material_root,
                 reviewed_by=reviewed_by,
                 reviewed_at=reviewed_at,
+                reviewer_ids=list(reviewers) or None,
                 material_class=cast(ReviewableMaterialClass, material_class),
                 allowed_target_ids=list(allowed_targets) or None,
                 collection_id=collection_id,
@@ -81,6 +84,7 @@ def register_benchmark_material_commands(eval_group: click.Group, console: Conso
         console.print(f"Material class: {result.manifest.material_class}")
         console.print(f"Material ref: {result.material_ref}")
         console.print(f"Manifest ref: {result.manifest_ref}")
+        console.print(f"Reviewers: {', '.join(result.manifest.reviewers)}")
         console.print("Raw prompt body: copied to private vault; not printed")
 
 

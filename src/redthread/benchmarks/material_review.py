@@ -40,6 +40,7 @@ def import_reviewed_material(
     material_root: str | Path | None = None,
     reviewed_by: str,
     reviewed_at: str,
+    reviewer_ids: list[str] | None = None,
     material_class: ReviewableMaterialClass = "redacted",
     allowed_target_ids: list[str] | None = None,
     collection_id: str = "spiritual-spell",
@@ -50,6 +51,7 @@ def import_reviewed_material(
     collection = _validated_collection_id(collection_id)
     targets = allowed_target_ids or ["local-dev"]
     _validate_targets(targets, allow_nonlocal_targets)
+    reviewers = _reviewer_ids(reviewed_by, reviewer_ids, material_class)
     source = Path(source_material_path).expanduser().resolve()
     if not source.is_file():
         msg = f"reviewed material source file does not exist: {source_material_path}"
@@ -66,6 +68,7 @@ def import_reviewed_material(
         review_status=material_class,
         reviewed_by=reviewed_by,
         reviewed_at=reviewed_at,
+        reviewers=reviewers,
         allowed_target_ids=targets,
         source_path=fixture.source_path,
         source_commit=fixture.source_commit,
@@ -92,6 +95,7 @@ def approve_fixture_for_replay(
     if "local-dev" not in manifest.allowed_target_ids:
         msg = "approved replay seeds must allow local-dev replay"
         raise MaterialReviewError(msg)
+    _validate_reviewer_gate(manifest.reviewers)
     _validate_manifest_matches_fixture(fixture, manifest)
     data = fixture.model_dump()
     data.update(
@@ -102,6 +106,25 @@ def approve_fixture_for_replay(
         }
     )
     return JailbreakBenchmarkFixture.model_validate(data)
+
+
+def _reviewer_ids(
+    reviewed_by: str,
+    reviewer_ids: list[str] | None,
+    material_class: ReviewableMaterialClass,
+) -> list[str]:
+    reviewers = {reviewed_by.strip()}
+    reviewers.update(reviewer.strip() for reviewer in reviewer_ids or [] if reviewer.strip())
+    if material_class == "approved_replay_seed":
+        _validate_reviewer_gate(reviewers)
+    return sorted(reviewers)
+
+
+def _validate_reviewer_gate(reviewers: set[str] | list[str]) -> None:
+    distinct_reviewers = {reviewer.strip() for reviewer in reviewers if reviewer.strip()}
+    if len(distinct_reviewers) < 2:
+        msg = "approved replay seeds require two distinct reviewers"
+        raise MaterialReviewError(msg)
 
 
 def _material_ref(collection_id: str, material_class: ReviewableMaterialClass, fixture_id: str) -> str:

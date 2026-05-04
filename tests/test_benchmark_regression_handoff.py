@@ -47,6 +47,7 @@ def _manifest(tmp_path: Path, seed: str = "toy approved regression seed") -> str
         material_root=tmp_path,
         reviewed_by="security-review-owner",
         reviewed_at="2026-04-26T00:00:00Z",
+        reviewer_ids=["security-review-owner", "benchmark-owner"],
         material_class="approved_replay_seed",
     )
     return result.manifest_ref
@@ -114,6 +115,7 @@ def test_handoff_redacts_confirmed_regression_case(tmp_path: Path) -> None:
 
     assert artifact.created_cases[0].fixture_id == "spiritual-spell-0032"
     assert artifact.created_cases[0].material_sha256 == manifest.sha256
+    assert artifact.reviewers == ["benchmark-owner", "security-review-owner"]
     assert "toy approved regression seed" not in rendered
     assert "[redacted: reviewed benchmark prompt material remains in private vault]" in rendered
     assert payload["raw_prompt_policy"] == "raw prompt bodies are redacted; replay uses private vault material refs"

@@ -67,6 +67,10 @@ def test_import_material_cli_json_reports_manifest_ref(tmp_path: Path) -> None:
             "2026-04-26T00:00:00Z",
             "--material-class",
             "approved_replay_seed",
+            "--reviewer",
+            "security-review-owner",
+            "--reviewer",
+            "benchmark-owner",
             "--json",
         ],
     )
@@ -75,7 +79,36 @@ def test_import_material_cli_json_reports_manifest_ref(tmp_path: Path) -> None:
     payload = json.loads(result.output)
     assert payload["manifest_ref"] == "spiritual-spell/manifests/spiritual-spell-0032.json"
     assert payload["manifest"]["material_class"] == "approved_replay_seed"
+    assert payload["manifest"]["reviewers"] == ["benchmark-owner", "security-review-owner"]
     assert payload["manifest"]["allowed_target_ids"] == ["local-dev"]
+
+
+def test_import_material_cli_requires_two_reviewers_for_approved_seed(tmp_path: Path) -> None:
+    source = _source_file(tmp_path)
+
+    result = CliRunner().invoke(
+        main,
+        [
+            "eval",
+            "jailbreak-material",
+            "import",
+            "--fixture-id",
+            "spiritual-spell-0032",
+            "--source-material",
+            str(source),
+            "--material-root",
+            str(tmp_path),
+            "--reviewed-by",
+            "security-review-owner",
+            "--reviewed-at",
+            "2026-04-26T00:00:00Z",
+            "--material-class",
+            "approved_replay_seed",
+        ],
+    )
+
+    assert result.exit_code != 0
+    assert "two distinct reviewers" in result.output
 
 
 def test_import_material_cli_blocks_unknown_fixture(tmp_path: Path) -> None:
@@ -125,6 +158,10 @@ def test_import_material_cli_blocks_nonlocal_target_without_override(tmp_path: P
             "2026-04-26T00:00:00Z",
             "--material-class",
             "approved_replay_seed",
+            "--reviewer",
+            "security-review-owner",
+            "--reviewer",
+            "benchmark-owner",
             "--allowed-target",
             "prod-model",
         ],

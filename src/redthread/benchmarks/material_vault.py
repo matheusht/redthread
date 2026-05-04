@@ -37,6 +37,7 @@ class BenchmarkMaterialManifest(BaseModel):
     review_status: VaultReviewStatus
     reviewed_by: str = Field(min_length=1)
     reviewed_at: str = Field(min_length=1)
+    reviewers: list[str] = Field(default_factory=list)
     allowed_target_ids: list[str] = Field(default_factory=lambda: ["local-dev"])
     source_path: str = Field(min_length=1)
     source_commit: str = Field(min_length=1)
@@ -47,6 +48,14 @@ class BenchmarkMaterialManifest(BaseModel):
         if self.material_class != self.review_status:
             msg = "material manifest class must match review status"
             raise ValueError(msg)
+        if not self.reviewers:
+            self.reviewers = [self.reviewed_by]
+        distinct_reviewers = {reviewer.strip() for reviewer in self.reviewers if reviewer.strip()}
+        distinct_reviewers.add(self.reviewed_by.strip())
+        if self.material_class == "approved_replay_seed" and len(distinct_reviewers) < 2:
+            msg = "approved replay seeds require two distinct reviewers"
+            raise ValueError(msg)
+        self.reviewers = sorted(distinct_reviewers)
         return self
 
 

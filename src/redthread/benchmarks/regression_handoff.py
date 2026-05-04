@@ -60,6 +60,7 @@ class BenchmarkRegressionHandoffArtifact(BaseModel):
     material_sha256: str
     reviewed_by: str
     reviewed_at: str
+    reviewers: list[str] = Field(default_factory=list)
     allowed_target_ids: list[str] = Field(default_factory=list)
     created_cases: list[BenchmarkRegressionCaseSummary] = Field(default_factory=list)
     skipped_results: list[BenchmarkRegressionSkip] = Field(default_factory=list)
@@ -125,6 +126,7 @@ def build_benchmark_regression_handoff(
         material_sha256=manifest.sha256,
         reviewed_by=manifest.reviewed_by,
         reviewed_at=manifest.reviewed_at,
+        reviewers=manifest.reviewers,
         allowed_target_ids=manifest.allowed_target_ids,
         created_cases=created_cases,
         skipped_results=skipped_results,
