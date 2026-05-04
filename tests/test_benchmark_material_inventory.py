@@ -43,8 +43,37 @@ def test_lists_material_manifests_without_prompt_bodies(tmp_path: Path) -> None:
     assert inventory.manifest_count == 1
     assert inventory.manifests[0].fixture_id == "spiritual-spell-0032"
     assert inventory.manifests[0].hash_verified is False
+    assert inventory.manifests[0].hash_status == "not_checked"
+    assert inventory.verified_hash_count == 0
+    assert inventory.invalid_hash_count == 0
     assert "toy inventory helper body" not in rendered
     assert "not read" in inventory.raw_prompt_policy
+
+
+def test_lists_material_manifests_with_hash_verification(tmp_path: Path) -> None:
+    _manifest(tmp_path, "toy inventory hash body")
+
+    inventory = list_benchmark_material_manifests(material_root=tmp_path, verify_hashes=True)
+
+    assert inventory.manifests[0].hash_verified is True
+    assert inventory.manifests[0].hash_status == "verified"
+    assert inventory.verified_hash_count == 1
+    assert inventory.invalid_hash_count == 0
+    assert "toy inventory hash body" not in inventory.model_dump_json()
+
+
+def test_lists_material_manifests_with_hash_mismatch_status(tmp_path: Path) -> None:
+    _manifest(tmp_path, "toy inventory mismatch body")
+    material_path = tmp_path / "spiritual-spell" / "reviewed" / "spiritual-spell-0032.txt"
+    material_path.write_text("tampered inventory body", encoding="utf-8")
+
+    inventory = list_benchmark_material_manifests(material_root=tmp_path, verify_hashes=True)
+
+    assert inventory.manifests[0].hash_verified is False
+    assert inventory.manifests[0].hash_status == "mismatch"
+    assert inventory.verified_hash_count == 0
+    assert inventory.invalid_hash_count == 1
+    assert "tampered inventory body" not in inventory.model_dump_json()
 
 
 def test_lists_material_manifests_by_safe_collection(tmp_path: Path) -> None:
@@ -74,6 +103,7 @@ def test_material_inventory_cli_json_is_prompt_safe(tmp_path: Path) -> None:
             "list",
             "--material-root",
             str(tmp_path),
+            "--verify-hashes",
             "--json",
         ],
     )
@@ -81,7 +111,9 @@ def test_material_inventory_cli_json_is_prompt_safe(tmp_path: Path) -> None:
     assert result.exit_code == 0
     payload = json.loads(result.output)
     assert payload["manifest_count"] == 1
+    assert payload["verified_hash_count"] == 1
     assert payload["manifests"][0]["fixture_id"] == "spiritual-spell-0032"
+    assert payload["manifests"][0]["hash_status"] == "verified"
     assert "toy inventory cli body" not in result.output
 
 
@@ -102,6 +134,7 @@ def test_material_inventory_cli_text_is_prompt_safe(tmp_path: Path) -> None:
     assert result.exit_code == 0
     assert "REDTHREAD BENCHMARK MATERIAL INVENTORY" in result.output
     assert "Manifest count: 1" in result.output
+    assert "Hash check: not checked" in result.output
     assert "Raw prompt bodies: not read" in result.output
     assert "spiritual-spell-0032" in result.output
     assert "toy inventory text body" not in result.output

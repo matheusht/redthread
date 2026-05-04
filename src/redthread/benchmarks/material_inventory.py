@@ -11,6 +11,8 @@ from redthread.benchmarks.material_vault import (
     MaterialVaultError,
     benchmark_material_root,
     load_material_manifest,
+    safe_vault_path,
+    sha256_file,
 )
 
 
@@ -27,6 +29,7 @@ class BenchmarkMaterialInventoryRow(BaseModel):
     source_path: str = Field(min_length=1)
     source_commit: str = Field(min_length=1)
     hash_verified: bool = False
+    hash_status: str = "not_checked"
 
 
 class BenchmarkMaterialInventory(BaseModel):
@@ -35,6 +38,8 @@ class BenchmarkMaterialInventory(BaseModel):
     material_root: str = Field(min_length=1)
     collection_id: str | None = None
     manifest_count: int = 0
+    verified_hash_count: int = 0
+    invalid_hash_count: int = 0
     manifests: list[BenchmarkMaterialInventoryRow] = Field(default_factory=list)
     raw_prompt_policy: str = "raw prompt bodies stay in the private benchmark vault and are not read"
 
@@ -43,6 +48,7 @@ def list_benchmark_material_manifests(
     *,
     material_root: str | Path | None = None,
     collection_id: str | None = None,
+    verify_hashes: bool = False,
 ) -> BenchmarkMaterialInventory:
     """List reviewed material manifests without reading prompt bodies."""
     root = benchmark_material_root(material_root)
@@ -50,6 +56,7 @@ def list_benchmark_material_manifests(
     rows: list[BenchmarkMaterialInventoryRow] = []
     for manifest_ref in refs:
         manifest = load_material_manifest(manifest_ref, material_root=root)
+        hash_status = _hash_status(root, manifest.material_ref, manifest.sha256, verify_hashes)
         rows.append(
             BenchmarkMaterialInventoryRow(
                 manifest_ref=manifest_ref,
@@ -61,14 +68,30 @@ def list_benchmark_material_manifests(
                 allowed_target_ids=manifest.allowed_target_ids,
                 source_path=manifest.source_path,
                 source_commit=manifest.source_commit,
+                hash_verified=hash_status == "verified",
+                hash_status=hash_status,
             )
         )
     return BenchmarkMaterialInventory(
         material_root=str(root),
         collection_id=collection_id,
         manifest_count=len(rows),
+        verified_hash_count=sum(1 for row in rows if row.hash_status == "verified"),
+        invalid_hash_count=sum(1 for row in rows if row.hash_status in {"mismatch", "missing"}),
         manifests=rows,
     )
+
+
+def _hash_status(root: Path, material_ref: str, expected_sha256: str, verify_hashes: bool) -> str:
+    if not verify_hashes:
+        return "not_checked"
+    material_path = safe_vault_path(root, material_ref)
+    if not material_path.is_file():
+        return "missing"
+    digest = sha256_file(material_path)
+    if digest != expected_sha256:
+        return "mismatch"
+    return "verified"
 
 
 def _manifest_refs(root: Path, collection_id: str | None) -> list[str]:
