@@ -48,6 +48,10 @@ from redthread.benchmarks.material_vault import (
     load_material_manifest,
     resolve_reviewed_material,
 )
+from redthread.benchmarks.material_verify import (
+    BenchmarkMaterialVerification,
+    verify_benchmark_material_manifest,
+)
 from redthread.benchmarks.models import (
     BenchmarkEvidenceMode,
     BenchmarkLane,
@@ -112,6 +116,7 @@ __all__ = [
     "BenchmarkEvidenceMode",
     "BenchmarkLane",
     "BenchmarkLiveReplayGatePlan",
+    "BenchmarkMaterialVerification",
     "BenchmarkNotScoredReason",
     "BenchmarkPromotionImpact",
     "BenchmarkRunMode",
@@ -165,6 +170,7 @@ __all__ = [
     "load_spiritual_spell_fixtures",
     "score_confirmed_benchmark",
     "spiritual_spell_fixture_pack_data",
+    "verify_benchmark_material_manifest",
     "write_benchmark_regression_handoff_artifact",
     "write_benchmark_report_artifact",
 ]
