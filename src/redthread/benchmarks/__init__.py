@@ -27,6 +27,12 @@ from redthread.benchmarks.jailbreakbench import (
     jailbreakbench_fixture_pack_data,
     load_jailbreakbench_fixtures,
 )
+from redthread.benchmarks.live_replay_gate import (
+    LIVE_REPLAY_ACKNOWLEDGEMENT,
+    LIVE_REPLAY_DEFERRED_MESSAGE,
+    BenchmarkLiveReplayGatePlan,
+    build_live_replay_gate_plan,
+)
 from redthread.benchmarks.material_review import (
     MaterialImportResult,
     MaterialReviewError,
@@ -105,6 +111,7 @@ __all__ = [
     "BenchmarkMaterialManifest",
     "BenchmarkEvidenceMode",
     "BenchmarkLane",
+    "BenchmarkLiveReplayGatePlan",
     "BenchmarkNotScoredReason",
     "BenchmarkPromotionImpact",
     "BenchmarkRunMode",
@@ -125,6 +132,8 @@ __all__ = [
     "PromptMaterialError",
     "JailbreakBenchmarkFixture",
     "JailbreakFixtureError",
+    "LIVE_REPLAY_ACKNOWLEDGEMENT",
+    "LIVE_REPLAY_DEFERRED_MESSAGE",
     "LocalBenchmarkTarget",
     "MaterialImportResult",
     "MaterialReviewError",
@@ -140,6 +149,7 @@ __all__ = [
     "build_unscored_scorecard",
     "build_fixture_hint_profile",
     "build_fixture_hint_profiles",
+    "build_live_replay_gate_plan",
     "evidence_mode_score_cap",
     "import_reviewed_material",
     "jailbreakbench_fixture_pack_data",

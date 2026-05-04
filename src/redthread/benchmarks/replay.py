@@ -10,6 +10,7 @@ from pydantic import BaseModel
 from redthread.benchmarks.campaigns import build_benchmark_campaign_draft
 from redthread.benchmarks.dry_run import BenchmarkSource
 from redthread.benchmarks.jailbreak_fixtures import JailbreakBenchmarkFixture
+from redthread.benchmarks.live_replay_gate import LIVE_REPLAY_DEFERRED_MESSAGE
 from redthread.benchmarks.material_review import approve_fixture_for_replay
 from redthread.benchmarks.material_vault import load_material_manifest, resolve_reviewed_material
 from redthread.benchmarks.models import (
@@ -95,11 +96,7 @@ async def run_approved_jailbreak_replay_with_regression_handoff(
         msg = f"unsupported jailbreak corpus source: {source}"
         raise BenchmarkReplayError(msg)
     if target_id != "local-dev":
-        msg = (
-            "live benchmark replay is deferred; use local-dev sealed harness. "
-            "Future live replay requires manifest allowlist and typed acknowledgement."
-        )
-        raise BenchmarkReplayError(msg)
+        raise BenchmarkReplayError(LIVE_REPLAY_DEFERRED_MESSAGE)
     fixture = _fixture_by_id(fixture_id)
     manifest = load_material_manifest(manifest_ref, material_root=material_root)
     approved = approve_fixture_for_replay(fixture, manifest)
