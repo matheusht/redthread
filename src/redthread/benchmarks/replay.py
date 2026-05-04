@@ -94,8 +94,11 @@ async def run_approved_jailbreak_replay_with_regression_handoff(
     if source != "spiritual-spell":
         msg = f"unsupported jailbreak corpus source: {source}"
         raise BenchmarkReplayError(msg)
-    if not allow_live_target and target_id != "local-dev":
-        msg = "approved benchmark replay requires local-dev target unless live target is authorized"
+    if target_id != "local-dev":
+        msg = (
+            "live benchmark replay is deferred; use local-dev sealed harness. "
+            "Future live replay requires manifest allowlist and typed acknowledgement."
+        )
         raise BenchmarkReplayError(msg)
     fixture = _fixture_by_id(fixture_id)
     manifest = load_material_manifest(manifest_ref, material_root=material_root)
