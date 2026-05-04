@@ -5,7 +5,13 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
+from redthread.benchmarks.models import (
+    BenchmarkEvidenceMode,
+    BenchmarkNotScoredReason,
+    BenchmarkPromotionImpact,
+)
 from redthread.reporting import (
+    ExternalEvidenceBundle,
     ExternalEvidenceItem,
     ExternalEvidenceSource,
     external_evidence_bundle,
@@ -27,6 +33,9 @@ def test_promptfoo_result_maps_to_weak_external_evidence() -> None:
     assert evidence.source == ExternalEvidenceSource.PROMPTFOO
     assert evidence.evidence_strength == "weak_imported_evidence"
     assert evidence.evidence_label == "imported_weak_evidence"
+    assert evidence.evidence_mode == BenchmarkEvidenceMode.WEAK_IMPORTED_EVIDENCE
+    assert evidence.promotion_impact == BenchmarkPromotionImpact.NONE
+    assert evidence.not_scored_reason == BenchmarkNotScoredReason.WEAK_IMPORTED_EVIDENCE
     assert evidence.is_confirmed_finding is False
     assert evidence.requires_judge_confirmation is True
     assert evidence.candidate_probe_seed is not None
@@ -70,6 +79,9 @@ def test_external_evidence_bundle_has_stable_schema_and_limitations() -> None:
 
     assert bundle.schema_version == "redthread.external_evidence_bundle.v1"
     assert bundle.items[0].source == ExternalEvidenceSource.GENERIC
+    assert bundle.evidence_mode == BenchmarkEvidenceMode.WEAK_IMPORTED_EVIDENCE
+    assert bundle.promotion_impact == BenchmarkPromotionImpact.NONE
+    assert bundle.not_scored_reason == BenchmarkNotScoredReason.WEAK_IMPORTED_EVIDENCE
     assert any("not proof" in limitation for limitation in bundle.limitations)
 
 
@@ -90,4 +102,40 @@ def test_external_evidence_rejects_strong_evidence_overclaim() -> None:
             "source_id": "bad-2",
             "title": "Bad strength claim",
             "evidence_strength": "confirmed_by_external_tool",
+        })
+
+
+def test_external_evidence_rejects_benchmark_mode_overclaim() -> None:
+    with pytest.raises(ValidationError, match="benchmark mode must remain weak_imported_evidence"):
+        ExternalEvidenceItem.model_validate({
+            "source": ExternalEvidenceSource.GENERIC,
+            "source_id": "bad-3",
+            "title": "Bad benchmark claim",
+            "evidence_mode": "judge_confirmed_sandbox",
+        })
+
+
+def test_external_evidence_rejects_promotion_and_artifact_claims() -> None:
+    with pytest.raises(ValidationError, match="cannot create promotion impact"):
+        ExternalEvidenceItem.model_validate({
+            "source": ExternalEvidenceSource.GENERIC,
+            "source_id": "bad-4",
+            "title": "Bad promotion claim",
+            "promotion_impact": "promotion_review_eligible",
+        })
+    with pytest.raises(ValidationError, match="cannot create regression, defense, or promotion claims"):
+        ExternalEvidenceItem.model_validate({
+            "source": ExternalEvidenceSource.GENERIC,
+            "source_id": "bad-5",
+            "title": "Bad regression claim",
+            "creates_regression_case": True,
+        })
+
+
+def test_external_evidence_bundle_rejects_score_overclaim() -> None:
+    with pytest.raises(ValidationError):
+        ExternalEvidenceBundle.model_validate({
+            "source": ExternalEvidenceSource.GENERIC,
+            "items": [],
+            "not_scored_reason": "no_judge_verdict",
         })

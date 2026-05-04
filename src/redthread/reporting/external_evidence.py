@@ -7,9 +7,15 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, Field, model_validator
 
+from redthread.benchmarks.models import (
+    BenchmarkEvidenceMode,
+    BenchmarkNotScoredReason,
+    BenchmarkPromotionImpact,
+)
 from redthread.reporting.evidence_labels import IMPORTED_WEAK_EVIDENCE
 
 WEAK_EVIDENCE: Literal["weak_imported_evidence"] = "weak_imported_evidence"
+NO_PROMOTION: Literal["none"] = "none"
 
 
 class ExternalEvidenceSource(str, Enum):
@@ -39,7 +45,13 @@ class ExternalEvidenceItem(BaseModel):
     description: str = ""
     evidence_strength: Literal["weak_imported_evidence"] = WEAK_EVIDENCE
     evidence_label: Literal["imported_weak_evidence"] = IMPORTED_WEAK_EVIDENCE
+    evidence_mode: Literal["weak_imported_evidence"] = WEAK_EVIDENCE
+    promotion_impact: Literal["none"] = NO_PROMOTION
+    not_scored_reason: Literal["weak_imported_evidence"] = WEAK_EVIDENCE
     is_confirmed_finding: Literal[False] = False
+    creates_regression_case: Literal[False] = False
+    creates_defense_claim: Literal[False] = False
+    creates_promotion_claim: Literal[False] = False
     requires_judge_confirmation: Literal[True] = True
     detector_hint_context: dict[str, Any] = Field(default_factory=dict)
     candidate_probe_seed: CandidateProbeSeed | None = None
@@ -59,6 +71,33 @@ class ExternalEvidenceItem(BaseModel):
             if data.get("requires_judge_confirmation") is False:
                 msg = "external evidence must require JudgeAgent confirmation"
                 raise ValueError(msg)
+            if data.get("evidence_mode") not in {
+                None,
+                BenchmarkEvidenceMode.WEAK_IMPORTED_EVIDENCE,
+                BenchmarkEvidenceMode.WEAK_IMPORTED_EVIDENCE.value,
+            }:
+                msg = "external evidence benchmark mode must remain weak_imported_evidence"
+                raise ValueError(msg)
+            if data.get("promotion_impact") not in {
+                None,
+                BenchmarkPromotionImpact.NONE,
+                BenchmarkPromotionImpact.NONE.value,
+            }:
+                msg = "external evidence cannot create promotion impact"
+                raise ValueError(msg)
+            if data.get("not_scored_reason") not in {
+                None,
+                BenchmarkNotScoredReason.WEAK_IMPORTED_EVIDENCE,
+                BenchmarkNotScoredReason.WEAK_IMPORTED_EVIDENCE.value,
+            }:
+                msg = "external evidence must remain not scored as weak_imported_evidence"
+                raise ValueError(msg)
+            if any(
+                data.get(key) is True
+                for key in ("creates_regression_case", "creates_defense_claim", "creates_promotion_claim")
+            ):
+                msg = "external evidence cannot create regression, defense, or promotion claims"
+                raise ValueError(msg)
         return data
 
 
@@ -67,10 +106,14 @@ class ExternalEvidenceBundle(BaseModel):
 
     schema_version: str = "redthread.external_evidence_bundle.v1"
     source: ExternalEvidenceSource
+    evidence_mode: Literal["weak_imported_evidence"] = WEAK_EVIDENCE
+    promotion_impact: Literal["none"] = NO_PROMOTION
+    not_scored_reason: Literal["weak_imported_evidence"] = WEAK_EVIDENCE
     items: list[ExternalEvidenceItem]
     limitations: list[str] = Field(default_factory=lambda: [
         "External evidence is weak imported context, not proof.",
         "JudgeAgent confirmation is required before creating findings or regression cases.",
+        "Weak imported evidence cannot create scores, defenses, or promotion claims.",
     ])
 
 

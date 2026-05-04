@@ -40,7 +40,8 @@ def register_evidence_commands(main: click.Group, console: Console) -> None:
         )
         console.print(
             f"Imported {len(bundle.items)} weak evidence item(s) to {output}. "
-            "No findings or regression cases were created."
+            "Evidence mode: weak_imported_evidence. No scores, findings, regression cases, "
+            "defenses, or promotion claims were created."
         )
 
     @evidence.command("plan")
@@ -66,7 +67,7 @@ def register_evidence_commands(main: click.Group, console: Console) -> None:
         output_path.write_text(json.dumps(candidates.model_dump(mode="json"), indent=2, sort_keys=True) + "\n", encoding="utf-8")
         console.print(
             f"Wrote {len(candidates.probe_seeds)} candidate probe seed(s) to {output}. "
-            "JudgeAgent confirmation is still required."
+            "Evidence mode: weak_imported_evidence; JudgeAgent confirmation is still required."
         )
 
     @evidence.command("compare-weighting")

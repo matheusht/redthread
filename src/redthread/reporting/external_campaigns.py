@@ -6,6 +6,11 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+from redthread.benchmarks.models import (
+    BenchmarkEvidenceMode,
+    BenchmarkNotScoredReason,
+    BenchmarkPromotionImpact,
+)
 from redthread.reporting.external_evidence import CandidateProbeSeed, ExternalEvidenceBundle
 
 
@@ -15,15 +20,22 @@ class ExternalEvidenceCampaignCandidates(BaseModel):
     schema_version: str = "redthread.external_campaign_candidates.v1"
     source_bundle_schema: str
     source: str
+    evidence_mode: BenchmarkEvidenceMode = BenchmarkEvidenceMode.WEAK_IMPORTED_EVIDENCE
+    promotion_impact: BenchmarkPromotionImpact = BenchmarkPromotionImpact.NONE
+    not_scored_reason: BenchmarkNotScoredReason = BenchmarkNotScoredReason.WEAK_IMPORTED_EVIDENCE
     objective: str
     risk_ids: list[str] = Field(default_factory=lambda: ["imported_external_evidence"])
     strategy_ids: list[str] = Field(default_factory=lambda: ["static_seed_replay"])
     probe_seeds: list[CandidateProbeSeed] = Field(default_factory=list)
     campaign_config_hint: dict[str, Any]
+    creates_regression_case: bool = False
+    creates_defense_claim: bool = False
+    creates_promotion_claim: bool = False
     limitations: list[str] = Field(default_factory=lambda: [
         "Candidate campaigns are planning hints only.",
         "Imported evidence remains weak until JudgeAgent confirms a RedThread attack result.",
         "This artifact does not create findings or regression cases.",
+        "This artifact does not create defenses, scores, or promotion claims.",
     ])
 
 
@@ -70,6 +82,9 @@ def _campaign_config_hint(
         ],
         "strategies": {"include": ["static_seed_replay"]},
         "probe_seed_examples": examples,
+        "benchmark_evidence_mode": BenchmarkEvidenceMode.WEAK_IMPORTED_EVIDENCE.value,
+        "promotion_impact": BenchmarkPromotionImpact.NONE.value,
+        "not_scored_reason": BenchmarkNotScoredReason.WEAK_IMPORTED_EVIDENCE.value,
         "safety_note": "Run these as RedThread probes; do not treat imported evidence as a finding.",
     }
 

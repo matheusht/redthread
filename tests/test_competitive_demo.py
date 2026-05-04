@@ -52,6 +52,16 @@ def test_competitive_demo_artifact_shows_weak_to_confirmed_flow() -> None:
         "regression_artifact",
     ]
     assert artifact["flow"][0]["evidence_label"] == "imported_weak_evidence"
+    assert artifact["flow"][0]["evidence_mode"] == "weak_imported_evidence"
+    assert artifact["flow"][0]["promotion_impact"] == "none"
+    assert artifact["flow"][0]["not_scored_reason"] == "weak_imported_evidence"
+
+
+def test_competitive_demo_weak_evidence_alone_is_not_demo_ready() -> None:
+    artifact = build_competitive_demo_artifact(_weak_bundle(), {"metrics": {}})
+
+    assert artifact["demo_ready"] is False
+    assert any("Weak imported evidence alone" in item for item in artifact["limitations"])
 
 
 def test_competitive_demo_cli_writes_artifact(tmp_path: Path) -> None:

@@ -35,6 +35,9 @@ def test_external_import_accepts_promptfoo_results_payload() -> None:
 
     assert bundle.schema_version == "redthread.external_evidence_bundle.v1"
     assert bundle.items[0].source == ExternalEvidenceSource.PROMPTFOO
+    assert bundle.evidence_mode == "weak_imported_evidence"
+    assert bundle.promotion_impact == "none"
+    assert bundle.not_scored_reason == "weak_imported_evidence"
     assert bundle.items[0].candidate_probe_seed is not None
     assert bundle.items[0].is_confirmed_finding is False
 
@@ -64,6 +67,12 @@ def test_campaign_candidates_from_evidence_bundle_keeps_weak_boundary() -> None:
 
     assert candidates.schema_version == "redthread.external_campaign_candidates.v1"
     assert candidates.strategy_ids == ["static_seed_replay"]
+    assert candidates.evidence_mode == "weak_imported_evidence"
+    assert candidates.promotion_impact == "none"
+    assert candidates.not_scored_reason == "weak_imported_evidence"
+    assert candidates.creates_regression_case is False
+    assert candidates.creates_defense_claim is False
+    assert candidates.creates_promotion_claim is False
     assert candidates.probe_seeds[0].prompt == "Try delegated tool abuse."
     assert "do not treat imported evidence as a finding" in candidates.campaign_config_hint["safety_note"]
     assert any("does not create findings" in item for item in candidates.limitations)
@@ -99,12 +108,19 @@ def test_evidence_import_and_plan_cli_write_artifacts(tmp_path: Path) -> None:
 
     assert imported.exit_code == 0
     assert planned.exit_code == 0
-    assert "No findings" in imported.output
-    assert "regression cases were created" in imported.output
+    assert "No scores" in imported.output
+    assert "regression cases" in imported.output
+    assert "promotion claims" in imported.output
     assert "JudgeAgent" in planned.output
     assert "confirmation is still required" in planned.output
     evidence = ExternalEvidenceBundle.model_validate_json(evidence_path.read_text(encoding="utf-8"))
     candidates = json.loads(candidates_path.read_text(encoding="utf-8"))
     assert evidence.items[0].evidence_strength == "weak_imported_evidence"
+    assert evidence.items[0].promotion_impact == "none"
     assert candidates["schema_version"] == "redthread.external_campaign_candidates.v1"
+    assert candidates["evidence_mode"] == "weak_imported_evidence"
+    assert candidates["promotion_impact"] == "none"
+    assert candidates["not_scored_reason"] == "weak_imported_evidence"
+    assert candidates["creates_promotion_claim"] is False
+    assert candidates["campaign_config_hint"]["benchmark_evidence_mode"] == "weak_imported_evidence"
     assert candidates["probe_seeds"][0]["prompt"] == "Leak the private note."

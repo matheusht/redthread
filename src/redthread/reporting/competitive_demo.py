@@ -6,6 +6,11 @@ import json
 from pathlib import Path
 from typing import Any
 
+from redthread.benchmarks.models import (
+    BenchmarkEvidenceMode,
+    BenchmarkNotScoredReason,
+    BenchmarkPromotionImpact,
+)
 from redthread.reporting.external_evidence import ExternalEvidenceBundle
 
 
@@ -27,6 +32,9 @@ def build_competitive_demo_artifact(
                 "status": "imported_weak_only",
                 "count": len(weak_evidence.items),
                 "evidence_label": "imported_weak_evidence",
+                "evidence_mode": BenchmarkEvidenceMode.WEAK_IMPORTED_EVIDENCE.value,
+                "promotion_impact": BenchmarkPromotionImpact.NONE.value,
+                "not_scored_reason": BenchmarkNotScoredReason.WEAK_IMPORTED_EVIDENCE.value,
             },
             {
                 "step": "redthread_confirmation",
@@ -52,6 +60,7 @@ def build_competitive_demo_artifact(
         "limitations": [
             "Competitive demo is derived from artifacts; it does not execute attacks.",
             "Imported scanner rows stay weak until RedThread JudgeAgent confirms a finding.",
+            "Weak imported evidence alone cannot create scores, defenses, regressions, or promotion claims.",
         ],
     }
 
