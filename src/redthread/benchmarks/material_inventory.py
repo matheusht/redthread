@@ -39,6 +39,7 @@ class BenchmarkMaterialInventory(BaseModel):
 
     material_root: str = Field(min_length=1)
     collection_id: str | None = None
+    fixture_id: str | None = None
     material_class: str | None = None
     allowed_target_id: str | None = None
     manifest_count: int = 0
@@ -56,6 +57,7 @@ def list_benchmark_material_manifests(
     *,
     material_root: str | Path | None = None,
     collection_id: str | None = None,
+    fixture_id: str | None = None,
     material_class: str | None = None,
     allowed_target_id: str | None = None,
     verify_hashes: bool = False,
@@ -66,7 +68,14 @@ def list_benchmark_material_manifests(
     rows: list[BenchmarkMaterialInventoryRow] = []
     for manifest_ref in refs:
         manifest = load_material_manifest(manifest_ref, material_root=root)
-        if not _matches_filters(manifest.material_class, manifest.allowed_target_ids, material_class, allowed_target_id):
+        if not _matches_filters(
+            manifest.fixture_id,
+            manifest.material_class,
+            manifest.allowed_target_ids,
+            fixture_id,
+            material_class,
+            allowed_target_id,
+        ):
             continue
         hash_status = _hash_status(root, manifest.material_ref, manifest.sha256, verify_hashes)
         rows.append(
@@ -88,6 +97,7 @@ def list_benchmark_material_manifests(
     return BenchmarkMaterialInventory(
         material_root=str(root),
         collection_id=collection_id,
+        fixture_id=fixture_id,
         material_class=material_class,
         allowed_target_id=allowed_target_id,
         manifest_count=len(rows),
@@ -114,11 +124,15 @@ def _count_values(values: Iterable[str]) -> dict[str, int]:
 
 
 def _matches_filters(
+    row_fixture_id: str,
     row_material_class: str,
     row_allowed_target_ids: list[str],
+    fixture_id: str | None,
     material_class: str | None,
     allowed_target_id: str | None,
 ) -> bool:
+    if fixture_id is not None and row_fixture_id != fixture_id:
+        return False
     if material_class is not None and row_material_class != material_class:
         return False
     return not (allowed_target_id is not None and allowed_target_id not in row_allowed_target_ids)

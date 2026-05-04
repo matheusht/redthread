@@ -118,6 +118,7 @@ def register_benchmark_material_commands(eval_group: click.Group, console: Conso
     @material_group.command(name="list")
     @click.option("--material-root", default=None, type=click.Path(exists=False))
     @click.option("--collection-id", default=None, help="Optional vault collection id filter.")
+    @click.option("--fixture-id", default=None, help="Optional fixture id filter.")
     @click.option(
         "--material-class",
         type=click.Choice(["redacted", "approved_replay_seed"]),
@@ -130,6 +131,7 @@ def register_benchmark_material_commands(eval_group: click.Group, console: Conso
     def list_materials(
         material_root: str | None,
         collection_id: str | None,
+        fixture_id: str | None,
         material_class: str | None,
         allowed_target_id: str | None,
         verify_hashes: bool,
@@ -141,6 +143,7 @@ def register_benchmark_material_commands(eval_group: click.Group, console: Conso
             inventory = list_benchmark_material_manifests(
                 material_root=material_root,
                 collection_id=collection_id,
+                fixture_id=fixture_id,
                 material_class=material_class,
                 allowed_target_id=allowed_target_id,
                 verify_hashes=verify_hashes or require_valid_hashes,
@@ -155,6 +158,8 @@ def register_benchmark_material_commands(eval_group: click.Group, console: Conso
             return
         console.print("[bold red]REDTHREAD BENCHMARK MATERIAL INVENTORY[/bold red]")
         console.print(f"Manifest count: {inventory.manifest_count}")
+        if fixture_id is not None:
+            console.print(f"Fixture filter: {fixture_id}")
         if material_class is not None:
             console.print(f"Material class filter: {material_class}")
         if allowed_target_id is not None:

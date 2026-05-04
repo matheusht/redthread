@@ -21,10 +21,11 @@ def _import_material(
     material_class: str,
     text: str,
     allowed_targets: list[str] | None = None,
+    fixture_id: str = "spiritual-spell-0032",
 ) -> None:
     fixture = next(
         item for item in load_spiritual_spell_fixtures()
-        if item.id == "spiritual-spell-0032"
+        if item.id == fixture_id
     )
     source = tmp_path / f"{collection_id}.txt"
     source.write_text(text, encoding="utf-8")
@@ -40,6 +41,35 @@ def _import_material(
         collection_id=collection_id,
         allow_nonlocal_targets=True,
     )
+
+
+def test_material_inventory_filters_by_fixture_id(tmp_path: Path) -> None:
+    _import_material(
+        tmp_path,
+        collection_id="primary-set",
+        material_class="approved_replay_seed",
+        text="primary fixture filter body",
+        fixture_id="spiritual-spell-0032",
+    )
+    _import_material(
+        tmp_path,
+        collection_id="secondary-set",
+        material_class="approved_replay_seed",
+        text="secondary fixture filter body",
+        fixture_id="spiritual-spell-0033",
+    )
+
+    inventory = list_benchmark_material_manifests(
+        material_root=tmp_path,
+        fixture_id="spiritual-spell-0033",
+    )
+
+    assert inventory.manifest_count == 1
+    assert inventory.fixture_id == "spiritual-spell-0033"
+    assert inventory.manifests[0].fixture_id == "spiritual-spell-0033"
+    assert inventory.manifests[0].collection_id == "secondary-set"
+    assert "primary fixture filter body" not in inventory.model_dump_json()
+    assert "secondary fixture filter body" not in inventory.model_dump_json()
 
 
 def test_material_inventory_filters_by_material_class(tmp_path: Path) -> None:
@@ -126,6 +156,8 @@ def test_material_inventory_cli_filters_are_prompt_safe(tmp_path: Path) -> None:
             "list",
             "--material-root",
             str(tmp_path),
+            "--fixture-id",
+            "spiritual-spell-0032",
             "--material-class",
             "redacted",
             "--allowed-target",
@@ -137,6 +169,7 @@ def test_material_inventory_cli_filters_are_prompt_safe(tmp_path: Path) -> None:
     assert result.exit_code == 0
     payload = json.loads(result.output)
     assert payload["manifest_count"] == 1
+    assert payload["fixture_id"] == "spiritual-spell-0032"
     assert payload["material_class"] == "redacted"
     assert payload["allowed_target_id"] == "staging-target"
     assert payload["collection_counts"] == {"redacted-set": 1}
