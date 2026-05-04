@@ -118,12 +118,20 @@ def register_benchmark_material_commands(eval_group: click.Group, console: Conso
     @material_group.command(name="list")
     @click.option("--material-root", default=None, type=click.Path(exists=False))
     @click.option("--collection-id", default=None, help="Optional vault collection id filter.")
+    @click.option(
+        "--material-class",
+        type=click.Choice(["redacted", "approved_replay_seed"]),
+        default=None,
+    )
+    @click.option("--allowed-target", "allowed_target_id", default=None)
     @click.option("--verify-hashes", is_flag=True, default=False)
     @click.option("--require-valid-hashes", is_flag=True, default=False)
     @click.option("--json", "as_json", is_flag=True, default=False)
     def list_materials(
         material_root: str | None,
         collection_id: str | None,
+        material_class: str | None,
+        allowed_target_id: str | None,
         verify_hashes: bool,
         require_valid_hashes: bool,
         as_json: bool,
@@ -133,6 +141,8 @@ def register_benchmark_material_commands(eval_group: click.Group, console: Conso
             inventory = list_benchmark_material_manifests(
                 material_root=material_root,
                 collection_id=collection_id,
+                material_class=material_class,
+                allowed_target_id=allowed_target_id,
                 verify_hashes=verify_hashes or require_valid_hashes,
             )
         except MaterialVaultError as exc:
@@ -145,6 +155,10 @@ def register_benchmark_material_commands(eval_group: click.Group, console: Conso
             return
         console.print("[bold red]REDTHREAD BENCHMARK MATERIAL INVENTORY[/bold red]")
         console.print(f"Manifest count: {inventory.manifest_count}")
+        if material_class is not None:
+            console.print(f"Material class filter: {material_class}")
+        if allowed_target_id is not None:
+            console.print(f"Allowed target filter: {allowed_target_id}")
         console.print(f"Hash check: {'enabled' if verify_hashes or require_valid_hashes else 'not checked'}")
         console.print("Raw prompt bodies: not read")
         for row in inventory.manifests:
