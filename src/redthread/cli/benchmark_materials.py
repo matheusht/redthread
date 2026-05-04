@@ -15,6 +15,13 @@ from redthread.benchmarks.material_review import (
     ReviewableMaterialClass,
     import_reviewed_material,
 )
+from redthread.benchmarks.material_vault import (
+    MaterialVaultError,
+    benchmark_material_root,
+    load_material_manifest,
+    safe_vault_path,
+    sha256_file,
+)
 from redthread.benchmarks.spiritual_spell import load_spiritual_spell_fixtures
 
 
@@ -90,6 +97,49 @@ def register_benchmark_material_commands(eval_group: click.Group, console: Conso
         console.print(f"Manifest ref: {result.manifest_ref}")
         console.print(f"Reviewers: {', '.join(result.manifest.reviewers)}")
         console.print("Raw prompt body: copied to private vault; not printed")
+
+    @material_group.command(name="verify")
+    @click.option("--manifest-ref", required=True)
+    @click.option("--material-root", default=None, type=click.Path(exists=False))
+    @click.option("--json", "as_json", is_flag=True, default=False)
+    def verify_material(manifest_ref: str, material_root: str | None, as_json: bool) -> None:
+        """Verify one reviewed material manifest without printing prompt bodies."""
+        try:
+            payload = _verify_material_payload(manifest_ref, material_root)
+        except MaterialVaultError as exc:
+            raise click.ClickException(str(exc)) from exc
+        if as_json:
+            click.echo(json.dumps(payload, indent=2))
+            return
+        console.print("[bold red]REDTHREAD BENCHMARK MATERIAL VERIFY[/bold red]")
+        console.print(f"Fixture: {payload['fixture_id']}")
+        console.print(f"Material class: {payload['material_class']}")
+        console.print(f"Manifest ref: {payload['manifest_ref']}")
+        console.print(f"Material ref: {payload['material_ref']}")
+        console.print(f"Hash verified: {payload['hash_verified']}")
+        console.print("Raw prompt body: not printed")
+
+
+def _verify_material_payload(manifest_ref: str, material_root: str | None) -> dict[str, object]:
+    root = benchmark_material_root(material_root)
+    manifest = load_material_manifest(manifest_ref, material_root=root)
+    material_path = safe_vault_path(root, manifest.material_ref)
+    digest = sha256_file(material_path)
+    if digest != manifest.sha256:
+        msg = "prompt material hash does not match manifest"
+        raise MaterialVaultError(msg)
+    return {
+        "manifest_ref": manifest_ref,
+        "fixture_id": manifest.fixture_id,
+        "material_ref": manifest.material_ref,
+        "material_class": manifest.material_class,
+        "review_status": manifest.review_status,
+        "reviewers": manifest.reviewers,
+        "allowed_target_ids": manifest.allowed_target_ids,
+        "sha256": manifest.sha256,
+        "hash_verified": True,
+        "raw_prompt_policy": "raw prompt body stays in private benchmark vault and is not printed",
+    }
 
 
 def _fixture_by_id(source: str, fixture_id: str) -> JailbreakBenchmarkFixture:
