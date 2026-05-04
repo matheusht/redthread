@@ -21,6 +21,7 @@ class BenchmarkMaterialInventoryRow(BaseModel):
     """One prompt-safe material manifest inventory row."""
 
     manifest_ref: str = Field(min_length=1)
+    collection_id: str = Field(min_length=1)
     fixture_id: str = Field(min_length=1)
     material_ref: str = Field(min_length=1)
     material_class: str = Field(min_length=1)
@@ -43,6 +44,7 @@ class BenchmarkMaterialInventory(BaseModel):
     manifest_count: int = 0
     verified_hash_count: int = 0
     invalid_hash_count: int = 0
+    collection_counts: dict[str, int] = Field(default_factory=dict)
     material_class_counts: dict[str, int] = Field(default_factory=dict)
     hash_status_counts: dict[str, int] = Field(default_factory=dict)
     allowed_target_counts: dict[str, int] = Field(default_factory=dict)
@@ -70,6 +72,7 @@ def list_benchmark_material_manifests(
         rows.append(
             BenchmarkMaterialInventoryRow(
                 manifest_ref=manifest_ref,
+                collection_id=_collection_id_from_ref(manifest_ref),
                 fixture_id=manifest.fixture_id,
                 material_ref=manifest.material_ref,
                 material_class=manifest.material_class,
@@ -90,11 +93,16 @@ def list_benchmark_material_manifests(
         manifest_count=len(rows),
         verified_hash_count=sum(1 for row in rows if row.hash_status == "verified"),
         invalid_hash_count=sum(1 for row in rows if row.hash_status in {"mismatch", "missing"}),
+        collection_counts=_count_values(row.collection_id for row in rows),
         material_class_counts=_count_values(row.material_class for row in rows),
         hash_status_counts=_count_values(row.hash_status for row in rows),
         allowed_target_counts=_count_values(target for row in rows for target in row.allowed_target_ids),
         manifests=rows,
     )
+
+
+def _collection_id_from_ref(manifest_ref: str) -> str:
+    return manifest_ref.split("/", maxsplit=1)[0]
 
 
 def _count_values(values: Iterable[str]) -> dict[str, int]:

@@ -63,7 +63,9 @@ def test_material_inventory_filters_by_material_class(tmp_path: Path) -> None:
 
     assert inventory.manifest_count == 1
     assert inventory.material_class == "approved_replay_seed"
+    assert inventory.collection_counts == {"approved-set": 1}
     assert inventory.material_class_counts == {"approved_replay_seed": 1}
+    assert inventory.manifests[0].collection_id == "approved-set"
     assert inventory.manifests[0].manifest_ref.startswith("approved-set/")
     assert "approved filter body" not in inventory.model_dump_json()
     assert "redacted filter body" not in inventory.model_dump_json()
@@ -92,7 +94,9 @@ def test_material_inventory_filters_by_allowed_target(tmp_path: Path) -> None:
 
     assert inventory.manifest_count == 1
     assert inventory.allowed_target_id == "staging-target"
+    assert inventory.collection_counts == {"staging-set": 1}
     assert inventory.allowed_target_counts == {"staging-target": 1}
+    assert inventory.manifests[0].collection_id == "staging-set"
     assert inventory.manifests[0].manifest_ref.startswith("staging-set/")
     assert "local target filter body" not in inventory.model_dump_json()
     assert "staging target filter body" not in inventory.model_dump_json()
@@ -135,8 +139,10 @@ def test_material_inventory_cli_filters_are_prompt_safe(tmp_path: Path) -> None:
     assert payload["manifest_count"] == 1
     assert payload["material_class"] == "redacted"
     assert payload["allowed_target_id"] == "staging-target"
+    assert payload["collection_counts"] == {"redacted-set": 1}
     assert payload["material_class_counts"] == {"redacted": 1}
     assert payload["allowed_target_counts"] == {"staging-target": 1}
+    assert payload["manifests"][0]["collection_id"] == "redacted-set"
     assert payload["manifests"][0]["manifest_ref"].startswith("redacted-set/")
     assert "approved cli filter body" not in result.output
     assert "redacted cli filter body" not in result.output
