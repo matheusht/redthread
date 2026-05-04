@@ -138,3 +138,46 @@ def test_material_inventory_cli_text_is_prompt_safe(tmp_path: Path) -> None:
     assert "Raw prompt bodies: not read" in result.output
     assert "spiritual-spell-0032" in result.output
     assert "toy inventory text body" not in result.output
+
+
+def test_material_inventory_cli_requires_valid_hashes(tmp_path: Path) -> None:
+    _manifest(tmp_path, "toy inventory required hash body")
+
+    result = CliRunner().invoke(
+        main,
+        [
+            "eval",
+            "jailbreak-material",
+            "list",
+            "--material-root",
+            str(tmp_path),
+            "--require-valid-hashes",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert "Hash check: enabled" in result.output
+    assert "verified" in result.output
+    assert "toy inventory required hash body" not in result.output
+
+
+def test_material_inventory_cli_fails_on_invalid_required_hashes(tmp_path: Path) -> None:
+    _manifest(tmp_path, "toy inventory invalid required body")
+    material_path = tmp_path / "spiritual-spell" / "reviewed" / "spiritual-spell-0032.txt"
+    material_path.write_text("tampered required inventory body", encoding="utf-8")
+
+    result = CliRunner().invoke(
+        main,
+        [
+            "eval",
+            "jailbreak-material",
+            "list",
+            "--material-root",
+            str(tmp_path),
+            "--require-valid-hashes",
+        ],
+    )
+
+    assert result.exit_code != 0
+    assert "invalid material hashes found: 1" in result.output
+    assert "tampered required inventory body" not in result.output

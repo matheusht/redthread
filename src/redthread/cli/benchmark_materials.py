@@ -119,11 +119,13 @@ def register_benchmark_material_commands(eval_group: click.Group, console: Conso
     @click.option("--material-root", default=None, type=click.Path(exists=False))
     @click.option("--collection-id", default=None, help="Optional vault collection id filter.")
     @click.option("--verify-hashes", is_flag=True, default=False)
+    @click.option("--require-valid-hashes", is_flag=True, default=False)
     @click.option("--json", "as_json", is_flag=True, default=False)
     def list_materials(
         material_root: str | None,
         collection_id: str | None,
         verify_hashes: bool,
+        require_valid_hashes: bool,
         as_json: bool,
     ) -> None:
         """List reviewed material manifests without reading prompt bodies."""
@@ -131,16 +133,19 @@ def register_benchmark_material_commands(eval_group: click.Group, console: Conso
             inventory = list_benchmark_material_manifests(
                 material_root=material_root,
                 collection_id=collection_id,
-                verify_hashes=verify_hashes,
+                verify_hashes=verify_hashes or require_valid_hashes,
             )
         except MaterialVaultError as exc:
             raise click.ClickException(str(exc)) from exc
+        if require_valid_hashes and inventory.invalid_hash_count > 0:
+            msg = f"invalid material hashes found: {inventory.invalid_hash_count}"
+            raise click.ClickException(msg)
         if as_json:
             click.echo(json.dumps(inventory.model_dump(mode="json"), indent=2))
             return
         console.print("[bold red]REDTHREAD BENCHMARK MATERIAL INVENTORY[/bold red]")
         console.print(f"Manifest count: {inventory.manifest_count}")
-        console.print(f"Hash check: {'enabled' if verify_hashes else 'not checked'}")
+        console.print(f"Hash check: {'enabled' if verify_hashes or require_valid_hashes else 'not checked'}")
         console.print("Raw prompt bodies: not read")
         for row in inventory.manifests:
             console.print(
