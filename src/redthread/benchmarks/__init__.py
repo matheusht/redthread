@@ -33,6 +33,11 @@ from redthread.benchmarks.live_replay_gate import (
     BenchmarkLiveReplayGatePlan,
     build_live_replay_gate_plan,
 )
+from redthread.benchmarks.material_inventory import (
+    BenchmarkMaterialInventory,
+    BenchmarkMaterialInventoryRow,
+    list_benchmark_material_manifests,
+)
 from redthread.benchmarks.material_review import (
     MaterialImportResult,
     MaterialReviewError,
@@ -116,6 +121,8 @@ __all__ = [
     "BenchmarkEvidenceMode",
     "BenchmarkLane",
     "BenchmarkLiveReplayGatePlan",
+    "BenchmarkMaterialInventory",
+    "BenchmarkMaterialInventoryRow",
     "BenchmarkMaterialVerification",
     "BenchmarkNotScoredReason",
     "BenchmarkPromotionImpact",
@@ -163,6 +170,7 @@ __all__ = [
     "load_jailbreak_fixture_file",
     "load_material_manifest",
     "load_jailbreak_fixture_pack",
+    "list_benchmark_material_manifests",
     "load_jailbreakbench_fixtures",
     "load_prompt_material",
     "load_replay_seed_prompts",

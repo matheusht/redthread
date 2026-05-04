@@ -10,6 +10,7 @@ from rich.console import Console
 
 from redthread.benchmarks.jailbreak_fixtures import JailbreakBenchmarkFixture
 from redthread.benchmarks.jailbreakbench import load_jailbreakbench_fixtures
+from redthread.benchmarks.material_inventory import list_benchmark_material_manifests
 from redthread.benchmarks.material_review import (
     MaterialReviewError,
     ReviewableMaterialClass,
@@ -113,6 +114,28 @@ def register_benchmark_material_commands(eval_group: click.Group, console: Conso
         console.print(f"Material ref: {verification.material_ref}")
         console.print(f"Hash verified: {verification.hash_verified}")
         console.print("Raw prompt body: not printed")
+
+    @material_group.command(name="list")
+    @click.option("--material-root", default=None, type=click.Path(exists=False))
+    @click.option("--collection-id", default=None, help="Optional vault collection id filter.")
+    @click.option("--json", "as_json", is_flag=True, default=False)
+    def list_materials(material_root: str | None, collection_id: str | None, as_json: bool) -> None:
+        """List reviewed material manifests without reading prompt bodies."""
+        try:
+            inventory = list_benchmark_material_manifests(
+                material_root=material_root,
+                collection_id=collection_id,
+            )
+        except MaterialVaultError as exc:
+            raise click.ClickException(str(exc)) from exc
+        if as_json:
+            click.echo(json.dumps(inventory.model_dump(mode="json"), indent=2))
+            return
+        console.print("[bold red]REDTHREAD BENCHMARK MATERIAL INVENTORY[/bold red]")
+        console.print(f"Manifest count: {inventory.manifest_count}")
+        console.print("Raw prompt bodies: not read")
+        for row in inventory.manifests:
+            console.print(f"- {row.fixture_id} | {row.material_class} | {row.manifest_ref}")
 
 
 def _fixture_by_id(source: str, fixture_id: str) -> JailbreakBenchmarkFixture:
