@@ -13,6 +13,7 @@ from redthread.benchmarks.material_inventory_decision import (
     material_inventory_operator_summary,
     material_inventory_row_is_blocked,
     material_inventory_row_is_ready,
+    material_inventory_suggested_replay_commands,
 )
 from redthread.benchmarks.material_inventory_models import (
     BenchmarkMaterialInventory,
@@ -109,6 +110,7 @@ def list_benchmark_material_manifests(
             ready_count=ready_count,
             blocked_count=blocked_count,
         ),
+        suggested_replay_commands=material_inventory_suggested_replay_commands(rows),
         collection_counts=_count_values(row.collection_id for row in rows),
         material_class_counts=_count_values(row.material_class for row in rows),
         hash_status_counts=_count_values(row.hash_status for row in rows),

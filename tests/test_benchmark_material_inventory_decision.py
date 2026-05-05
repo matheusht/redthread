@@ -42,6 +42,7 @@ def test_material_inventory_decision_needs_hash_check(tmp_path: Path) -> None:
     assert inventory.engine_decision == "needs_hash_check"
     assert inventory.operator_next_step == "verify hashes before replay"
     assert inventory.operator_summary == "ready=0; blocked=0; hash check needed"
+    assert inventory.suggested_replay_commands == []
     assert "decision unchecked body" not in inventory.model_dump_json()
 
 
@@ -56,6 +57,10 @@ def test_material_inventory_decision_ready_for_replay(tmp_path: Path) -> None:
     assert inventory.engine_decision == "ready_for_replay"
     assert inventory.operator_next_step == "ready for approved local replay"
     assert inventory.operator_summary == "ready=1; blocked=0; no operator action needed"
+    assert inventory.suggested_replay_commands == [
+        "redthread eval jailbreak-corpus --replay --fixture-id spiritual-spell-0032 "
+        "--manifest-ref spiritual-spell/manifests/spiritual-spell-0032.json"
+    ]
     assert "decision ready body" not in inventory.model_dump_json()
 
 
@@ -72,6 +77,7 @@ def test_material_inventory_decision_blocked(tmp_path: Path) -> None:
     assert inventory.engine_decision == "blocked"
     assert inventory.operator_next_step == "fix invalid hashes or review gates before replay"
     assert inventory.operator_summary == "ready=0; blocked=1; fix blockers before replay"
+    assert inventory.suggested_replay_commands == []
     assert "tampered decision body" not in inventory.model_dump_json()
 
 
@@ -89,6 +95,7 @@ def test_material_inventory_cli_prints_engine_decision_without_extra_flags(tmp_p
     assert "Operator summary: ready=1; blocked=0; no operator action needed" in result.output
     assert "Ready materials: 1" in result.output
     assert "Blocked materials: 0" in result.output
+    assert "Suggested replay: redthread eval jailbreak-corpus --replay" in result.output
     assert "Blocked reasons:" not in result.output
     assert "decision cli body" not in result.output
 
@@ -115,5 +122,9 @@ def test_material_inventory_cli_json_includes_engine_decision(tmp_path: Path) ->
     assert payload["operator_summary"] == "ready=1; blocked=0; no operator action needed"
     assert payload["material_ready_count"] == 1
     assert payload["material_blocked_count"] == 0
+    assert payload["suggested_replay_commands"] == [
+        "redthread eval jailbreak-corpus --replay --fixture-id spiritual-spell-0032 "
+        "--manifest-ref spiritual-spell/manifests/spiritual-spell-0032.json"
+    ]
     assert payload["blocked_reason_counts"] == {}
     assert "decision json body" not in result.output

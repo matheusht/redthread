@@ -41,6 +41,7 @@ from redthread.benchmarks.material_inventory_decision import (
     material_inventory_operator_summary,
     material_inventory_row_is_blocked,
     material_inventory_row_is_ready,
+    material_inventory_suggested_replay_commands,
 )
 from redthread.benchmarks.material_inventory_models import (
     BenchmarkMaterialInventory,
@@ -185,6 +186,7 @@ __all__ = [
     "material_inventory_operator_summary",
     "material_inventory_row_is_blocked",
     "material_inventory_row_is_ready",
+    "material_inventory_suggested_replay_commands",
     "load_jailbreakbench_fixtures",
     "load_prompt_material",
     "load_replay_seed_prompts",

@@ -38,6 +38,19 @@ def material_inventory_operator_next_step(engine_decision: str) -> str:
     return "verify hashes before replay"
 
 
+def material_inventory_suggested_replay_commands(rows: Iterable[BenchmarkMaterialInventoryRow]) -> list[str]:
+    """Return prompt-safe local replay commands for ready rows."""
+    commands: list[str] = []
+    for row in rows:
+        if not material_inventory_row_is_ready(row):
+            continue
+        commands.append(
+            "redthread eval jailbreak-corpus --replay "
+            f"--fixture-id {row.fixture_id} --manifest-ref {row.manifest_ref}"
+        )
+    return commands
+
+
 def material_inventory_operator_summary(
     *,
     engine_decision: str,
