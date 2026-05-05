@@ -6,6 +6,12 @@ import re
 from collections.abc import Iterable
 from pathlib import Path
 
+from redthread.benchmarks.material_inventory_decision import (
+    material_inventory_engine_decision,
+    material_inventory_operator_next_step,
+    material_inventory_row_is_blocked,
+    material_inventory_row_is_ready,
+)
 from redthread.benchmarks.material_inventory_models import (
     BenchmarkMaterialInventory,
     BenchmarkMaterialInventoryRow,
@@ -76,7 +82,7 @@ def list_benchmark_material_manifests(
                 hash_status=hash_status,
             )
         )
-    engine_decision = _engine_decision(rows)
+    engine_decision = material_inventory_engine_decision(rows)
     return BenchmarkMaterialInventory(
         material_root=str(root),
         collection_id=collection_id,
@@ -89,10 +95,10 @@ def list_benchmark_material_manifests(
         manifest_count=len(rows),
         verified_hash_count=sum(1 for row in rows if row.hash_status == "verified"),
         invalid_hash_count=sum(1 for row in rows if row.hash_status in {"mismatch", "missing"}),
-        material_ready_count=sum(1 for row in rows if _row_is_ready(row)),
-        material_blocked_count=sum(1 for row in rows if _row_is_blocked(row)),
+        material_ready_count=sum(1 for row in rows if material_inventory_row_is_ready(row)),
+        material_blocked_count=sum(1 for row in rows if material_inventory_row_is_blocked(row)),
         engine_decision=engine_decision,
-        operator_next_step=_operator_next_step(engine_decision),
+        operator_next_step=material_inventory_operator_next_step(engine_decision),
         collection_counts=_count_values(row.collection_id for row in rows),
         material_class_counts=_count_values(row.material_class for row in rows),
         hash_status_counts=_count_values(row.hash_status for row in rows),
@@ -104,36 +110,6 @@ def list_benchmark_material_manifests(
 
 def _collection_id_from_ref(manifest_ref: str) -> str:
     return manifest_ref.split("/", maxsplit=1)[0]
-
-
-def _engine_decision(rows: list[BenchmarkMaterialInventoryRow]) -> str:
-    if not rows:
-        return "empty_inventory"
-    if any(_row_is_blocked(row) for row in rows):
-        return "blocked"
-    if any(row.hash_status == "not_checked" for row in rows):
-        return "needs_hash_check"
-    return "ready_for_replay"
-
-
-def _operator_next_step(engine_decision: str) -> str:
-    if engine_decision == "ready_for_replay":
-        return "ready for approved local replay"
-    if engine_decision == "blocked":
-        return "fix invalid hashes or review gates before replay"
-    if engine_decision == "empty_inventory":
-        return "import reviewed material before replay"
-    return "verify hashes before replay"
-
-
-def _row_is_ready(row: BenchmarkMaterialInventoryRow) -> bool:
-    gate_ready = row.review_gate_status in {"not_required", "two_reviewer_gate_met"}
-    return gate_ready and row.hash_status == "verified"
-
-
-def _row_is_blocked(row: BenchmarkMaterialInventoryRow) -> bool:
-    return row.hash_status in {"mismatch", "missing"} or row.review_gate_status == "two_reviewer_gate_failed"
-
 
 def _review_gate_status(material_class: str, reviewers: list[str]) -> str:
     if material_class != "approved_replay_seed":

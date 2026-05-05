@@ -34,6 +34,12 @@ from redthread.benchmarks.live_replay_gate import (
     build_live_replay_gate_plan,
 )
 from redthread.benchmarks.material_inventory import list_benchmark_material_manifests
+from redthread.benchmarks.material_inventory_decision import (
+    material_inventory_engine_decision,
+    material_inventory_operator_next_step,
+    material_inventory_row_is_blocked,
+    material_inventory_row_is_ready,
+)
 from redthread.benchmarks.material_inventory_models import (
     BenchmarkMaterialInventory,
     BenchmarkMaterialInventoryRow,
@@ -171,6 +177,10 @@ __all__ = [
     "load_material_manifest",
     "load_jailbreak_fixture_pack",
     "list_benchmark_material_manifests",
+    "material_inventory_engine_decision",
+    "material_inventory_operator_next_step",
+    "material_inventory_row_is_blocked",
+    "material_inventory_row_is_ready",
     "load_jailbreakbench_fixtures",
     "load_prompt_material",
     "load_replay_seed_prompts",
