@@ -16,6 +16,7 @@ from redthread.models import AttackResult
 
 _REDACTED_PROMPT = "[redacted: reviewed benchmark prompt material remains in private vault]"
 _REDACTED_RESPONSE = "[redacted: target response may echo reviewed benchmark material]"
+_REDACTED_TARGET_PROMPT = "[redacted: target system prompt stays outside public benchmark artifacts]"
 
 
 class BenchmarkRegressionHandoffError(ValueError):
@@ -172,6 +173,8 @@ def _redacted_trace(trace: dict[str, Any]) -> dict[str, Any]:
     turns = safe_trace.get("turns", [])
     if isinstance(turns, list):
         safe_trace["turns"] = [_redacted_turn(turn) for turn in turns]
+    if "target_system_prompt" in safe_trace:
+        safe_trace["target_system_prompt"] = _REDACTED_TARGET_PROMPT
     safe_trace["raw_prompt_policy"] = "reviewed prompt material stays in the private benchmark vault"
     return safe_trace
 
@@ -184,4 +187,6 @@ def _redacted_turn(turn: object) -> object:
         safe_turn["attacker_prompt"] = _REDACTED_PROMPT
     if "target_response_excerpt" in safe_turn:
         safe_turn["target_response_excerpt"] = _REDACTED_RESPONSE
+    if "target_response" in safe_turn:
+        safe_turn["target_response"] = _REDACTED_RESPONSE
     return safe_turn

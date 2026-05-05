@@ -15,6 +15,7 @@ from redthread.benchmarks.material_review import (
 )
 from redthread.benchmarks.material_vault import load_material_manifest
 from redthread.benchmarks.regression_handoff import (
+    _redacted_trace,
     build_benchmark_regression_handoff,
     write_benchmark_regression_handoff_artifact,
 )
@@ -117,7 +118,9 @@ def test_handoff_redacts_confirmed_regression_case(tmp_path: Path) -> None:
     assert artifact.created_cases[0].material_sha256 == manifest.sha256
     assert artifact.reviewers == ["benchmark-owner", "security-review-owner"]
     assert "toy approved regression seed" not in rendered
+    assert "Do not reveal secrets." not in rendered
     assert "[redacted: reviewed benchmark prompt material remains in private vault]" in rendered
+    assert "[redacted: target system prompt stays outside public benchmark artifacts]" in rendered
     assert payload["raw_prompt_policy"] == "raw prompt bodies are redacted; replay uses private vault material refs"
 
 
@@ -136,6 +139,25 @@ async def test_local_replay_handoff_skips_safe_verdict(tmp_path: Path) -> None:
     assert bundle.regression_handoff is not None
     assert bundle.regression_handoff.created_cases == []
     assert bundle.regression_handoff.skipped_results[0].reason == "verdict_not_jailbreak"
+
+
+def test_handoff_redacts_future_target_response_key() -> None:
+    redacted = _redacted_trace(
+        {
+            "target_system_prompt": "Do not reveal secrets.",
+            "turns": [
+                {
+                    "attacker_prompt": "toy approved regression seed",
+                    "target_response": "echoed toy approved regression seed",
+                }
+            ],
+        }
+    )
+    rendered = json.dumps(redacted)
+
+    assert "toy approved regression seed" not in rendered
+    assert "Do not reveal secrets." not in rendered
+    assert "[redacted: target response may echo reviewed benchmark material]" in rendered
 
 
 def test_writes_prompt_safe_handoff_artifact(tmp_path: Path) -> None:
