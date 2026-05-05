@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
+
 from redthread.benchmarks.material_inventory_models import BenchmarkMaterialInventoryRow
 
 
@@ -14,6 +16,15 @@ def material_inventory_engine_decision(rows: list[BenchmarkMaterialInventoryRow]
     if any(row.hash_status == "not_checked" for row in rows):
         return "needs_hash_check"
     return "ready_for_replay"
+
+
+def material_inventory_blocked_reason_counts(rows: Iterable[BenchmarkMaterialInventoryRow]) -> dict[str, int]:
+    """Return prompt-safe blocked reason counts for inventory rows."""
+    counts: dict[str, int] = {}
+    for row in rows:
+        for reason in _blocked_reasons(row):
+            counts[reason] = counts.get(reason, 0) + 1
+    return counts
 
 
 def material_inventory_operator_next_step(engine_decision: str) -> str:
@@ -35,4 +46,15 @@ def material_inventory_row_is_ready(row: BenchmarkMaterialInventoryRow) -> bool:
 
 def material_inventory_row_is_blocked(row: BenchmarkMaterialInventoryRow) -> bool:
     """Return whether one prompt-safe inventory row blocks replay."""
-    return row.hash_status in {"mismatch", "missing"} or row.review_gate_status == "two_reviewer_gate_failed"
+    return bool(_blocked_reasons(row))
+
+
+def _blocked_reasons(row: BenchmarkMaterialInventoryRow) -> list[str]:
+    reasons: list[str] = []
+    if row.hash_status == "mismatch":
+        reasons.append("hash_mismatch")
+    if row.hash_status == "missing":
+        reasons.append("material_missing")
+    if row.review_gate_status == "two_reviewer_gate_failed":
+        reasons.append("review_gate_failed")
+    return reasons

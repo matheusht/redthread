@@ -106,6 +106,8 @@ def _print_inventory(
     console.print(f"Review gates: {inventory.review_gate_counts}")
     console.print(f"Ready materials: {inventory.material_ready_count}")
     console.print(f"Blocked materials: {inventory.material_blocked_count}")
+    if inventory.blocked_reason_counts:
+        console.print(f"Blocked reasons: {inventory.blocked_reason_counts}")
     console.print("Raw prompt bodies: not printed or returned")
     for row in inventory.manifests:
         console.print(

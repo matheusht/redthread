@@ -7,6 +7,7 @@ from collections.abc import Iterable
 from pathlib import Path
 
 from redthread.benchmarks.material_inventory_decision import (
+    material_inventory_blocked_reason_counts,
     material_inventory_engine_decision,
     material_inventory_operator_next_step,
     material_inventory_row_is_blocked,
@@ -97,6 +98,7 @@ def list_benchmark_material_manifests(
         invalid_hash_count=sum(1 for row in rows if row.hash_status in {"mismatch", "missing"}),
         material_ready_count=sum(1 for row in rows if material_inventory_row_is_ready(row)),
         material_blocked_count=sum(1 for row in rows if material_inventory_row_is_blocked(row)),
+        blocked_reason_counts=material_inventory_blocked_reason_counts(rows),
         engine_decision=engine_decision,
         operator_next_step=material_inventory_operator_next_step(engine_decision),
         collection_counts=_count_values(row.collection_id for row in rows),

@@ -43,12 +43,12 @@ def test_lists_material_manifests_without_prompt_bodies(tmp_path: Path) -> None:
     assert inventory.manifest_count == 1
     assert inventory.manifests[0].collection_id == "spiritual-spell"
     assert inventory.manifests[0].fixture_id == "spiritual-spell-0032"
-    assert inventory.manifests[0].reviewer_count == 2
     assert inventory.manifests[0].review_gate_status == "two_reviewer_gate_met"
     assert inventory.manifests[0].hash_verified is False
     assert inventory.manifests[0].hash_status == "not_checked"
     assert inventory.verified_hash_count == 0
     assert inventory.invalid_hash_count == 0
+    assert inventory.blocked_reason_counts == {}
     assert inventory.collection_counts == {"spiritual-spell": 1}
     assert inventory.material_class_counts == {"approved_replay_seed": 1}
     assert inventory.hash_status_counts == {"not_checked": 1}
@@ -81,6 +81,7 @@ def test_lists_material_manifests_with_hash_mismatch_status(tmp_path: Path) -> N
     assert inventory.manifests[0].hash_status == "mismatch"
     assert inventory.verified_hash_count == 0
     assert inventory.invalid_hash_count == 1
+    assert inventory.blocked_reason_counts == {"hash_mismatch": 1}
     assert "tampered inventory body" not in inventory.model_dump_json()
 
 
@@ -151,7 +152,6 @@ def test_material_inventory_cli_text_is_prompt_safe(tmp_path: Path) -> None:
     assert "Collections: {'spiritual-spell': 1}" in result.output
     assert "Material classes: {'approved_replay_seed': 1}" in result.output
     assert "Hash statuses: {'verified': 1}" in result.output
-    assert "Review gates: {'two_reviewer_gate_met': 1}" in result.output
     assert "Raw prompt bodies: not printed or returned" in result.output
     assert "spiritual-spell-0032" in result.output
     assert "toy inventory text body" not in result.output

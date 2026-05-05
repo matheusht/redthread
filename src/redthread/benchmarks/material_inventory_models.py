@@ -40,6 +40,7 @@ class BenchmarkMaterialInventory(BaseModel):
     invalid_hash_count: int = 0
     material_ready_count: int = 0
     material_blocked_count: int = 0
+    blocked_reason_counts: dict[str, int] = Field(default_factory=dict)
     engine_decision: str = "needs_hash_check"
     operator_next_step: str = "verify hashes before replay"
     collection_counts: dict[str, int] = Field(default_factory=dict)

@@ -35,6 +35,7 @@ from redthread.benchmarks.live_replay_gate import (
 )
 from redthread.benchmarks.material_inventory import list_benchmark_material_manifests
 from redthread.benchmarks.material_inventory_decision import (
+    material_inventory_blocked_reason_counts,
     material_inventory_engine_decision,
     material_inventory_operator_next_step,
     material_inventory_row_is_blocked,
@@ -177,6 +178,7 @@ __all__ = [
     "load_material_manifest",
     "load_jailbreak_fixture_pack",
     "list_benchmark_material_manifests",
+    "material_inventory_blocked_reason_counts",
     "material_inventory_engine_decision",
     "material_inventory_operator_next_step",
     "material_inventory_row_is_blocked",
