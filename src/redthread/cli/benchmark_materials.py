@@ -126,6 +126,7 @@ def register_benchmark_material_commands(eval_group: click.Group, console: Conso
     )
     @click.option("--allowed-target", "allowed_target_id", default=None)
     @click.option("--verify-hashes", is_flag=True, default=False)
+    @click.option("--invalid-hashes-only", is_flag=True, default=False)
     @click.option("--require-valid-hashes", is_flag=True, default=False)
     @click.option("--json", "as_json", is_flag=True, default=False)
     def list_materials(
@@ -135,10 +136,11 @@ def register_benchmark_material_commands(eval_group: click.Group, console: Conso
         material_class: str | None,
         allowed_target_id: str | None,
         verify_hashes: bool,
+        invalid_hashes_only: bool,
         require_valid_hashes: bool,
         as_json: bool,
     ) -> None:
-        """List reviewed material manifests without reading prompt bodies."""
+        """List reviewed material manifests without returning prompt bodies."""
         try:
             inventory = list_benchmark_material_manifests(
                 material_root=material_root,
@@ -147,6 +149,7 @@ def register_benchmark_material_commands(eval_group: click.Group, console: Conso
                 material_class=material_class,
                 allowed_target_id=allowed_target_id,
                 verify_hashes=verify_hashes or require_valid_hashes,
+                invalid_hashes_only=invalid_hashes_only,
             )
         except MaterialVaultError as exc:
             raise click.ClickException(str(exc)) from exc
@@ -164,11 +167,13 @@ def register_benchmark_material_commands(eval_group: click.Group, console: Conso
             console.print(f"Material class filter: {material_class}")
         if allowed_target_id is not None:
             console.print(f"Allowed target filter: {allowed_target_id}")
-        console.print(f"Hash check: {'enabled' if verify_hashes or require_valid_hashes else 'not checked'}")
+        if invalid_hashes_only:
+            console.print("Invalid hashes only: true")
+        console.print(f"Hash check: {'enabled' if verify_hashes or require_valid_hashes or invalid_hashes_only else 'not checked'}")
         console.print(f"Collections: {inventory.collection_counts}")
         console.print(f"Material classes: {inventory.material_class_counts}")
         console.print(f"Hash statuses: {inventory.hash_status_counts}")
-        console.print("Raw prompt bodies: not read")
+        console.print("Raw prompt bodies: not printed or returned")
         for row in inventory.manifests:
             console.print(
                 f"- {row.collection_id} | {row.fixture_id} | {row.material_class} | "

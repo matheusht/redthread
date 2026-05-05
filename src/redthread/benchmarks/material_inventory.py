@@ -42,6 +42,7 @@ class BenchmarkMaterialInventory(BaseModel):
     fixture_id: str | None = None
     material_class: str | None = None
     allowed_target_id: str | None = None
+    invalid_hashes_only: bool = False
     manifest_count: int = 0
     verified_hash_count: int = 0
     invalid_hash_count: int = 0
@@ -50,7 +51,7 @@ class BenchmarkMaterialInventory(BaseModel):
     hash_status_counts: dict[str, int] = Field(default_factory=dict)
     allowed_target_counts: dict[str, int] = Field(default_factory=dict)
     manifests: list[BenchmarkMaterialInventoryRow] = Field(default_factory=list)
-    raw_prompt_policy: str = "raw prompt bodies stay in the private benchmark vault and are not read"
+    raw_prompt_policy: str = "raw prompt bodies stay in the private benchmark vault and are not printed or returned"
 
 
 def list_benchmark_material_manifests(
@@ -61,9 +62,11 @@ def list_benchmark_material_manifests(
     material_class: str | None = None,
     allowed_target_id: str | None = None,
     verify_hashes: bool = False,
+    invalid_hashes_only: bool = False,
 ) -> BenchmarkMaterialInventory:
-    """List reviewed material manifests without reading prompt bodies."""
+    """List reviewed material manifests without returning prompt bodies."""
     root = benchmark_material_root(material_root)
+    should_verify_hashes = verify_hashes or invalid_hashes_only
     refs = _manifest_refs(root, collection_id)
     rows: list[BenchmarkMaterialInventoryRow] = []
     for manifest_ref in refs:
@@ -77,7 +80,9 @@ def list_benchmark_material_manifests(
             allowed_target_id,
         ):
             continue
-        hash_status = _hash_status(root, manifest.material_ref, manifest.sha256, verify_hashes)
+        hash_status = _hash_status(root, manifest.material_ref, manifest.sha256, should_verify_hashes)
+        if invalid_hashes_only and hash_status not in {"mismatch", "missing"}:
+            continue
         rows.append(
             BenchmarkMaterialInventoryRow(
                 manifest_ref=manifest_ref,
@@ -100,6 +105,7 @@ def list_benchmark_material_manifests(
         fixture_id=fixture_id,
         material_class=material_class,
         allowed_target_id=allowed_target_id,
+        invalid_hashes_only=invalid_hashes_only,
         manifest_count=len(rows),
         verified_hash_count=sum(1 for row in rows if row.hash_status == "verified"),
         invalid_hash_count=sum(1 for row in rows if row.hash_status in {"mismatch", "missing"}),

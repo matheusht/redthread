@@ -52,7 +52,7 @@ def test_lists_material_manifests_without_prompt_bodies(tmp_path: Path) -> None:
     assert inventory.hash_status_counts == {"not_checked": 1}
     assert inventory.allowed_target_counts == {"local-dev": 1}
     assert "toy inventory helper body" not in rendered
-    assert "not read" in inventory.raw_prompt_policy
+    assert "not printed or returned" in inventory.raw_prompt_policy
 
 
 def test_lists_material_manifests_with_hash_verification(tmp_path: Path) -> None:
@@ -145,7 +145,7 @@ def test_material_inventory_cli_text_is_prompt_safe(tmp_path: Path) -> None:
     assert "Collections: {'spiritual-spell': 1}" in result.output
     assert "Material classes: {'approved_replay_seed': 1}" in result.output
     assert "Hash statuses: {'not_checked': 1}" in result.output
-    assert "Raw prompt bodies: not read" in result.output
+    assert "Raw prompt bodies: not printed or returned" in result.output
     assert "spiritual-spell-0032" in result.output
     assert "toy inventory text body" not in result.output
 
