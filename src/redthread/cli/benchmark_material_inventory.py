@@ -36,6 +36,7 @@ def register_material_inventory_command(material_group: click.Group, console: Co
     @click.option("--verify-hashes", is_flag=True, default=False, help="Deprecated; hashes are checked by default.")
     @click.option("--skip-hash-check", is_flag=True, default=False)
     @click.option("--invalid-hashes-only", is_flag=True, default=False)
+    @click.option("--ready-only", is_flag=True, default=False)
     @click.option("--require-valid-hashes", is_flag=True, default=False)
     @click.option("--json", "as_json", is_flag=True, default=False)
     def list_materials(
@@ -49,6 +50,7 @@ def register_material_inventory_command(material_group: click.Group, console: Co
         verify_hashes: bool,
         skip_hash_check: bool,
         invalid_hashes_only: bool,
+        ready_only: bool,
         require_valid_hashes: bool,
         as_json: bool,
     ) -> None:
@@ -65,6 +67,7 @@ def register_material_inventory_command(material_group: click.Group, console: Co
                 limit=limit,
                 verify_hashes=hash_check_enabled,
                 invalid_hashes_only=invalid_hashes_only,
+                ready_only=ready_only,
             )
         except MaterialVaultError as exc:
             raise click.ClickException(str(exc)) from exc
@@ -100,6 +103,8 @@ def _print_inventory(
         console.print(f"Limit: {inventory.limit}")
     if invalid_hashes_only:
         console.print("Invalid hashes only: true")
+    if inventory.ready_only:
+        console.print("Ready only: true")
     console.print(f"Hash check: {'enabled' if hash_check_enabled else 'not checked'}")
     console.print(f"Collections: {inventory.collection_counts}")
     console.print(f"Material classes: {inventory.material_class_counts}")

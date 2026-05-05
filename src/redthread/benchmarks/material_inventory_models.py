@@ -35,6 +35,7 @@ class BenchmarkMaterialInventory(BaseModel):
     review_gate_status: str | None = None
     limit: int | None = None
     invalid_hashes_only: bool = False
+    ready_only: bool = False
     manifest_count: int = 0
     verified_hash_count: int = 0
     invalid_hash_count: int = 0

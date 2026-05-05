@@ -162,6 +162,7 @@ def test_material_inventory_cli_filters_are_prompt_safe(tmp_path: Path) -> None:
             "redacted",
             "--allowed-target",
             "staging-target",
+            "--ready-only",
             "--json",
         ],
     )
@@ -172,6 +173,7 @@ def test_material_inventory_cli_filters_are_prompt_safe(tmp_path: Path) -> None:
     assert payload["fixture_id"] == "spiritual-spell-0032"
     assert payload["material_class"] == "redacted"
     assert payload["allowed_target_id"] == "staging-target"
+    assert payload["ready_only"] is True
     assert payload["collection_counts"] == {"redacted-set": 1}
     assert payload["material_class_counts"] == {"redacted": 1}
     assert payload["allowed_target_counts"] == {"staging-target": 1}

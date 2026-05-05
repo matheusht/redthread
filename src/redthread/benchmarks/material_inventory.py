@@ -39,6 +39,7 @@ def list_benchmark_material_manifests(
     limit: int | None = None,
     verify_hashes: bool = False,
     invalid_hashes_only: bool = False,
+    ready_only: bool = False,
 ) -> BenchmarkMaterialInventory:
     """List reviewed material manifests without returning prompt bodies."""
     root = benchmark_material_root(material_root)
@@ -65,10 +66,7 @@ def list_benchmark_material_manifests(
         hash_status = _hash_status(root, manifest.material_ref, manifest.sha256, should_verify_hashes)
         if invalid_hashes_only and hash_status not in {"mismatch", "missing"}:
             continue
-        if limit is not None and len(rows) >= limit:
-            break
-        rows.append(
-            BenchmarkMaterialInventoryRow(
+        row = BenchmarkMaterialInventoryRow(
                 manifest_ref=manifest_ref,
                 collection_id=_collection_id_from_ref(manifest_ref),
                 fixture_id=manifest.fixture_id,
@@ -84,7 +82,11 @@ def list_benchmark_material_manifests(
                 hash_verified=hash_status == "verified",
                 hash_status=hash_status,
             )
-        )
+        if ready_only and not material_inventory_row_is_ready(row):
+            continue
+        if limit is not None and len(rows) >= limit:
+            break
+        rows.append(row)
     ready_count = sum(1 for row in rows if material_inventory_row_is_ready(row))
     blocked_count = sum(1 for row in rows if material_inventory_row_is_blocked(row))
     engine_decision = material_inventory_engine_decision(rows)
@@ -97,6 +99,7 @@ def list_benchmark_material_manifests(
         review_gate_status=review_gate_status,
         limit=limit,
         invalid_hashes_only=invalid_hashes_only,
+        ready_only=ready_only,
         manifest_count=len(rows),
         verified_hash_count=sum(1 for row in rows if row.hash_status == "verified"),
         invalid_hash_count=sum(1 for row in rows if row.hash_status in {"mismatch", "missing"}),
