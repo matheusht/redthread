@@ -43,6 +43,8 @@ def test_lists_material_manifests_without_prompt_bodies(tmp_path: Path) -> None:
     assert inventory.manifest_count == 1
     assert inventory.manifests[0].collection_id == "spiritual-spell"
     assert inventory.manifests[0].fixture_id == "spiritual-spell-0032"
+    assert inventory.manifests[0].reviewer_count == 2
+    assert inventory.manifests[0].review_gate_status == "two_reviewer_gate_met"
     assert inventory.manifests[0].hash_verified is False
     assert inventory.manifests[0].hash_status == "not_checked"
     assert inventory.verified_hash_count == 0
@@ -50,6 +52,7 @@ def test_lists_material_manifests_without_prompt_bodies(tmp_path: Path) -> None:
     assert inventory.collection_counts == {"spiritual-spell": 1}
     assert inventory.material_class_counts == {"approved_replay_seed": 1}
     assert inventory.hash_status_counts == {"not_checked": 1}
+    assert inventory.review_gate_counts == {"two_reviewer_gate_met": 1}
     assert inventory.allowed_target_counts == {"local-dev": 1}
     assert "toy inventory helper body" not in rendered
     assert "not printed or returned" in inventory.raw_prompt_policy
@@ -119,7 +122,9 @@ def test_material_inventory_cli_json_is_prompt_safe(tmp_path: Path) -> None:
     assert payload["verified_hash_count"] == 1
     assert payload["collection_counts"] == {"spiritual-spell": 1}
     assert payload["manifests"][0]["collection_id"] == "spiritual-spell"
+    assert payload["review_gate_counts"] == {"two_reviewer_gate_met": 1}
     assert payload["manifests"][0]["fixture_id"] == "spiritual-spell-0032"
+    assert payload["manifests"][0]["review_gate_status"] == "two_reviewer_gate_met"
     assert payload["manifests"][0]["hash_status"] == "verified"
     assert "toy inventory cli body" not in result.output
 
@@ -145,6 +150,7 @@ def test_material_inventory_cli_text_is_prompt_safe(tmp_path: Path) -> None:
     assert "Collections: {'spiritual-spell': 1}" in result.output
     assert "Material classes: {'approved_replay_seed': 1}" in result.output
     assert "Hash statuses: {'not_checked': 1}" in result.output
+    assert "Review gates: {'two_reviewer_gate_met': 1}" in result.output
     assert "Raw prompt bodies: not printed or returned" in result.output
     assert "spiritual-spell-0032" in result.output
     assert "toy inventory text body" not in result.output

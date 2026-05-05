@@ -27,6 +27,8 @@ class BenchmarkMaterialInventoryRow(BaseModel):
     material_class: str = Field(min_length=1)
     review_status: str = Field(min_length=1)
     reviewers: list[str] = Field(default_factory=list)
+    reviewer_count: int = 0
+    review_gate_status: str = Field(min_length=1)
     allowed_target_ids: list[str] = Field(default_factory=list)
     source_path: str = Field(min_length=1)
     source_commit: str = Field(min_length=1)
@@ -49,6 +51,7 @@ class BenchmarkMaterialInventory(BaseModel):
     collection_counts: dict[str, int] = Field(default_factory=dict)
     material_class_counts: dict[str, int] = Field(default_factory=dict)
     hash_status_counts: dict[str, int] = Field(default_factory=dict)
+    review_gate_counts: dict[str, int] = Field(default_factory=dict)
     allowed_target_counts: dict[str, int] = Field(default_factory=dict)
     manifests: list[BenchmarkMaterialInventoryRow] = Field(default_factory=list)
     raw_prompt_policy: str = "raw prompt bodies stay in the private benchmark vault and are not printed or returned"
@@ -92,6 +95,8 @@ def list_benchmark_material_manifests(
                 material_class=manifest.material_class,
                 review_status=manifest.review_status,
                 reviewers=manifest.reviewers,
+                reviewer_count=len(manifest.reviewers),
+                review_gate_status=_review_gate_status(manifest.material_class, manifest.reviewers),
                 allowed_target_ids=manifest.allowed_target_ids,
                 source_path=manifest.source_path,
                 source_commit=manifest.source_commit,
@@ -112,6 +117,7 @@ def list_benchmark_material_manifests(
         collection_counts=_count_values(row.collection_id for row in rows),
         material_class_counts=_count_values(row.material_class for row in rows),
         hash_status_counts=_count_values(row.hash_status for row in rows),
+        review_gate_counts=_count_values(row.review_gate_status for row in rows),
         allowed_target_counts=_count_values(target for row in rows for target in row.allowed_target_ids),
         manifests=rows,
     )
@@ -119,6 +125,14 @@ def list_benchmark_material_manifests(
 
 def _collection_id_from_ref(manifest_ref: str) -> str:
     return manifest_ref.split("/", maxsplit=1)[0]
+
+
+def _review_gate_status(material_class: str, reviewers: list[str]) -> str:
+    if material_class != "approved_replay_seed":
+        return "not_required"
+    if len({reviewer.strip() for reviewer in reviewers if reviewer.strip()}) >= 2:
+        return "two_reviewer_gate_met"
+    return "two_reviewer_gate_failed"
 
 
 def _count_values(values: Iterable[str]) -> dict[str, int]:

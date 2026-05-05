@@ -86,9 +86,10 @@ def _print_inventory(
     console.print(f"Collections: {inventory.collection_counts}")
     console.print(f"Material classes: {inventory.material_class_counts}")
     console.print(f"Hash statuses: {inventory.hash_status_counts}")
+    console.print(f"Review gates: {inventory.review_gate_counts}")
     console.print("Raw prompt bodies: not printed or returned")
     for row in inventory.manifests:
         console.print(
             f"- {row.collection_id} | {row.fixture_id} | {row.material_class} | "
-            f"{row.hash_status} | {row.manifest_ref}"
+            f"{row.review_gate_status} | {row.hash_status} | {row.manifest_ref}"
         )
