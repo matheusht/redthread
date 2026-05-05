@@ -49,6 +49,7 @@ class MemoryIndex:
     """Access append-only markdown and JSONL deployment records."""
 
     def __init__(self, settings: RedThreadSettings) -> None:
+        self._settings = settings
         self._path: Path = settings.memory_dir / _MEMORY_FILENAME
         self._deployments_path: Path = settings.memory_dir / _DEPLOYMENTS_FILENAME
         self._ensure_files()
@@ -59,6 +60,7 @@ class MemoryIndex:
             seam="memory.write",
             prompt=f"{record.guardrail_clause}\n{record.validation.replay_response}",
             metadata=record.metadata,
+            mode=self._settings_canary_policy(),
         )
         if canary_decision.blocked:
             logger.warning(
@@ -76,6 +78,9 @@ class MemoryIndex:
             handle.write(json.dumps(asdict(record)) + "\n")
         logger.info("📚 MemoryIndex updated | trace=%s | category=%s", record.trace_id, record.classification.category)
         return True
+
+    def _settings_canary_policy(self) -> str:
+        return self._settings.canary_policy_preset.value
 
     def append_records(self, records: Iterable[DeploymentRecord]) -> list[str]:
         """Append a bounded batch and return the trace IDs written this time."""

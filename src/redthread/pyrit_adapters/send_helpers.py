@@ -60,6 +60,7 @@ def _with_canary_decision(
         prompt=prompt,
         metadata=execution_metadata.metadata,
         canary_tags=execution_metadata.canary_tags,
+        mode=str(execution_metadata.metadata.get("canary_policy_preset", "block_memory_and_outbound")),
     )
     updated_tags = list(dict.fromkeys([*execution_metadata.canary_tags, *decision.canary_tags]))
     updated_metadata = replace(

@@ -70,6 +70,8 @@ class SupervisorState(TypedDict):
     authorization_decision_counts: dict[str, int]
     canary_event_total: int
     canary_report: dict[str, Any]
+    live_canary_event_total: int
+    live_canary_report: dict[str, Any]
     amplification_metrics: dict[str, Any]
     budget_stop_triggered: bool
     untrusted_lineage_action_total: int
@@ -136,6 +138,28 @@ def fan_out_attack_workers(state: SupervisorState) -> list[Send]:
     return sends
 
 
+def _worker_canary_update(
+    outputs: list[dict[str, Any]],
+    existing_report: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Extract canary reports emitted by workers and merge them for supervisor state."""
+    from redthread.orchestration.runtime_summary import merge_canary_reports
+
+    reports = [existing_report] if existing_report else []
+    reports.extend(
+        output["live_canary_report"]
+        for output in outputs
+        if isinstance(output.get("live_canary_report"), dict)
+    )
+    merged = merge_canary_reports(reports)
+    if not merged:
+        return {}
+    return {
+        "live_canary_report": merged,
+        "live_canary_event_total": merged.get("stage_count", 0),
+    }
+
+
 async def collect_results_node(state: SupervisorState) -> dict[str, Any]:
     """Collect all attack_worker outputs — consolidates fan-out results."""
     logger.info(
@@ -154,6 +178,7 @@ async def collect_results_node(state: SupervisorState) -> dict[str, Any]:
         "errors": errors,
         "attack_worker_total": len(state["attack_results"]),
         "attack_worker_failures": attack_worker_failures,
+        **_worker_canary_update(state["attack_results"]),
     }
 
 
@@ -195,6 +220,7 @@ async def judge_all_results_node(state: SupervisorState) -> dict[str, Any]:
         "errors": errors,
         "judge_worker_total": len(judge_inputs),
         "judge_worker_failures": judge_worker_failures,
+        **_worker_canary_update(judged, state.get("live_canary_report")),
     }
 
 
@@ -271,6 +297,7 @@ async def defense_synthesis_node(state: SupervisorState) -> dict[str, Any]:
         "defense_worker_total": len(defense_inputs),
         "defense_worker_failures": defense_worker_failures,
         "defense_deployments": defense_deployments,
+        **_worker_canary_update(records, state.get("live_canary_report")),
     }
 
 
@@ -426,6 +453,8 @@ class RedThreadSupervisor:
             "authorization_decision_counts": {},
             "canary_event_total": 0,
             "canary_report": {},
+            "live_canary_event_total": 0,
+            "live_canary_report": {},
             "amplification_metrics": {},
             "budget_stop_triggered": False,
             "untrusted_lineage_action_total": 0,

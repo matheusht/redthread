@@ -113,6 +113,7 @@ class RedThreadTool(ABC, Generic[InputT]):
                 seam=str(ctx.metadata.get("seam", f"tool.{self.name}")),
                 metadata=ctx.metadata,
                 canary_tags=ctx.canary_tags,
+                mode=ctx.settings.canary_policy_preset.value,
             )
             if decision.blocked:
                 return ToolResult.err(

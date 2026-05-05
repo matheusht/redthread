@@ -45,3 +45,26 @@ async def test_send_helper_allows_analysis_only_canary_and_records_decision() ->
     )
 
     assert response == "judged"
+
+
+@pytest.mark.asyncio
+async def test_send_helper_honors_monitor_only_policy_metadata() -> None:
+    class MonitorTarget:
+        async def send(self, **kwargs: object) -> str:
+            metadata = kwargs["execution_metadata"]
+            assert metadata.canary_containment["decision"] == "allow"
+            assert metadata.canary_containment["reason"] == "monitor-only canary policy"
+            return "sent"
+
+    response = await send_with_execution_metadata(
+        MonitorTarget(),
+        prompt="contaminated CANARY_EXT_TOOL_01",
+        execution_metadata=ExecutionMetadata(
+            seam="tool.attack",
+            role="attack_tool",
+            evidence_class="live_attack",
+            metadata={"canary_policy_preset": "monitor_only"},
+        ),
+    )
+
+    assert response == "sent"

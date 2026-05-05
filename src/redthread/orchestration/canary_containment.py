@@ -30,6 +30,13 @@ class CanaryContainmentDecisionType(str, Enum):
     ESCALATE = "escalate"
 
 
+class CanaryPolicyPreset(str, Enum):
+    MONITOR_ONLY = "monitor_only"
+    BLOCK_EXECUTION_BOUNDARY = "block_execution_boundary"
+    BLOCK_MEMORY_AND_OUTBOUND = "block_memory_and_outbound"
+    STRICT_FAIL_CLOSED = "strict_fail_closed"
+
+
 class CanaryBoundaryKind(str, Enum):
     ANALYSIS_ONLY = "analysis_only"
     SHARED_STATE = "shared_state"
@@ -97,7 +104,7 @@ def evaluate_canary_containment(
     prompt: str = "",
     metadata: dict[str, Any] | None = None,
     canary_tags: list[str] | None = None,
-    mode: str = "block_execution_boundary",
+    mode: str | CanaryPolicyPreset = CanaryPolicyPreset.BLOCK_MEMORY_AND_OUTBOUND,
 ) -> CanaryContainmentDecision:
     """Return the live containment decision for one pending boundary crossing."""
     tags = extract_canary_tags(prompt, metadata, canary_tags or [])
@@ -117,7 +124,8 @@ def evaluate_canary_containment(
             canary_tags=tags,
             reason="analysis-only boundary allows tagged evidence",
         )
-    if mode in {"monitor_only", "off"}:
+    policy = CanaryPolicyPreset(mode) if mode != "off" else CanaryPolicyPreset.MONITOR_ONLY
+    if policy == CanaryPolicyPreset.MONITOR_ONLY:
         return CanaryContainmentDecision(
             decision=CanaryContainmentDecisionType.ALLOW,
             seam=seam,
@@ -125,7 +133,19 @@ def evaluate_canary_containment(
             canary_tags=tags,
             reason="monitor-only canary policy",
         )
-    if boundary in {CanaryBoundaryKind.EXECUTION_BOUNDARY, CanaryBoundaryKind.MEMORY_WRITE}:
+    if policy == CanaryPolicyPreset.STRICT_FAIL_CLOSED:
+        return CanaryContainmentDecision(
+            decision=CanaryContainmentDecisionType.BLOCK,
+            seam=seam,
+            boundary=boundary,
+            canary_tags=tags,
+            blocked_point=seam,
+            reason="strict canary policy blocks tagged boundary crossing",
+        )
+    protected = {CanaryBoundaryKind.EXECUTION_BOUNDARY}
+    if policy == CanaryPolicyPreset.BLOCK_MEMORY_AND_OUTBOUND:
+        protected.add(CanaryBoundaryKind.MEMORY_WRITE)
+    if boundary in protected:
         return CanaryContainmentDecision(
             decision=CanaryContainmentDecisionType.BLOCK,
             seam=seam,
