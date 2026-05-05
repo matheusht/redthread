@@ -13,6 +13,7 @@ from redthread.benchmarks.models import (
     BenchmarkPromotionImpact,
 )
 from redthread.reporting.evidence_labels import IMPORTED_WEAK_EVIDENCE
+from redthread.reporting.external_evidence_guards import reject_external_evidence_overclaim_keys
 
 WEAK_EVIDENCE: Literal["weak_imported_evidence"] = "weak_imported_evidence"
 NO_PROMOTION: Literal["none"] = "none"
@@ -62,6 +63,7 @@ class ExternalEvidenceItem(BaseModel):
     def reject_confirmed_finding_claims(cls, data: object) -> object:
         """Reject imports that try to claim RedThread finding authority."""
         if isinstance(data, dict):
+            reject_external_evidence_overclaim_keys(data)
             if data.get("is_confirmed_finding") is True:
                 msg = "external evidence cannot be a confirmed finding"
                 raise ValueError(msg)
@@ -103,6 +105,13 @@ class ExternalEvidenceItem(BaseModel):
 
 class ExternalEvidenceBundle(BaseModel):
     """Stable bundle for weak imported evidence."""
+
+    @model_validator(mode="before")
+    @classmethod
+    def reject_bundle_overclaim_keys(cls, data: object) -> object:
+        """Reject bundle-level score, finding, defense, or regression claims."""
+        reject_external_evidence_overclaim_keys(data)
+        return data
 
     schema_version: str = "redthread.external_evidence_bundle.v1"
     source: ExternalEvidenceSource
@@ -179,16 +188,3 @@ def _probe_seed(source_id: str, prompt: str, row: dict[str, Any]) -> CandidatePr
         prompt=prompt,
         metadata={"imported_source_keys": sorted(str(key) for key in row)},
     )
-
-
-__all__ = [
-    "CandidateProbeSeed",
-    "ExternalEvidenceBundle",
-    "ExternalEvidenceItem",
-    "ExternalEvidenceSource",
-    "WEAK_EVIDENCE",
-    "external_evidence_bundle",
-    "garak_result_to_evidence",
-    "promptfoo_result_to_evidence",
-    "strix_finding_to_evidence",
-]

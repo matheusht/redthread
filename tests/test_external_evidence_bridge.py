@@ -132,10 +132,29 @@ def test_external_evidence_rejects_promotion_and_artifact_claims() -> None:
         })
 
 
+def test_external_evidence_rejects_finding_artifact_overclaim() -> None:
+    with pytest.raises(ValidationError, match="cannot create RedThread score/finding artifacts"):
+        ExternalEvidenceItem.model_validate({
+            "source": ExternalEvidenceSource.GENERIC,
+            "source_id": "bad-6",
+            "title": "Bad finding artifact claim",
+            "finding_id": "finding-1",
+        })
+
+
 def test_external_evidence_bundle_rejects_score_overclaim() -> None:
     with pytest.raises(ValidationError):
         ExternalEvidenceBundle.model_validate({
             "source": ExternalEvidenceSource.GENERIC,
             "items": [],
             "not_scored_reason": "no_judge_verdict",
+        })
+
+
+def test_external_evidence_bundle_rejects_scorecard_overclaim() -> None:
+    with pytest.raises(ValidationError, match="cannot create RedThread score/finding artifacts"):
+        ExternalEvidenceBundle.model_validate({
+            "source": ExternalEvidenceSource.GENERIC,
+            "items": [],
+            "scorecard": {"score": 1.0},
         })
