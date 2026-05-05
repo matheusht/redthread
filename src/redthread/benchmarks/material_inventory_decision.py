@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import shlex
 from collections.abc import Iterable
 
 from redthread.benchmarks.material_inventory_models import BenchmarkMaterialInventoryRow
@@ -38,15 +39,21 @@ def material_inventory_operator_next_step(engine_decision: str) -> str:
     return "verify hashes before replay"
 
 
-def material_inventory_suggested_replay_commands(rows: Iterable[BenchmarkMaterialInventoryRow]) -> list[str]:
+def material_inventory_suggested_replay_commands(
+    rows: Iterable[BenchmarkMaterialInventoryRow],
+    *,
+    material_root: str | None = None,
+) -> list[str]:
     """Return prompt-safe local replay commands for ready rows."""
     commands: list[str] = []
+    root_arg = f" --material-root {shlex.quote(material_root)}" if material_root else ""
     for row in rows:
         if not material_inventory_row_is_ready(row):
             continue
         commands.append(
             "redthread eval jailbreak-corpus --replay "
-            f"--fixture-id {row.fixture_id} --manifest-ref {row.manifest_ref}"
+            f"--fixture-id {shlex.quote(row.fixture_id)} --manifest-ref {shlex.quote(row.manifest_ref)}"
+            f"{root_arg}"
         )
     return commands
 

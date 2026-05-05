@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import shlex
 from pathlib import Path
 
 from click.testing import CliRunner
@@ -59,7 +60,8 @@ def test_material_inventory_decision_ready_for_replay(tmp_path: Path) -> None:
     assert inventory.operator_summary == "ready=1; blocked=0; no operator action needed"
     assert inventory.suggested_replay_commands == [
         "redthread eval jailbreak-corpus --replay --fixture-id spiritual-spell-0032 "
-        "--manifest-ref spiritual-spell/manifests/spiritual-spell-0032.json"
+        "--manifest-ref spiritual-spell/manifests/spiritual-spell-0032.json "
+        f"--material-root {shlex.quote(str(tmp_path.resolve()))}"
     ]
     assert "decision ready body" not in inventory.model_dump_json()
 
@@ -124,7 +126,8 @@ def test_material_inventory_cli_json_includes_engine_decision(tmp_path: Path) ->
     assert payload["material_blocked_count"] == 0
     assert payload["suggested_replay_commands"] == [
         "redthread eval jailbreak-corpus --replay --fixture-id spiritual-spell-0032 "
-        "--manifest-ref spiritual-spell/manifests/spiritual-spell-0032.json"
+        "--manifest-ref spiritual-spell/manifests/spiritual-spell-0032.json "
+        f"--material-root {shlex.quote(str(tmp_path.resolve()))}"
     ]
     assert payload["blocked_reason_counts"] == {}
     assert "decision json body" not in result.output

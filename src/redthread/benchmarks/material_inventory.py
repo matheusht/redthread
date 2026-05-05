@@ -110,7 +110,7 @@ def list_benchmark_material_manifests(
             ready_count=ready_count,
             blocked_count=blocked_count,
         ),
-        suggested_replay_commands=material_inventory_suggested_replay_commands(rows),
+        suggested_replay_commands=material_inventory_suggested_replay_commands(rows, material_root=str(root)),
         collection_counts=_count_values(row.collection_id for row in rows),
         material_class_counts=_count_values(row.material_class for row in rows),
         hash_status_counts=_count_values(row.hash_status for row in rows),
