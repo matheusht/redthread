@@ -41,6 +41,7 @@ def test_material_inventory_decision_needs_hash_check(tmp_path: Path) -> None:
     assert inventory.blocked_reason_counts == {}
     assert inventory.engine_decision == "needs_hash_check"
     assert inventory.operator_next_step == "verify hashes before replay"
+    assert inventory.operator_summary == "ready=0; blocked=0; hash check needed"
     assert "decision unchecked body" not in inventory.model_dump_json()
 
 
@@ -54,6 +55,7 @@ def test_material_inventory_decision_ready_for_replay(tmp_path: Path) -> None:
     assert inventory.blocked_reason_counts == {}
     assert inventory.engine_decision == "ready_for_replay"
     assert inventory.operator_next_step == "ready for approved local replay"
+    assert inventory.operator_summary == "ready=1; blocked=0; no operator action needed"
     assert "decision ready body" not in inventory.model_dump_json()
 
 
@@ -69,6 +71,7 @@ def test_material_inventory_decision_blocked(tmp_path: Path) -> None:
     assert inventory.blocked_reason_counts == {"hash_mismatch": 1}
     assert inventory.engine_decision == "blocked"
     assert inventory.operator_next_step == "fix invalid hashes or review gates before replay"
+    assert inventory.operator_summary == "ready=0; blocked=1; fix blockers before replay"
     assert "tampered decision body" not in inventory.model_dump_json()
 
 
@@ -83,6 +86,7 @@ def test_material_inventory_cli_prints_engine_decision_without_extra_flags(tmp_p
     assert result.exit_code == 0
     assert "Engine decision: ready_for_replay" in result.output
     assert "Operator next step: ready for approved local replay" in result.output
+    assert "Operator summary: ready=1; blocked=0; no operator action needed" in result.output
     assert "Ready materials: 1" in result.output
     assert "Blocked materials: 0" in result.output
     assert "Blocked reasons:" not in result.output
@@ -108,6 +112,7 @@ def test_material_inventory_cli_json_includes_engine_decision(tmp_path: Path) ->
     payload = json.loads(result.output)
     assert payload["engine_decision"] == "ready_for_replay"
     assert payload["operator_next_step"] == "ready for approved local replay"
+    assert payload["operator_summary"] == "ready=1; blocked=0; no operator action needed"
     assert payload["material_ready_count"] == 1
     assert payload["material_blocked_count"] == 0
     assert payload["blocked_reason_counts"] == {}

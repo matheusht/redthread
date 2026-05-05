@@ -38,6 +38,7 @@ from redthread.benchmarks.material_inventory_decision import (
     material_inventory_blocked_reason_counts,
     material_inventory_engine_decision,
     material_inventory_operator_next_step,
+    material_inventory_operator_summary,
     material_inventory_row_is_blocked,
     material_inventory_row_is_ready,
 )
@@ -181,6 +182,7 @@ __all__ = [
     "material_inventory_blocked_reason_counts",
     "material_inventory_engine_decision",
     "material_inventory_operator_next_step",
+    "material_inventory_operator_summary",
     "material_inventory_row_is_blocked",
     "material_inventory_row_is_ready",
     "load_jailbreakbench_fixtures",

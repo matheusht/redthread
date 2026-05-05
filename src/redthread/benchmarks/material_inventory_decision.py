@@ -38,6 +38,22 @@ def material_inventory_operator_next_step(engine_decision: str) -> str:
     return "verify hashes before replay"
 
 
+def material_inventory_operator_summary(
+    *,
+    engine_decision: str,
+    ready_count: int,
+    blocked_count: int,
+) -> str:
+    """Return a concise prompt-safe summary for operators."""
+    if engine_decision == "ready_for_replay":
+        return f"ready={ready_count}; blocked=0; no operator action needed"
+    if engine_decision == "blocked":
+        return f"ready={ready_count}; blocked={blocked_count}; fix blockers before replay"
+    if engine_decision == "empty_inventory":
+        return "ready=0; blocked=0; import reviewed material"
+    return f"ready={ready_count}; blocked={blocked_count}; hash check needed"
+
+
 def material_inventory_row_is_ready(row: BenchmarkMaterialInventoryRow) -> bool:
     """Return whether one prompt-safe inventory row is replay-ready."""
     gate_ready = row.review_gate_status in {"not_required", "two_reviewer_gate_met"}

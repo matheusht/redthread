@@ -10,6 +10,7 @@ from redthread.benchmarks.material_inventory_decision import (
     material_inventory_blocked_reason_counts,
     material_inventory_engine_decision,
     material_inventory_operator_next_step,
+    material_inventory_operator_summary,
     material_inventory_row_is_blocked,
     material_inventory_row_is_ready,
 )
@@ -83,6 +84,8 @@ def list_benchmark_material_manifests(
                 hash_status=hash_status,
             )
         )
+    ready_count = sum(1 for row in rows if material_inventory_row_is_ready(row))
+    blocked_count = sum(1 for row in rows if material_inventory_row_is_blocked(row))
     engine_decision = material_inventory_engine_decision(rows)
     return BenchmarkMaterialInventory(
         material_root=str(root),
@@ -96,11 +99,16 @@ def list_benchmark_material_manifests(
         manifest_count=len(rows),
         verified_hash_count=sum(1 for row in rows if row.hash_status == "verified"),
         invalid_hash_count=sum(1 for row in rows if row.hash_status in {"mismatch", "missing"}),
-        material_ready_count=sum(1 for row in rows if material_inventory_row_is_ready(row)),
-        material_blocked_count=sum(1 for row in rows if material_inventory_row_is_blocked(row)),
+        material_ready_count=ready_count,
+        material_blocked_count=blocked_count,
         blocked_reason_counts=material_inventory_blocked_reason_counts(rows),
         engine_decision=engine_decision,
         operator_next_step=material_inventory_operator_next_step(engine_decision),
+        operator_summary=material_inventory_operator_summary(
+            engine_decision=engine_decision,
+            ready_count=ready_count,
+            blocked_count=blocked_count,
+        ),
         collection_counts=_count_values(row.collection_id for row in rows),
         material_class_counts=_count_values(row.material_class for row in rows),
         hash_status_counts=_count_values(row.hash_status for row in rows),

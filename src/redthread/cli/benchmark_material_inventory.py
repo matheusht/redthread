@@ -87,6 +87,7 @@ def _print_inventory(
     console.print(f"Manifest count: {inventory.manifest_count}")
     console.print(f"Engine decision: {inventory.engine_decision}")
     console.print(f"Operator next step: {inventory.operator_next_step}")
+    console.print(f"Operator summary: {inventory.operator_summary}")
     if inventory.fixture_id is not None:
         console.print(f"Fixture filter: {inventory.fixture_id}")
     if inventory.material_class is not None:
