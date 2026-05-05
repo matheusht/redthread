@@ -10,6 +10,7 @@ from rich.console import Console
 from redthread.benchmarks.artifacts import (
     BenchmarkArtifactError,
     BenchmarkReportPayload,
+    assert_prompt_safe_benchmark_payload,
     write_benchmark_report_artifact,
 )
 from redthread.benchmarks.regression_handoff import (
@@ -53,6 +54,15 @@ def write_regression_handoff_artifact(
         console.print(f"Regression handoff written: {path}")
 
 
+def emit_prompt_safe_json(payload: dict[str, object]) -> None:
+    """Emit benchmark JSON only after prompt-safe validation."""
+    try:
+        assert_prompt_safe_benchmark_payload(payload)
+    except BenchmarkArtifactError as exc:
+        raise click.ClickException(str(exc)) from exc
+    click.echo(json.dumps(payload, indent=2))
+
+
 def emit_report(
     console: Console,
     payload: dict[str, object],
@@ -61,7 +71,7 @@ def emit_report(
 ) -> None:
     """Emit a benchmark replay report to stdout."""
     if as_json:
-        click.echo(json.dumps(payload, indent=2))
+        emit_prompt_safe_json(payload)
         return
     console.print("[bold red]REDTHREAD JAILBREAK BENCHMARK REPLAY[/bold red]")
     for line in summary_lines:

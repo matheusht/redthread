@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 from typing import cast
 
 import click
@@ -19,6 +18,7 @@ from redthread.benchmarks.replay import (
     run_approved_jailbreak_replay_with_regression_handoff,
 )
 from redthread.cli.eval_common import (
+    emit_prompt_safe_json,
     emit_report,
     write_regression_handoff_artifact,
     write_report_artifact,
@@ -186,7 +186,7 @@ def _run_dry_run(
         raise click.ClickException(str(exc)) from exc
     write_report_artifact(console, report, report_out, as_json)
     if as_json:
-        click.echo(json.dumps(report.model_dump(), indent=2))
+        emit_prompt_safe_json(report.model_dump())
         return
     console.print("[bold red]REDTHREAD JAILBREAK BENCHMARK DRY-RUN[/bold red]")
     for line in report.summary_lines:
