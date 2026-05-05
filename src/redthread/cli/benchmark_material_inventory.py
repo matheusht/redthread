@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import json
-
 import click
 from rich.console import Console
 
@@ -12,6 +10,7 @@ from redthread.benchmarks.material_inventory import (
     list_benchmark_material_manifests,
 )
 from redthread.benchmarks.material_vault import MaterialVaultError
+from redthread.cli.eval_common import emit_prompt_safe_json
 
 
 def register_material_inventory_command(material_group: click.Group, console: Console) -> None:
@@ -77,7 +76,7 @@ def register_material_inventory_command(material_group: click.Group, console: Co
             msg = f"invalid material hashes found: {inventory.invalid_hash_count}"
             raise click.ClickException(msg)
         if as_json:
-            click.echo(json.dumps(inventory.model_dump(mode="json"), indent=2))
+            emit_prompt_safe_json(inventory.model_dump(mode="json"))
             return
         if replay_commands_only:
             for command in inventory.suggested_replay_commands:

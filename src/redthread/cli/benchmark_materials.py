@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 from typing import cast
 
 import click
@@ -19,6 +18,7 @@ from redthread.benchmarks.material_vault import MaterialVaultError
 from redthread.benchmarks.material_verify import verify_benchmark_material_manifest
 from redthread.benchmarks.spiritual_spell import load_spiritual_spell_fixtures
 from redthread.cli.benchmark_material_inventory import register_material_inventory_command
+from redthread.cli.eval_common import emit_prompt_safe_json
 
 
 def register_benchmark_material_commands(eval_group: click.Group, console: Console) -> None:
@@ -84,7 +84,7 @@ def register_benchmark_material_commands(eval_group: click.Group, console: Conso
             raise click.ClickException(str(exc)) from exc
         payload = result.model_dump()
         if as_json:
-            click.echo(json.dumps(payload, indent=2))
+            emit_prompt_safe_json(payload)
             return
         console.print("[bold red]REDTHREAD BENCHMARK MATERIAL IMPORT[/bold red]")
         console.print(f"Fixture: {fixture.id}")
@@ -105,7 +105,7 @@ def register_benchmark_material_commands(eval_group: click.Group, console: Conso
         except MaterialVaultError as exc:
             raise click.ClickException(str(exc)) from exc
         if as_json:
-            click.echo(json.dumps(verification.model_dump(mode="json"), indent=2))
+            emit_prompt_safe_json(verification.model_dump(mode="json"))
             return
         console.print("[bold red]REDTHREAD BENCHMARK MATERIAL VERIFY[/bold red]")
         console.print(f"Fixture: {verification.fixture_id}")
