@@ -16,6 +16,8 @@ def material_inventory_engine_decision(rows: list[BenchmarkMaterialInventoryRow]
         return "blocked"
     if any(row.hash_status == "not_checked" for row in rows):
         return "needs_hash_check"
+    if not any(material_inventory_row_is_ready(row) for row in rows):
+        return "no_replay_ready"
     return "ready_for_replay"
 
 
@@ -36,6 +38,8 @@ def material_inventory_operator_next_step(engine_decision: str) -> str:
         return "fix invalid hashes or review gates before replay"
     if engine_decision == "empty_inventory":
         return "import reviewed material before replay"
+    if engine_decision == "no_replay_ready":
+        return "import approved replay seed before replay"
     return "verify hashes before replay"
 
 
@@ -71,13 +75,14 @@ def material_inventory_operator_summary(
         return f"ready={ready_count}; blocked={blocked_count}; fix blockers before replay"
     if engine_decision == "empty_inventory":
         return "ready=0; blocked=0; import reviewed material"
+    if engine_decision == "no_replay_ready":
+        return "ready=0; blocked=0; import approved replay seed"
     return f"ready={ready_count}; blocked={blocked_count}; hash check needed"
 
 
 def material_inventory_row_is_ready(row: BenchmarkMaterialInventoryRow) -> bool:
     """Return whether one prompt-safe inventory row is replay-ready."""
-    gate_ready = row.review_gate_status in {"not_required", "two_reviewer_gate_met"}
-    return gate_ready and row.hash_status == "verified"
+    return row.material_class == "approved_replay_seed" and row.review_gate_status == "two_reviewer_gate_met" and row.hash_status == "verified"
 
 
 def material_inventory_row_is_blocked(row: BenchmarkMaterialInventoryRow) -> bool:

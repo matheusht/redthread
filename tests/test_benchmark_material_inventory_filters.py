@@ -169,15 +169,14 @@ def test_material_inventory_cli_filters_are_prompt_safe(tmp_path: Path) -> None:
 
     assert result.exit_code == 0
     payload = json.loads(result.output)
-    assert payload["manifest_count"] == 1
+    assert payload["manifest_count"] == 0
     assert payload["fixture_id"] == "spiritual-spell-0032"
     assert payload["material_class"] == "redacted"
     assert payload["allowed_target_id"] == "staging-target"
     assert payload["ready_only"] is True
-    assert payload["collection_counts"] == {"redacted-set": 1}
-    assert payload["material_class_counts"] == {"redacted": 1}
-    assert payload["allowed_target_counts"] == {"staging-target": 1}
-    assert payload["manifests"][0]["collection_id"] == "redacted-set"
-    assert payload["manifests"][0]["manifest_ref"].startswith("redacted-set/")
+    assert payload["collection_counts"] == {}
+    assert payload["material_class_counts"] == {}
+    assert payload["allowed_target_counts"] == {}
+    assert payload["manifests"] == []
     assert "approved cli filter body" not in result.output
     assert "redacted cli filter body" not in result.output
