@@ -37,6 +37,7 @@ def register_material_inventory_command(material_group: click.Group, console: Co
     @click.option("--skip-hash-check", is_flag=True, default=False)
     @click.option("--invalid-hashes-only", is_flag=True, default=False)
     @click.option("--ready-only", is_flag=True, default=False)
+    @click.option("--replay-commands-only", is_flag=True, default=False)
     @click.option("--require-valid-hashes", is_flag=True, default=False)
     @click.option("--json", "as_json", is_flag=True, default=False)
     def list_materials(
@@ -51,11 +52,12 @@ def register_material_inventory_command(material_group: click.Group, console: Co
         skip_hash_check: bool,
         invalid_hashes_only: bool,
         ready_only: bool,
+        replay_commands_only: bool,
         require_valid_hashes: bool,
         as_json: bool,
     ) -> None:
         """List reviewed material manifests without returning prompt bodies."""
-        hash_check_enabled = not skip_hash_check or verify_hashes or require_valid_hashes or invalid_hashes_only
+        hash_check_enabled = not skip_hash_check or verify_hashes or require_valid_hashes or invalid_hashes_only or ready_only
         try:
             inventory = list_benchmark_material_manifests(
                 material_root=material_root,
@@ -76,6 +78,10 @@ def register_material_inventory_command(material_group: click.Group, console: Co
             raise click.ClickException(msg)
         if as_json:
             click.echo(json.dumps(inventory.model_dump(mode="json"), indent=2))
+            return
+        if replay_commands_only:
+            for command in inventory.suggested_replay_commands:
+                click.echo(command)
             return
         _print_inventory(console, inventory, hash_check_enabled, invalid_hashes_only)
 

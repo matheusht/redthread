@@ -75,3 +75,32 @@ def test_material_inventory_cli_ready_only_is_prompt_safe(tmp_path: Path) -> Non
     assert payload["manifest_count"] == 1
     assert payload["manifests"][0]["collection_id"] == "ready-cli-set"
     assert "ready only cli body" not in result.output
+
+
+def test_material_inventory_cli_prints_replay_commands_only(tmp_path: Path) -> None:
+    _import_material(
+        tmp_path,
+        collection_id="commands-only-set",
+        fixture_id="spiritual-spell-0032",
+        text="commands only cli body",
+    )
+
+    result = CliRunner().invoke(
+        main,
+        [
+            "eval",
+            "jailbreak-material",
+            "list",
+            "--material-root",
+            str(tmp_path),
+            "--ready-only",
+            "--replay-commands-only",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert result.output.startswith("redthread eval jailbreak-corpus --replay")
+    assert "--fixture-id spiritual-spell-0032" in result.output
+    assert "--material-root" in result.output
+    assert "REDTHREAD BENCHMARK MATERIAL INVENTORY" not in result.output
+    assert "commands only cli body" not in result.output
