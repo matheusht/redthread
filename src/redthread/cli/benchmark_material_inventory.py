@@ -33,7 +33,8 @@ def register_material_inventory_command(material_group: click.Group, console: Co
         default=None,
     )
     @click.option("--limit", type=click.IntRange(min=1), default=None)
-    @click.option("--verify-hashes", is_flag=True, default=False)
+    @click.option("--verify-hashes", is_flag=True, default=False, help="Deprecated; hashes are checked by default.")
+    @click.option("--skip-hash-check", is_flag=True, default=False)
     @click.option("--invalid-hashes-only", is_flag=True, default=False)
     @click.option("--require-valid-hashes", is_flag=True, default=False)
     @click.option("--json", "as_json", is_flag=True, default=False)
@@ -46,11 +47,13 @@ def register_material_inventory_command(material_group: click.Group, console: Co
         review_gate_status: str | None,
         limit: int | None,
         verify_hashes: bool,
+        skip_hash_check: bool,
         invalid_hashes_only: bool,
         require_valid_hashes: bool,
         as_json: bool,
     ) -> None:
         """List reviewed material manifests without returning prompt bodies."""
+        hash_check_enabled = not skip_hash_check or verify_hashes or require_valid_hashes or invalid_hashes_only
         try:
             inventory = list_benchmark_material_manifests(
                 material_root=material_root,
@@ -60,7 +63,7 @@ def register_material_inventory_command(material_group: click.Group, console: Co
                 allowed_target_id=allowed_target_id,
                 review_gate_status=review_gate_status,
                 limit=limit,
-                verify_hashes=verify_hashes or require_valid_hashes,
+                verify_hashes=hash_check_enabled,
                 invalid_hashes_only=invalid_hashes_only,
             )
         except MaterialVaultError as exc:
@@ -71,14 +74,13 @@ def register_material_inventory_command(material_group: click.Group, console: Co
         if as_json:
             click.echo(json.dumps(inventory.model_dump(mode="json"), indent=2))
             return
-        _print_inventory(console, inventory, verify_hashes, require_valid_hashes, invalid_hashes_only)
+        _print_inventory(console, inventory, hash_check_enabled, invalid_hashes_only)
 
 
 def _print_inventory(
     console: Console,
     inventory: BenchmarkMaterialInventory,
-    verify_hashes: bool,
-    require_valid_hashes: bool,
+    hash_check_enabled: bool,
     invalid_hashes_only: bool,
 ) -> None:
     console.print("[bold red]REDTHREAD BENCHMARK MATERIAL INVENTORY[/bold red]")
@@ -97,8 +99,7 @@ def _print_inventory(
         console.print(f"Limit: {inventory.limit}")
     if invalid_hashes_only:
         console.print("Invalid hashes only: true")
-    hash_check = verify_hashes or require_valid_hashes or invalid_hashes_only
-    console.print(f"Hash check: {'enabled' if hash_check else 'not checked'}")
+    console.print(f"Hash check: {'enabled' if hash_check_enabled else 'not checked'}")
     console.print(f"Collections: {inventory.collection_counts}")
     console.print(f"Material classes: {inventory.material_class_counts}")
     console.print(f"Hash statuses: {inventory.hash_status_counts}")

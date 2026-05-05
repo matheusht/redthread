@@ -111,7 +111,6 @@ def test_material_inventory_cli_json_is_prompt_safe(tmp_path: Path) -> None:
             "list",
             "--material-root",
             str(tmp_path),
-            "--verify-hashes",
             "--json",
         ],
     )
@@ -146,10 +145,12 @@ def test_material_inventory_cli_text_is_prompt_safe(tmp_path: Path) -> None:
     assert result.exit_code == 0
     assert "REDTHREAD BENCHMARK MATERIAL INVENTORY" in result.output
     assert "Manifest count: 1" in result.output
-    assert "Hash check: not checked" in result.output
+    assert "Engine decision: ready_for_replay" in result.output
+    assert "Operator next step: ready for approved local replay" in result.output
+    assert "Hash check: enabled" in result.output
     assert "Collections: {'spiritual-spell': 1}" in result.output
     assert "Material classes: {'approved_replay_seed': 1}" in result.output
-    assert "Hash statuses: {'not_checked': 1}" in result.output
+    assert "Hash statuses: {'verified': 1}" in result.output
     assert "Review gates: {'two_reviewer_gate_met': 1}" in result.output
     assert "Raw prompt bodies: not printed or returned" in result.output
     assert "spiritual-spell-0032" in result.output

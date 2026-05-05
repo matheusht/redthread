@@ -69,7 +69,7 @@ def test_material_inventory_decision_blocked(tmp_path: Path) -> None:
     assert "tampered decision body" not in inventory.model_dump_json()
 
 
-def test_material_inventory_cli_prints_engine_decision(tmp_path: Path) -> None:
+def test_material_inventory_cli_prints_engine_decision_without_extra_flags(tmp_path: Path) -> None:
     _manifest(tmp_path, "decision cli body")
 
     result = CliRunner().invoke(
@@ -78,9 +78,9 @@ def test_material_inventory_cli_prints_engine_decision(tmp_path: Path) -> None:
     )
 
     assert result.exit_code == 0
-    assert "Engine decision: needs_hash_check" in result.output
-    assert "Operator next step: verify hashes before replay" in result.output
-    assert "Ready materials: 0" in result.output
+    assert "Engine decision: ready_for_replay" in result.output
+    assert "Operator next step: ready for approved local replay" in result.output
+    assert "Ready materials: 1" in result.output
     assert "Blocked materials: 0" in result.output
     assert "decision cli body" not in result.output
 
@@ -96,7 +96,6 @@ def test_material_inventory_cli_json_includes_engine_decision(tmp_path: Path) ->
             "list",
             "--material-root",
             str(tmp_path),
-            "--verify-hashes",
             "--json",
         ],
     )
