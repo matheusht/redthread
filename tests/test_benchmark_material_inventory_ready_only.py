@@ -104,3 +104,31 @@ def test_material_inventory_cli_prints_replay_commands_only(tmp_path: Path) -> N
     assert "--material-root" in result.output
     assert "REDTHREAD BENCHMARK MATERIAL INVENTORY" not in result.output
     assert "commands only cli body" not in result.output
+
+
+def test_replay_commands_only_does_not_emit_blocked_material(tmp_path: Path) -> None:
+    _import_material(
+        tmp_path,
+        collection_id="blocked-commands-set",
+        fixture_id="spiritual-spell-0032",
+        text="blocked commands only body",
+    )
+    material_path = tmp_path / "blocked-commands-set" / "reviewed" / "spiritual-spell-0032.txt"
+    material_path.write_text("tampered blocked commands body", encoding="utf-8")
+
+    result = CliRunner().invoke(
+        main,
+        [
+            "eval",
+            "jailbreak-material",
+            "list",
+            "--material-root",
+            str(tmp_path),
+            "--replay-commands-only",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert result.output == ""
+    assert "blocked commands only body" not in result.output
+    assert "tampered blocked commands body" not in result.output
