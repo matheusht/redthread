@@ -85,3 +85,52 @@ def test_import_jailbreakbench_approved_seed_is_prompt_safe_json(tmp_path: Path)
     assert payload["manifest"]["source_path"].startswith("metadata-only/jailbreakbench")
     assert payload["manifest"]["reviewers"] == ["benchmark-owner", "security-review-owner"]
     assert "toy jailbreakbench approved seed" not in result.output
+
+
+def test_jailbreakbench_ready_material_suggests_source_flag(tmp_path: Path) -> None:
+    source = _source_file(tmp_path, "toy jailbreakbench command seed")
+    import_result = CliRunner().invoke(
+        main,
+        [
+            "eval",
+            "jailbreak-material",
+            "import",
+            "--source",
+            "jailbreakbench",
+            "--fixture-id",
+            "jailbreakbench-0001",
+            "--source-material",
+            str(source),
+            "--material-root",
+            str(tmp_path),
+            "--reviewed-by",
+            "security-review-owner",
+            "--reviewed-at",
+            "2026-04-26T00:00:00Z",
+            "--reviewer",
+            "security-review-owner",
+            "--reviewer",
+            "benchmark-owner",
+            "--material-class",
+            "approved_replay_seed",
+        ],
+    )
+    assert import_result.exit_code == 0
+
+    list_result = CliRunner().invoke(
+        main,
+        [
+            "eval",
+            "jailbreak-material",
+            "list",
+            "--material-root",
+            str(tmp_path),
+            "--ready-only",
+            "--replay-commands-only",
+        ],
+    )
+
+    assert list_result.exit_code == 0
+    assert "--source jailbreakbench" in list_result.output
+    assert "--fixture-id jailbreakbench-0001" in list_result.output
+    assert "toy jailbreakbench command seed" not in list_result.output

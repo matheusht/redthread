@@ -54,12 +54,19 @@ def material_inventory_suggested_replay_commands(
     for row in rows:
         if not material_inventory_row_is_ready(row):
             continue
+        source_arg = _source_arg(row.collection_id)
         commands.append(
             "redthread eval jailbreak-corpus --replay "
-            f"--fixture-id {shlex.quote(row.fixture_id)} --manifest-ref {shlex.quote(row.manifest_ref)}"
+            f"{source_arg}--fixture-id {shlex.quote(row.fixture_id)} --manifest-ref {shlex.quote(row.manifest_ref)}"
             f"{root_arg}"
         )
     return commands
+
+
+def _source_arg(collection_id: str) -> str:
+    if collection_id == "jailbreakbench":
+        return "--source jailbreakbench "
+    return ""
 
 
 def material_inventory_operator_summary(
