@@ -33,10 +33,10 @@ from redthread.benchmarks.live_replay_gate import (
     BenchmarkLiveReplayGatePlan,
     build_live_replay_gate_plan,
 )
-from redthread.benchmarks.material_inventory import (
+from redthread.benchmarks.material_inventory import list_benchmark_material_manifests
+from redthread.benchmarks.material_inventory_models import (
     BenchmarkMaterialInventory,
     BenchmarkMaterialInventoryRow,
-    list_benchmark_material_manifests,
 )
 from redthread.benchmarks.material_review import (
     MaterialImportResult,

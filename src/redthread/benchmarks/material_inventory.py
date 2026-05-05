@@ -6,8 +6,10 @@ import re
 from collections.abc import Iterable
 from pathlib import Path
 
-from pydantic import BaseModel, Field
-
+from redthread.benchmarks.material_inventory_models import (
+    BenchmarkMaterialInventory,
+    BenchmarkMaterialInventoryRow,
+)
 from redthread.benchmarks.material_vault import (
     MaterialVaultError,
     benchmark_material_root,
@@ -17,46 +19,6 @@ from redthread.benchmarks.material_vault import (
 )
 
 
-class BenchmarkMaterialInventoryRow(BaseModel):
-    """One prompt-safe material manifest inventory row."""
-
-    manifest_ref: str = Field(min_length=1)
-    collection_id: str = Field(min_length=1)
-    fixture_id: str = Field(min_length=1)
-    material_ref: str = Field(min_length=1)
-    material_class: str = Field(min_length=1)
-    review_status: str = Field(min_length=1)
-    reviewers: list[str] = Field(default_factory=list)
-    reviewer_count: int = 0
-    review_gate_status: str = Field(min_length=1)
-    allowed_target_ids: list[str] = Field(default_factory=list)
-    source_path: str = Field(min_length=1)
-    source_commit: str = Field(min_length=1)
-    hash_verified: bool = False
-    hash_status: str = "not_checked"
-
-
-class BenchmarkMaterialInventory(BaseModel):
-    """Prompt-safe vault inventory payload."""
-
-    material_root: str = Field(min_length=1)
-    collection_id: str | None = None
-    fixture_id: str | None = None
-    material_class: str | None = None
-    allowed_target_id: str | None = None
-    invalid_hashes_only: bool = False
-    manifest_count: int = 0
-    verified_hash_count: int = 0
-    invalid_hash_count: int = 0
-    collection_counts: dict[str, int] = Field(default_factory=dict)
-    material_class_counts: dict[str, int] = Field(default_factory=dict)
-    hash_status_counts: dict[str, int] = Field(default_factory=dict)
-    review_gate_counts: dict[str, int] = Field(default_factory=dict)
-    allowed_target_counts: dict[str, int] = Field(default_factory=dict)
-    manifests: list[BenchmarkMaterialInventoryRow] = Field(default_factory=list)
-    raw_prompt_policy: str = "raw prompt bodies stay in the private benchmark vault and are not printed or returned"
-
-
 def list_benchmark_material_manifests(
     *,
     material_root: str | Path | None = None,
@@ -64,6 +26,7 @@ def list_benchmark_material_manifests(
     fixture_id: str | None = None,
     material_class: str | None = None,
     allowed_target_id: str | None = None,
+    review_gate_status: str | None = None,
     verify_hashes: bool = False,
     invalid_hashes_only: bool = False,
 ) -> BenchmarkMaterialInventory:
@@ -83,6 +46,9 @@ def list_benchmark_material_manifests(
             allowed_target_id,
         ):
             continue
+        gate_status = _review_gate_status(manifest.material_class, manifest.reviewers)
+        if review_gate_status is not None and gate_status != review_gate_status:
+            continue
         hash_status = _hash_status(root, manifest.material_ref, manifest.sha256, should_verify_hashes)
         if invalid_hashes_only and hash_status not in {"mismatch", "missing"}:
             continue
@@ -96,7 +62,7 @@ def list_benchmark_material_manifests(
                 review_status=manifest.review_status,
                 reviewers=manifest.reviewers,
                 reviewer_count=len(manifest.reviewers),
-                review_gate_status=_review_gate_status(manifest.material_class, manifest.reviewers),
+                review_gate_status=gate_status,
                 allowed_target_ids=manifest.allowed_target_ids,
                 source_path=manifest.source_path,
                 source_commit=manifest.source_commit,
@@ -110,6 +76,7 @@ def list_benchmark_material_manifests(
         fixture_id=fixture_id,
         material_class=material_class,
         allowed_target_id=allowed_target_id,
+        review_gate_status=review_gate_status,
         invalid_hashes_only=invalid_hashes_only,
         manifest_count=len(rows),
         verified_hash_count=sum(1 for row in rows if row.hash_status == "verified"),

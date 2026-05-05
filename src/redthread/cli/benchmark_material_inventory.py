@@ -27,6 +27,11 @@ def register_material_inventory_command(material_group: click.Group, console: Co
         default=None,
     )
     @click.option("--allowed-target", "allowed_target_id", default=None)
+    @click.option(
+        "--review-gate-status",
+        type=click.Choice(["not_required", "two_reviewer_gate_met", "two_reviewer_gate_failed"]),
+        default=None,
+    )
     @click.option("--verify-hashes", is_flag=True, default=False)
     @click.option("--invalid-hashes-only", is_flag=True, default=False)
     @click.option("--require-valid-hashes", is_flag=True, default=False)
@@ -37,6 +42,7 @@ def register_material_inventory_command(material_group: click.Group, console: Co
         fixture_id: str | None,
         material_class: str | None,
         allowed_target_id: str | None,
+        review_gate_status: str | None,
         verify_hashes: bool,
         invalid_hashes_only: bool,
         require_valid_hashes: bool,
@@ -50,6 +56,7 @@ def register_material_inventory_command(material_group: click.Group, console: Co
                 fixture_id=fixture_id,
                 material_class=material_class,
                 allowed_target_id=allowed_target_id,
+                review_gate_status=review_gate_status,
                 verify_hashes=verify_hashes or require_valid_hashes,
                 invalid_hashes_only=invalid_hashes_only,
             )
@@ -79,6 +86,8 @@ def _print_inventory(
         console.print(f"Material class filter: {inventory.material_class}")
     if inventory.allowed_target_id is not None:
         console.print(f"Allowed target filter: {inventory.allowed_target_id}")
+    if inventory.review_gate_status is not None:
+        console.print(f"Review gate filter: {inventory.review_gate_status}")
     if invalid_hashes_only:
         console.print("Invalid hashes only: true")
     hash_check = verify_hashes or require_valid_hashes or invalid_hashes_only
