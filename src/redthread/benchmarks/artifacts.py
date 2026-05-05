@@ -33,8 +33,12 @@ class BenchmarkArtifactWriteResult(BaseModel):
 
 UNSAFE_PUBLIC_KEYS = frozenset({
     "prompt",
+    "prompt_body",
+    "raw_prompt",
     "attacker_prompt",
+    "target_echo",
     "target_response",
+    "judge_reasoning",
     "reasoning",
     "raw",
 })
