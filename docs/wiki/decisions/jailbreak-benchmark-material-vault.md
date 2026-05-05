@@ -135,10 +135,11 @@ The regression handoff artifact stores fixture lineage, manifest ref, SHA-256, r
 
 ## How to test
 
-Run the prompt-safe benchmark and regression handoff checks:
+Run the prompt-safe benchmark workflow smoke, replay, and regression handoff checks:
 
 ```bash
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src uv run python -m pytest \
+  tests/test_benchmark_material_workflow_smoke.py \
   tests/test_benchmark_regression_handoff.py \
   tests/test_benchmark_replay.py \
   tests/test_benchmark_eval_replay_cli.py

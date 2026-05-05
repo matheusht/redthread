@@ -1,5 +1,10 @@
 # Wiki Log
 
+## [2026-05-04] test-docs | recorded material workflow smoke proof
+- updated `decisions/jailbreak-benchmark-material-vault.md` test guidance to include `tests/test_benchmark_material_workflow_smoke.py`
+- captured the end-to-end proof for import → ready command listing → sealed local replay → prompt-safe report
+- kept the inventory UX closed; this is validation documentation, not a new flag or feature
+
 ## [2026-05-04] decision-update | finalized benchmark material inventory workflow
 - updated `decisions/jailbreak-benchmark-material-vault.md` with the completed prompt-safe inventory readiness workflow
 - recorded `--ready-only --replay-commands-only` as the blessed copy/paste local replay queue surface
