@@ -83,6 +83,8 @@ def _print_inventory(
 ) -> None:
     console.print("[bold red]REDTHREAD BENCHMARK MATERIAL INVENTORY[/bold red]")
     console.print(f"Manifest count: {inventory.manifest_count}")
+    console.print(f"Engine decision: {inventory.engine_decision}")
+    console.print(f"Operator next step: {inventory.operator_next_step}")
     if inventory.fixture_id is not None:
         console.print(f"Fixture filter: {inventory.fixture_id}")
     if inventory.material_class is not None:
@@ -101,6 +103,8 @@ def _print_inventory(
     console.print(f"Material classes: {inventory.material_class_counts}")
     console.print(f"Hash statuses: {inventory.hash_status_counts}")
     console.print(f"Review gates: {inventory.review_gate_counts}")
+    console.print(f"Ready materials: {inventory.material_ready_count}")
+    console.print(f"Blocked materials: {inventory.material_blocked_count}")
     console.print("Raw prompt bodies: not printed or returned")
     for row in inventory.manifests:
         console.print(
