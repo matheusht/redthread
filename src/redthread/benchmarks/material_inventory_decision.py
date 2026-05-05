@@ -89,7 +89,12 @@ def material_inventory_operator_summary(
 
 def material_inventory_row_is_ready(row: BenchmarkMaterialInventoryRow) -> bool:
     """Return whether one prompt-safe inventory row is replay-ready."""
-    return row.material_class == "approved_replay_seed" and row.review_gate_status == "two_reviewer_gate_met" and row.hash_status == "verified"
+    return (
+        row.material_class == "approved_replay_seed"
+        and row.review_gate_status == "two_reviewer_gate_met"
+        and row.hash_status == "verified"
+        and "local-dev" in row.allowed_target_ids
+    )
 
 
 def material_inventory_row_is_blocked(row: BenchmarkMaterialInventoryRow) -> bool:
