@@ -27,12 +27,16 @@ def list_benchmark_material_manifests(
     material_class: str | None = None,
     allowed_target_id: str | None = None,
     review_gate_status: str | None = None,
+    limit: int | None = None,
     verify_hashes: bool = False,
     invalid_hashes_only: bool = False,
 ) -> BenchmarkMaterialInventory:
     """List reviewed material manifests without returning prompt bodies."""
     root = benchmark_material_root(material_root)
     should_verify_hashes = verify_hashes or invalid_hashes_only
+    if limit is not None and limit < 1:
+        msg = "material inventory limit must be at least 1"
+        raise MaterialVaultError(msg)
     refs = _manifest_refs(root, collection_id)
     rows: list[BenchmarkMaterialInventoryRow] = []
     for manifest_ref in refs:
@@ -52,6 +56,8 @@ def list_benchmark_material_manifests(
         hash_status = _hash_status(root, manifest.material_ref, manifest.sha256, should_verify_hashes)
         if invalid_hashes_only and hash_status not in {"mismatch", "missing"}:
             continue
+        if limit is not None and len(rows) >= limit:
+            break
         rows.append(
             BenchmarkMaterialInventoryRow(
                 manifest_ref=manifest_ref,
@@ -77,6 +83,7 @@ def list_benchmark_material_manifests(
         material_class=material_class,
         allowed_target_id=allowed_target_id,
         review_gate_status=review_gate_status,
+        limit=limit,
         invalid_hashes_only=invalid_hashes_only,
         manifest_count=len(rows),
         verified_hash_count=sum(1 for row in rows if row.hash_status == "verified"),
