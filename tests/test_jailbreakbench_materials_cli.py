@@ -113,6 +113,8 @@ def test_jailbreakbench_ready_material_suggests_source_flag(tmp_path: Path) -> N
             "benchmark-owner",
             "--material-class",
             "approved_replay_seed",
+            "--collection-id",
+            "custom-jbb-set",
         ],
     )
     assert import_result.exit_code == 0
@@ -133,4 +135,5 @@ def test_jailbreakbench_ready_material_suggests_source_flag(tmp_path: Path) -> N
     assert list_result.exit_code == 0
     assert "--source jailbreakbench" in list_result.output
     assert "--fixture-id jailbreakbench-0001" in list_result.output
+    assert "--manifest-ref custom-jbb-set/manifests/jailbreakbench-0001.json" in list_result.output
     assert "toy jailbreakbench command seed" not in list_result.output
