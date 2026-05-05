@@ -87,7 +87,25 @@ redthread eval jailbreak-material import \
   --material-class approved_replay_seed
 ```
 
-Use replay only after the Security Review Owner has approved a manifest:
+Before replay, ask the engine for a prompt-safe inventory decision:
+
+```bash
+redthread eval jailbreak-material list \
+  --material-root "$REDTHREAD_BENCHMARK_MATERIAL_ROOT"
+```
+
+For a copy/paste local replay queue, list only verified replay-ready material and print only safe commands:
+
+```bash
+redthread eval jailbreak-material list \
+  --material-root "$REDTHREAD_BENCHMARK_MATERIAL_ROOT" \
+  --ready-only \
+  --replay-commands-only
+```
+
+This is the completed material-inventory UX slice. The engine now verifies hashes by default, calculates ready and blocked counts, reports blocked reasons, summarizes the operator next step, and can emit prompt-safe replay commands. Do not add more inventory flags unless they remove operator work or strengthen the evidence boundary.
+
+Use replay only after the Security Review Owner has approved a manifest and the inventory marks it ready:
 
 ```bash
 redthread eval jailbreak-corpus \

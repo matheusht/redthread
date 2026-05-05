@@ -1,5 +1,11 @@
 # Wiki Log
 
+## [2026-05-04] decision-update | finalized benchmark material inventory workflow
+- updated `decisions/jailbreak-benchmark-material-vault.md` with the completed prompt-safe inventory readiness workflow
+- recorded `--ready-only --replay-commands-only` as the blessed copy/paste local replay queue surface
+- marked further inventory flag work as deferred unless it removes operator work or strengthens evidence boundaries
+- updated `docs/wiki/index.md`
+
 ## [2026-05-03] research-pass | ingested task-feature specialization concept
 - added concept page `concepts/task-feature-specialization.md` based on Arxiv research on task arithmetic
 - updated `docs/wiki/index.md`
