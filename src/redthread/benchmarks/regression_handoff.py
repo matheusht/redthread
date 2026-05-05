@@ -8,6 +8,10 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
+from redthread.benchmarks.artifacts import (
+    BenchmarkArtifactError,
+    assert_prompt_safe_benchmark_payload,
+)
 from redthread.benchmarks.campaigns import BenchmarkCampaignDraft
 from redthread.benchmarks.jailbreak_fixtures import JailbreakBenchmarkFixture
 from redthread.benchmarks.material_vault import BenchmarkMaterialManifest
@@ -143,9 +147,14 @@ def write_benchmark_regression_handoff_artifact(
     if path.exists() and path.is_dir():
         msg = f"benchmark regression handoff output path is a directory: {output_path}"
         raise BenchmarkRegressionHandoffError(msg)
+    payload = artifact.model_dump(mode="json")
+    try:
+        assert_prompt_safe_benchmark_payload(payload)
+    except BenchmarkArtifactError as exc:
+        raise BenchmarkRegressionHandoffError(str(exc)) from exc
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(artifact.model_dump(mode="json"), indent=2) + "\n", encoding="utf-8")
+        path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     except OSError as exc:
         msg = f"could not write benchmark regression handoff artifact: {output_path}"
         raise BenchmarkRegressionHandoffError(msg) from exc

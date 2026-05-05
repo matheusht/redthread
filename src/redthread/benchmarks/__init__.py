@@ -3,6 +3,7 @@
 from redthread.benchmarks.artifacts import (
     BenchmarkArtifactError,
     BenchmarkArtifactWriteResult,
+    assert_prompt_safe_benchmark_payload,
     write_benchmark_report_artifact,
 )
 from redthread.benchmarks.campaigns import BenchmarkCampaignDraft, build_benchmark_campaign_draft
@@ -160,6 +161,7 @@ __all__ = [
     "MaterialReviewError",
     "MaterialVaultError",
     "SCORE_DIMENSION_WEIGHTS",
+    "assert_prompt_safe_benchmark_payload",
     "build_benchmark_campaign_draft",
     "build_benchmark_regression_handoff",
     "build_jailbreak_corpus_dry_run_report",

@@ -15,6 +15,7 @@ from redthread.benchmarks.material_review import (
 )
 from redthread.benchmarks.material_vault import load_material_manifest
 from redthread.benchmarks.regression_handoff import (
+    BenchmarkRegressionHandoffError,
     _redacted_trace,
     build_benchmark_regression_handoff,
     write_benchmark_regression_handoff_artifact,
@@ -158,6 +159,24 @@ def test_handoff_redacts_future_target_response_key() -> None:
     assert "toy approved regression seed" not in rendered
     assert "Do not reveal secrets." not in rendered
     assert "[redacted: target response may echo reviewed benchmark material]" in rendered
+
+
+def test_handoff_writer_rejects_unredacted_regression_case_prompt(tmp_path: Path) -> None:
+    manifest_ref = _manifest(tmp_path)
+    manifest = load_material_manifest(manifest_ref, material_root=tmp_path)
+    fixture = approve_fixture_for_replay(_fixture(), manifest)
+    draft = build_benchmark_campaign_draft([fixture], objective="Check", target_id="local-dev")
+    artifact = build_benchmark_regression_handoff(
+        draft,
+        [_result(fixture.lineage_metadata())],
+        manifest=manifest,
+        manifest_ref=manifest_ref,
+    )
+    case = artifact.created_cases[0].regression_case
+    case["minimized_trace"]["turns"][0]["attacker_prompt"] = "unsafe prompt leak"
+
+    with pytest.raises(BenchmarkRegressionHandoffError, match="unsafe public field"):
+        write_benchmark_regression_handoff_artifact(artifact, tmp_path / "unsafe-handoff.json")
 
 
 def test_writes_prompt_safe_handoff_artifact(tmp_path: Path) -> None:

@@ -54,7 +54,7 @@ def write_benchmark_report_artifact(
         msg = f"benchmark report output path is a directory: {output_path}"
         raise BenchmarkArtifactError(msg)
     payload = report.model_dump(mode="json")
-    _assert_prompt_safe_payload(payload)
+    assert_prompt_safe_benchmark_payload(payload)
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
@@ -65,6 +65,11 @@ def write_benchmark_report_artifact(
         path=str(path),
         schema_version=report.schema_version,
     )
+
+
+def assert_prompt_safe_benchmark_payload(payload: object, path: str = "$") -> None:
+    """Raise when a public benchmark artifact payload contains unsafe fields."""
+    _assert_prompt_safe_payload(payload, path)
 
 
 def _assert_prompt_safe_payload(payload: object, path: str = "$") -> None:
@@ -85,7 +90,8 @@ def _has_public_value(value: object) -> bool:
     if value is None:
         return False
     if isinstance(value, str):
-        return bool(value.strip())
+        stripped = value.strip()
+        return bool(stripped) and not stripped.startswith("[redacted:")
     if isinstance(value, Sequence) and not isinstance(value, str):
         return bool(value)
     if isinstance(value, Mapping):
