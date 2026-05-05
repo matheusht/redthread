@@ -49,3 +49,27 @@ def test_material_inventory_cli_can_skip_default_hash_check(tmp_path: Path) -> N
     assert "Engine decision: needs_hash_check" in result.output
     assert "Ready materials: 0" in result.output
     assert "skip hash cli body" not in result.output
+
+
+def test_ready_only_forces_hash_check_despite_skip_flag(tmp_path: Path) -> None:
+    _manifest(tmp_path, "ready skip hash cli body")
+
+    result = CliRunner().invoke(
+        main,
+        [
+            "eval",
+            "jailbreak-material",
+            "list",
+            "--material-root",
+            str(tmp_path),
+            "--skip-hash-check",
+            "--ready-only",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert "Hash check: enabled" in result.output
+    assert "Engine decision: ready_for_replay" in result.output
+    assert "Ready only: true" in result.output
+    assert "Ready materials: 1" in result.output
+    assert "ready skip hash cli body" not in result.output
