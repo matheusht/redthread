@@ -17,6 +17,7 @@ from redthread.core.defense_synthesis import (
     ValidationResult,
     VulnerabilityClassification,
 )
+from redthread.orchestration.canary_containment import evaluate_canary_containment
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +55,18 @@ class MemoryIndex:
 
     def append(self, record: DeploymentRecord) -> bool:
         """Append a deployment record unless its trace ID already exists."""
+        canary_decision = evaluate_canary_containment(
+            seam="memory.write",
+            prompt=f"{record.guardrail_clause}\n{record.validation.replay_response}",
+            metadata=record.metadata,
+        )
+        if canary_decision.blocked:
+            logger.warning(
+                "MemoryIndex blocked canary-tagged write | trace=%s | tags=%s",
+                record.trace_id,
+                canary_decision.canary_tags,
+            )
+            return False
         if self._is_duplicate(record.trace_id):
             logger.debug("MemoryIndex: duplicate trace_id=%s — skipping.", record.trace_id)
             return False

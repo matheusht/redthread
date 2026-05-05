@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
+from redthread.pyrit_adapters.targets import ExecutionMetadata, send_with_execution_metadata
 from redthread.tools.authorization import authorize_live_action
 from redthread.tools.authorization.tool_context import get_authorization_action
 from redthread.tools.base import RedThreadTool, ToolContext, ToolResult
@@ -87,9 +88,18 @@ class SandboxTool(RedThreadTool[SandboxInput]):
         judge = JudgeAgent(ctx.settings)
 
         try:
-            replay_response = await patched_target.send(
+            replay_response = await send_with_execution_metadata(
+                patched_target,
                 prompt=patched_prompt,
                 conversation_id=conversation_id,
+                execution_metadata=ExecutionMetadata(
+                    seam="sandbox.replay",
+                    role="defense_validator",
+                    evidence_class="live_replay",
+                    authorization_decision=decision.model_dump(mode="json") if decision else None,
+                    canary_tags=action.canary_tags if action is not None else [],
+                    metadata={"trace_id": data.trace_id, "rubric_name": data.rubric_name},
+                ),
             )
         except Exception as exc:
             return ToolResult.err(

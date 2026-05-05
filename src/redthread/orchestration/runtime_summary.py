@@ -17,6 +17,39 @@ def _build_agentic_security_summary(state: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def merge_live_canary_report(summary: RuntimeSummary, execution_records: list[Any]) -> RuntimeSummary:
+    """Merge canary containment decisions from live execution records."""
+    decisions = [
+        record.metadata.get("canary_containment")
+        for record in execution_records
+        if getattr(record, "metadata", None) and record.metadata.get("canary_containment")
+    ]
+    tagged = [decision for decision in decisions if decision.get("canary_tags")]
+    if not tagged:
+        return summary
+    blocked = [decision for decision in tagged if decision.get("decision") == "block"]
+    crossed = []
+    for decision in tagged:
+        seam = decision.get("seam")
+        if seam and seam not in crossed:
+            crossed.append(seam)
+    live_report = {
+        "injection_point": crossed[0] if crossed else None,
+        "crossed_boundaries": crossed,
+        "stage_count": len(crossed),
+        "first_blocked_point": blocked[0].get("blocked_point") if blocked else None,
+        "reached_execution_boundary": any(d.get("boundary") == "execution_boundary" for d in tagged),
+        "contained": bool(blocked) or not any(d.get("boundary") == "execution_boundary" for d in tagged),
+    }
+    merged = dict(summary)
+    agentic = dict(merged.get("agentic_security", {}))
+    agentic["live_canary_event_total"] = sum(len(d.get("canary_tags", [])) for d in tagged)
+    agentic["live_canary_report"] = live_report
+    agentic["canary_event_total"] = agentic.get("canary_event_total", 0) + agentic["live_canary_event_total"]
+    merged["agentic_security"] = agentic
+    return merged
+
+
 def build_runtime_summary(state: dict[str, Any]) -> RuntimeSummary:
     """Build a compact operator-facing runtime summary from supervisor state."""
     attack_worker_total = state.get("attack_worker_total", 0)

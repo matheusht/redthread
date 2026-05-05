@@ -40,6 +40,33 @@ def test_memory_index_append_and_deduplicate(tmp_path: Path) -> None:
 
 
 
+def test_memory_index_blocks_canary_tagged_memory_write(tmp_path: Path) -> None:
+    settings = make_settings().model_copy(update={"memory_dir": tmp_path})
+    index = MemoryIndex(settings)
+    record = DeploymentRecord(
+        trace_id="trace-canary",
+        guardrail_clause="Do not persist CANARY_EXT_TOOL_01.",
+        classification=VulnerabilityClassification(
+            category="prompt_injection",
+            owasp_ref="LLM01",
+            mitre_atlas_ref="AML.T0054",
+            severity="HIGH",
+            attack_vector="Tool poisoning",
+        ),
+        validation=ValidationResult(
+            passed=True,
+            replay_response="blocked",
+            judge_score=1.0,
+        ),
+        target_model="llama3.2:3b",
+        target_system_prompt_hash="dummyhash",
+        metadata={"canary_tags": ["CANARY_EXT_TOOL_01"]},
+    )
+
+    assert index.append(record) is False
+    assert "trace-canary" not in index.known_trace_ids()
+
+
 def test_memory_index_content_format(tmp_path: Path) -> None:
     settings = make_settings().model_copy(update={"memory_dir": tmp_path})
     index = MemoryIndex(settings)

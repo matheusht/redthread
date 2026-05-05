@@ -11,6 +11,7 @@ class ReplayTrace(BaseModel):
     scenario_result: dict[str, object] = Field(default_factory=dict)
     authorization_decision: dict[str, object] | None = None
     canary_report: dict[str, object] = Field(default_factory=dict)
+    live_canary_report: dict[str, object] = Field(default_factory=dict)
     budget_decision: dict[str, object] = Field(default_factory=dict)
     expected_authorization: str | None = None
     expect_canary_contained: bool | None = None

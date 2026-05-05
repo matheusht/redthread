@@ -91,6 +91,28 @@ def test_replay_bundle_passes_when_controls_match_expectations() -> None:
     assert result["bridge_workflow_context"]["applied_response_binding_count"] == 1
 
 
+def test_replay_bundle_fails_uncontained_live_canary_execution_boundary() -> None:
+    bundle = ReplayBundle(
+        bundle_id="phase-8e-live-canary-fail",
+        traces=[
+            ReplayTrace(
+                trace_id="live-canary-bad",
+                threat="tool_poisoning",
+                live_canary_report={
+                    "contained": False,
+                    "reached_execution_boundary": True,
+                    "crossed_boundaries": ["tool.attack"],
+                },
+            )
+        ],
+    )
+
+    result = evaluate_agentic_promotion(bundle)
+
+    assert result["passed"] is False
+    assert "live-canary-bad:live_canary:uncontained_execution_boundary" in result["failures"]
+
+
 def test_replay_bundle_fails_when_expected_control_is_missing() -> None:
     bundle = ReplayBundle(
         bundle_id="phase-8e-fail",
