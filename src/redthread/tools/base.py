@@ -16,6 +16,7 @@ from typing import Any, Generic, TypeVar
 from pydantic import BaseModel
 
 from redthread.config.settings import RedThreadSettings
+from redthread.orchestration.canary_containment import evaluate_canary_containment
 
 InputT = TypeVar("InputT", bound=BaseModel)
 
@@ -28,6 +29,7 @@ class ToolContext:
     campaign_id: str
     dry_run: bool = False
     metadata: dict[str, Any] = field(default_factory=dict)
+    canary_tags: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -105,5 +107,18 @@ class RedThreadTool(ABC, Generic[InputT]):
         permission = await self.check_permissions(data, ctx)
         if not permission.allowed:
             return ToolResult.err(f"Permission denied: {permission.reason}")
+
+        if self.is_destructive:
+            decision = evaluate_canary_containment(
+                seam=str(ctx.metadata.get("seam", f"tool.{self.name}")),
+                metadata=ctx.metadata,
+                canary_tags=ctx.canary_tags,
+                mode=ctx.settings.canary_policy_preset.value,
+            )
+            if decision.blocked:
+                return ToolResult.err(
+                    f"Canary containment blocked tool: {decision.reason}",
+                    canary_containment=decision.model_dump(mode="json"),
+                )
 
         return await self.call(data, ctx)

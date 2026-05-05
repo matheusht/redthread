@@ -138,8 +138,18 @@ In `src/redthread/tools/sandbox_tool.py`, `SandboxTool` can do the same before r
 In `src/redthread/core/defense_replay_runner.py`, live defense replay now authorizes each replay case before the patched target send and records that decision on the replay case evidence itself.
 If authorization is not `allow`, the target send is blocked before execution.
 
-This is still not the same as broad production enforcement.
-It is a narrow proof-of-control hook.
+Live canary containment now has a central guard on the shared provider-send helper.
+`send_with_execution_metadata()` and `send_with_usage_and_execution_metadata()` evaluate canary tags before target execution.
+Analysis-only seams such as `judge.score` may carry canary-tagged evidence.
+Protected execution seams such as `tool.attack`, `sandbox.replay`, `defense.replay`, `strategy.static_seed_replay`, and target lanes block canary-tagged content before the provider call runs.
+Direct production sends in `AttackTool`, `SandboxTool`, `ControlledLiveAdapter`, and static seed replay now route through the shared helper with seam metadata.
+Runtime summaries can merge live canary decisions under `runtime_summary.agentic_security.live_canary_report`.
+Destructive `RedThreadTool.run()` calls now evaluate `ToolContext.canary_tags` before tool execution.
+`MemoryIndex.append()` blocks canary-tagged guardrail or replay content before writing `MEMORY.md` or `deployments.jsonl`.
+The replay promotion gate now fails any trace whose sealed or live canary report reaches an execution boundary without containment.
+
+This is still not universal enterprise enforcement.
+It is the first broad shared-send containment layer and depends on production paths using the shared metadata helper.
 
 ---
 

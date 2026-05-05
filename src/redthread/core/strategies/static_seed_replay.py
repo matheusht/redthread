@@ -20,6 +20,7 @@ from redthread.models import (
     PsychologicalTrigger,
 )
 from redthread.orchestration.models import AttackStrategySpec, CampaignPlan, PlannedRisk
+from redthread.pyrit_adapters.targets import ExecutionMetadata, send_with_execution_metadata
 
 
 class StaticSeedReplayRunner:
@@ -58,9 +59,16 @@ class StaticSeedReplayRunner:
             ),
         )
         for index, prompt in enumerate(prompts, start=1):
-            response = await target.send(
-                prompt,
+            response = await send_with_execution_metadata(
+                target,
+                prompt=prompt,
                 conversation_id=f"{self.strategy_id}-{trace.id}-t{index}",
+                execution_metadata=ExecutionMetadata(
+                    seam="strategy.static_seed_replay",
+                    role="attack_worker",
+                    evidence_class="live_attack",
+                    metadata={"trace_id": trace.id, "turn": index},
+                ),
             )
             trace.turns.append(
                 ConversationTurn(

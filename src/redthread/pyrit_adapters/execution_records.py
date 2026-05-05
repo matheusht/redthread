@@ -17,6 +17,8 @@ class ExecutionMetadata:
     runtime_mode: str = LIVE_PROVIDER
     conversation_id: str | None = None
     authorization_decision: dict[str, Any] | None = None
+    canary_tags: list[str] = field(default_factory=list)
+    canary_containment: dict[str, Any] | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
 
 
@@ -57,5 +59,9 @@ def build_execution_record(
         success=success,
         error=error,
         authorization_decision=execution_metadata.authorization_decision,
-        metadata=dict(execution_metadata.metadata),
+        metadata={
+            **dict(execution_metadata.metadata),
+            "canary_tags": list(execution_metadata.canary_tags),
+            "canary_containment": execution_metadata.canary_containment,
+        },
     )

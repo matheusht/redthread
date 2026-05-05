@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
+from redthread.pyrit_adapters.targets import ExecutionMetadata, send_with_execution_metadata
 from redthread.tools.authorization import authorize_live_action
 from redthread.tools.authorization.tool_context import (
     AUTHORIZATION_ACTION_METADATA_KEY,
@@ -70,9 +71,18 @@ class AttackTool(RedThreadTool[AttackInput]):
         target = build_target(ctx.settings)
 
         try:
-            response = await target.send(
+            response = await send_with_execution_metadata(
+                target,
                 prompt=data.prompt,
                 conversation_id=conversation_id,
+                execution_metadata=ExecutionMetadata(
+                    seam="tool.attack",
+                    role="attack_tool",
+                    evidence_class="live_attack",
+                    authorization_decision=decision.model_dump(mode="json") if decision else None,
+                    canary_tags=action.canary_tags if action is not None else [],
+                    metadata={"campaign_id": ctx.campaign_id, "persona_id": data.persona_id},
+                ),
             )
             meta = {
                 "conversation_id": conversation_id,

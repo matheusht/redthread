@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from dataclasses import replace
 from uuid import uuid4
 
 from redthread.config.settings import RedThreadSettings, TargetBackend
+from redthread.orchestration.canary_containment import evaluate_canary_containment
 from redthread.pyrit_adapters.execution_context import get_execution_recorder
 from redthread.pyrit_adapters.execution_records import (
     ExecutionMetadata,
@@ -60,6 +62,7 @@ class RedThreadTarget:
             conversation_id = str(uuid4())
 
         try:
+            execution_metadata = self._apply_canary_containment(prompt, execution_metadata)
             maybe_intercept_live_execution(execution_metadata)
             message_cls, message_piece_cls, _ = import_pyrit_runtime()
             piece = message_piece_cls(
@@ -94,6 +97,30 @@ class RedThreadTarget:
     ) -> tuple[str, int]:
         response = await self.send(prompt, conversation_id, execution_metadata=execution_metadata)
         return response, (len(prompt) + len(response)) // 4
+
+    def _apply_canary_containment(
+        self,
+        prompt: str,
+        execution_metadata: ExecutionMetadata | None,
+    ) -> ExecutionMetadata | None:
+        if execution_metadata is None:
+            return None
+        if execution_metadata.canary_containment is not None:
+            return execution_metadata
+        decision = evaluate_canary_containment(
+            seam=execution_metadata.seam,
+            prompt=prompt,
+            metadata=execution_metadata.metadata,
+            canary_tags=execution_metadata.canary_tags,
+        )
+        updated = replace(
+            execution_metadata,
+            canary_tags=list(dict.fromkeys([*execution_metadata.canary_tags, *decision.canary_tags])),
+            canary_containment=decision.model_dump(mode="json"),
+        )
+        if decision.blocked:
+            raise RuntimeError(decision.reason)
+        return updated
 
     def close(self) -> None:
         if hasattr(self._target, "dispose_db_engine"):

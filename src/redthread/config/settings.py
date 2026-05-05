@@ -22,6 +22,13 @@ class TargetBackend(str, Enum):
     LLAMA_CPP = "llama_cpp"
 
 
+class CanaryPolicyPreset(str, Enum):
+    MONITOR_ONLY = "monitor_only"
+    BLOCK_EXECUTION_BOUNDARY = "block_execution_boundary"
+    BLOCK_MEMORY_AND_OUTBOUND = "block_memory_and_outbound"
+    STRICT_FAIL_CLOSED = "strict_fail_closed"
+
+
 class ModelRole(str, Enum):
     """Asymmetric deployment roles."""
     ATTACKER = "attacker"           # Lightweight: fast, fewer safety filters
@@ -213,6 +220,10 @@ class RedThreadSettings(BaseSettings):
     dry_run: bool = Field(
         default=False,
         description="Validate config + generate persona but do not send to target",
+    )
+    canary_policy_preset: CanaryPolicyPreset = Field(
+        default=CanaryPolicyPreset.BLOCK_MEMORY_AND_OUTBOUND,
+        description="Live canary containment mode for execution, memory, and outbound seams",
     )
 
     # ── Telemetry / ASI (Phase 5B) ────────────────────────────────────────────

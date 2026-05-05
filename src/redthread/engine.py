@@ -75,3 +75,11 @@ class RedThreadEngine:
         summary = build_execution_truth_summary(execution_records)
         campaign.metadata["execution_truth_summary"] = summary
         campaign.metadata["execution_records_sample"] = summary["record_sample"]
+        runtime_summary = campaign.metadata.get("runtime_summary")
+        if isinstance(runtime_summary, dict):
+            from redthread.orchestration.runtime_summary import merge_live_canary_report
+
+            campaign.metadata["runtime_summary"] = merge_live_canary_report(
+                runtime_summary,
+                execution_records,
+            )

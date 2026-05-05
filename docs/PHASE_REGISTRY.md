@@ -434,6 +434,7 @@ TERMINAL EVALUATION
 **Deliverables**:
 - `src/redthread/telemetry/canaries.py` — canary injection and merge helpers
 - `src/redthread/orchestration/canary_flow.py` — stage-by-stage propagation reports
+- `src/redthread/orchestration/canary_containment.py` — live canary boundary classifier and containment guard
 - `src/redthread/telemetry/runtime_budgets.py` — deterministic runtime budget evaluator
 - `src/redthread/orchestration/runtime_summary.py` — additive canary and budget reporting fields
 - `tests/test_canary_containment.py` — canary flow and budget stop coverage
@@ -444,7 +445,7 @@ TERMINAL EVALUATION
 | Canary reporting | stage list to compact report | Makes spread-path evidence inspectable without overcomplicating runtime state |
 | Budget control | deterministic threshold gate | Keeps amplification containment replay-safe and CI-friendly |
 | Summary impact | additive nested fields | Preserves existing operator truth surfaces while exposing new containment signals |
-| Scope control | sealed reporting only in v1 | Live hook wiring remains deferred to the next phase |
+| Scope control | shared-send live containment after v1 | Canary-tagged content is blocked at protected execution and memory boundaries while analysis-only seams can inspect evidence |
 
 ### Phase 8E: Replay, Promotion, and Controlled Live Adapters ✅
 **Objective**: Add replay-bundle gating and a fail-closed live adapter wrapper so agentic-security controls must pass sealed promotion checks before any live traffic path can open.
@@ -453,8 +454,10 @@ TERMINAL EVALUATION
 
 **Deliverables**:
 - `src/redthread/evaluation/replay_corpus.py` — replay trace and bundle models
-- `src/redthread/evaluation/promotion_gate.py` — deterministic replay promotion evaluator
+- `src/redthread/evaluation/promotion_gate.py` — deterministic replay promotion evaluator with uncontained-canary failure checks
 - `src/redthread/pyrit_adapters/controlled.py` — fail-closed controlled live adapter wrapper
+- `src/redthread/pyrit_adapters/send_helpers.py` — shared live send path with canary containment decisions
+- `src/redthread/tools/base.py` and `src/redthread/memory/index.py` — tool and memory-write containment gates
 - `tests/test_agentic_replay_promotion.py` — replay pass/fail and live-adapter lock coverage
 
 **Key Decisions**:

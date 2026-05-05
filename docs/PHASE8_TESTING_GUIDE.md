@@ -44,6 +44,7 @@ Do the runtime smoke second.
 
 ### Phase 8D — Canary and runtime containment
 - canary propagation report
+- live canary containment guard on shared send helpers
 - runtime budget checks
 - runtime summary extension
 
@@ -67,9 +68,11 @@ Do the runtime smoke second.
 - `src/redthread/orchestration/models/agentic_security.py`
 - `src/redthread/orchestration/permission_inheritance.py`
 - `src/redthread/orchestration/canary_flow.py`
+- `src/redthread/orchestration/canary_containment.py`
 - `src/redthread/orchestration/scenarios/confused_deputy.py`
 - `src/redthread/orchestration/scenarios/resource_amplification.py`
 - `src/redthread/orchestration/graphs/tool_attack_graph.py`
+- `src/redthread/tools/base.py`
 - `src/redthread/tools/authorization/engine.py`
 - `src/redthread/tools/authorization/models.py`
 - `src/redthread/tools/authorization/presets.py`
@@ -79,6 +82,8 @@ Do the runtime smoke second.
 - `src/redthread/telemetry/runtime_budgets.py`
 - `src/redthread/evaluation/replay_corpus.py`
 - `src/redthread/evaluation/promotion_gate.py`
+- `src/redthread/memory/index.py`
+- `src/redthread/pyrit_adapters/send_helpers.py`
 - `src/redthread/pyrit_adapters/controlled.py`
 - `src/redthread/engine.py`
 
@@ -88,6 +93,7 @@ Do the runtime smoke second.
 - `tests/test_authorization_engine.py`
 - `tests/test_canary_containment.py`
 - `tests/test_agentic_replay_promotion.py`
+- `tests/test_defense_memory.py`
 - `tests/test_supervisor.py`
 - `tests/test_runtime_truth.py`
 
