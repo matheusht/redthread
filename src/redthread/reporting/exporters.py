@@ -2,15 +2,15 @@
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 from redthread.reporting.models import FindingReport, OperatorArtifactBundle
+from redthread.reporting.public_artifacts import prompt_safe_json
 
 
 def operator_artifacts_to_json(bundle: OperatorArtifactBundle) -> str:
-    """Return stable JSON for an operator artifact bundle."""
-    return json.dumps(bundle.model_dump(mode="json"), indent=2, sort_keys=True) + "\n"
+    """Return stable JSON for a prompt-safe operator artifact bundle."""
+    return prompt_safe_json(bundle.model_dump(mode="json"))
 
 
 def operator_artifacts_to_markdown(bundle: OperatorArtifactBundle) -> str:

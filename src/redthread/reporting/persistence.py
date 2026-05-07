@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 from redthread.reporting.exporters import write_operator_artifacts
@@ -11,6 +10,7 @@ from redthread.reporting.persona_artifacts import (
     ADAPTIVE_PERSONA_WEIGHTING_PLAN_NAME,
     PERSONA_OUTCOMES_NAME,
 )
+from redthread.reporting.public_artifacts import prompt_safe_json
 
 REPORT_MARKDOWN_NAME = "operator-report.md"
 REPORT_JSON_NAME = "operator-report.json"
@@ -62,7 +62,7 @@ def write_campaign_report_artifacts(
             "External evidence must remain weak evidence until JudgeAgent confirms a finding.",
         ],
     )
-    manifest_path.write_text(json.dumps(manifest.model_dump(mode="json"), indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    manifest_path.write_text(prompt_safe_json(manifest.model_dump(mode="json")), encoding="utf-8")
     return manifest
 
 
@@ -70,7 +70,7 @@ def _write_optional_json(path: Path, payload: dict[str, object]) -> Path | None:
     if not payload:
         return None
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(prompt_safe_json(payload), encoding="utf-8")
     return path
 
 

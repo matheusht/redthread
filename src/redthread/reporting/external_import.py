@@ -15,6 +15,7 @@ from redthread.reporting.external_evidence import (
     promptfoo_result_to_evidence,
     strix_finding_to_evidence,
 )
+from redthread.reporting.public_artifacts import prompt_safe_json
 
 Mapper = Callable[[dict[str, Any]], ExternalEvidenceItem]
 
@@ -57,7 +58,7 @@ def _read_json(path: Path) -> object:
 
 
 def _bundle_to_json(bundle: ExternalEvidenceBundle) -> str:
-    return json.dumps(bundle.model_dump(mode="json"), indent=2, sort_keys=True) + "\n"
+    return prompt_safe_json(bundle.model_dump(mode="json"))
 
 
 def _extract_rows(payload: object) -> list[dict[str, Any]]:
