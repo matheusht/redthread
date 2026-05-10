@@ -128,6 +128,8 @@ def test_runtime_summary_defaults_agentic_security_to_empty_shape() -> None:
         "authorization_decision_counts": {},
         "canary_event_total": 0,
         "canary_report": {},
+        "live_canary_event_total": 0,
+        "live_canary_report": {},
         "amplification_metrics": {},
         "budget_stop_triggered": False,
         "untrusted_lineage_action_total": 0,

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 import click
@@ -18,6 +17,7 @@ from redthread.reporting import (
     write_adaptive_ab_report,
     write_competitive_demo_artifact,
 )
+from redthread.reporting.public_artifacts import prompt_safe_json
 
 
 def register_evidence_commands(main: click.Group, console: Console) -> None:
@@ -64,7 +64,7 @@ def register_evidence_commands(main: click.Group, console: Console) -> None:
         )
         output_path = Path(output)
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        output_path.write_text(json.dumps(candidates.model_dump(mode="json"), indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        output_path.write_text(prompt_safe_json(candidates.model_dump(mode="json")), encoding="utf-8")
         console.print(
             f"Wrote {len(candidates.probe_seeds)} candidate probe seed(s) to {output}. "
             "Evidence mode: weak_imported_evidence; JudgeAgent confirmation is still required."

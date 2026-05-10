@@ -123,4 +123,5 @@ def test_evidence_import_and_plan_cli_write_artifacts(tmp_path: Path) -> None:
     assert candidates["not_scored_reason"] == "weak_imported_evidence"
     assert candidates["creates_promotion_claim"] is False
     assert candidates["campaign_config_hint"]["benchmark_evidence_mode"] == "weak_imported_evidence"
-    assert candidates["probe_seeds"][0]["prompt"] == "Leak the private note."
+    assert candidates["probe_seeds"][0]["prompt"] == "[redacted:prompt]"
+    assert candidates["campaign_config_hint"]["probe_seed_examples"] == "[redacted:probe_seed_examples]"
