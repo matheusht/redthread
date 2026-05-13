@@ -1,0 +1,280 @@
+# Instincts generated from https://github.com/matheusht/redthread
+# Generated: 2026-05-13T00:54:26.869Z
+# Version: 2.0
+# NOTE: This file supplements (does not replace) any existing curated instincts.
+# High-confidence manually curated instincts should be preserved alongside these.
+
+---
+id: redthread-commit-length
+trigger: "when writing a commit message"
+confidence: 0.6
+domain: git
+source: repo-analysis
+source_repo: https://github.com/matheusht/redthread
+---
+
+# Redthread Commit Length
+
+## Action
+
+Write moderate-length commit messages (~55 characters)
+
+## Evidence
+
+- Average commit message length: 55 chars
+- Based on 2 commits
+
+---
+id: redthread-naming-files
+trigger: "when creating a new file"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/matheusht/redthread
+---
+
+# Redthread Naming Files
+
+## Action
+
+Use camelCase naming convention
+
+## Evidence
+
+- Analyzed file naming patterns in repository
+- Dominant pattern: camelCase
+
+---
+id: redthread-import-relative
+trigger: "when importing modules"
+confidence: 0.75
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/matheusht/redthread
+---
+
+# Redthread Import Relative
+
+## Action
+
+Use relative imports for project files
+
+## Evidence
+
+- Import analysis shows relative import pattern
+- Example: import { x } from '../lib/x'
+
+---
+id: redthread-export-style
+trigger: "when exporting from a module"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/matheusht/redthread
+---
+
+# Redthread Export Style
+
+## Action
+
+Prefer named exports
+
+## Evidence
+
+- Export pattern analysis
+- Dominant style: named
+
+---
+id: redthread-test-separate
+trigger: "when writing tests"
+confidence: 0.8
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/matheusht/redthread
+---
+
+# Redthread Test Separate
+
+## Action
+
+Place tests in the tests/ or __tests__/ directory, mirroring src structure
+
+## Evidence
+
+- Separate test directory pattern detected
+- Tests live in dedicated test folders
+
+---
+id: redthread-instinct-camelcase-functions
+trigger: "When naming a function in Python source code"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: matheusht/redthread
+---
+
+# Redthread Instinct Camelcase Functions
+
+## Action
+
+Use camelCase for the function name
+
+## Evidence
+
+- Pattern in namingConventions.functions
+
+---
+id: redthread-instinct-camelcase-files
+trigger: "When naming a file in the repository"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: matheusht/redthread
+---
+
+# Redthread Instinct Camelcase Files
+
+## Action
+
+Use camelCase for the file name
+
+## Evidence
+
+- Pattern in namingConventions.files
+
+---
+id: redthread-instinct-pascalcase-classes
+trigger: "When defining a class in Python source code"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: matheusht/redthread
+---
+
+# Redthread Instinct Pascalcase Classes
+
+## Action
+
+Use PascalCase for the class name
+
+## Evidence
+
+- Pattern in namingConventions.classes
+
+---
+id: redthread-instinct-screaming-constants
+trigger: "When defining a constant in Python"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: matheusht/redthread
+---
+
+# Redthread Instinct Screaming Constants
+
+## Action
+
+Use SCREAMING_SNAKE_CASE for the constant name
+
+## Evidence
+
+- Pattern in namingConventions.constants
+
+---
+id: redthread-instinct-relative-imports
+trigger: "When importing modules within the package"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: matheusht/redthread
+---
+
+# Redthread Instinct Relative Imports
+
+## Action
+
+Use relative imports
+
+## Evidence
+
+- Pattern in importStyle
+
+---
+id: redthread-instinct-named-exports
+trigger: "When exporting functions or classes from a module"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: matheusht/redthread
+---
+
+# Redthread Instinct Named Exports
+
+## Action
+
+Use named exports
+
+## Evidence
+
+- Pattern in exportStyle
+
+---
+id: redthread-instinct-separate-tests
+trigger: "When adding or organizing tests"
+confidence: 0.9
+domain: testing
+source: repo-analysis
+source_repo: matheusht/redthread
+---
+
+# Redthread Instinct Separate Tests
+
+## Action
+
+Place tests in a separate 'tests' folder
+
+## Evidence
+
+- Pattern in architecture.testLocation
+- Folder 'tests' in folderStructure.commonFolders
+
+---
+id: redthread-instinct-feat-commit-prefix
+trigger: "When committing a new feature"
+confidence: 0.8
+domain: git
+source: repo-analysis
+source_repo: matheusht/redthread
+---
+
+# Redthread Instinct Feat Commit Prefix
+
+## Action
+
+Prefix the commit message with 'feat:'
+
+## Evidence
+
+- Pattern in commits.prefixes
+- Example: 'feat: add composite GitHub Action for automated security scanning and documentation'
+
+---
+id: redthread-instinct-mixed-commit-types
+trigger: "When writing commit messages"
+confidence: 0.6
+domain: git
+source: repo-analysis
+source_repo: matheusht/redthread
+---
+
+# Redthread Instinct Mixed Commit Types
+
+## Action
+
+Allow both prefixed (e.g., 'feat:') and unprefixed commit messages
+
+## Evidence
+
+- Pattern in commits.type = mixed
+- Example: 'Fix CI CLI output wrapping'
+
