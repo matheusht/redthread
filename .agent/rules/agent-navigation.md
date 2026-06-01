@@ -17,6 +17,8 @@ ALWAYS LOADED (Priority 1 — rules):
 
 ON TASK START (Priority 2):
   AGENTS.md                           ← agent roles & subagent definitions
+  docs/ai-context-summary.md           ← compact AI context
+  docs/context-index.md                ← active docs and load-on-demand map
   docs/AGENT_DECISION_TREE.md         ← task-to-doc routing
 
 ON DEMAND (Priority 3):
@@ -34,6 +36,10 @@ VIA SKILL (Priority 4):
   .agent/skills/gap-check/SKILL.md    ← plan gap analysis
   .agent/skills/context7-mcp/SKILL.md ← library docs via Context7 MCP
 ```
+
+## Mirror Policy
+
+`AGENTS.md` and `docs/` are authoritative. `.agent/` mirrors shared behavior for Antigravity. `.codex/` mirrors shared behavior for Codex. When shared behavior changes, update the source doc first and then update both mirrors or state why one mirror differs.
 
 ## Decision Tree: What to Do
 

@@ -8,6 +8,7 @@ This document dictates the behavior and orchestration of the Antigravity Agent w
 * **Decision Matrix:** Before running *any* operation, the agent must consult [docs/AGENT_DECISION_TREE.md](docs/AGENT_DECISION_TREE.md) to identify which domain document to load based on the user's intent.
 * **Working Methodology:** All tasks must follow the RPI (Research → Plan → Implement) flow outlined in [docs/RPI_METHODOLOGY.md](docs/RPI_METHODOLOGY.md). Context must not exceed 40% window utilization.
 * **Default Response Style:** Use full caveman mode by default unless the user asks for a different style. That means simple words, short direct sentences, practical structure, low fluff, and clear "what this is / why it matters / what next" guidance.
+* **Context Index:** Start broad repository sessions with [docs/ai-context-summary.md](docs/ai-context-summary.md) and [docs/context-index.md](docs/context-index.md). Load large research, logs, and historical docs only on demand.
 
 ## 2. The Orchestration Workflow (Principal vs Subagents)
 Antigravity operates as the **Principal Agent** inside the RedThread ecosystem. It acts identically to the LangGraph supervisor documented in `docs/PHASE_REGISTRY.md` and `docs/AGENT_ARCHITECTURE.md`—it manages the task graph while delegating execution.
@@ -26,6 +27,12 @@ When tasks bridge boundaries, the Principal Agent MUST delegate:
 ## 3. Mandatory Component Rules
 Do not maintain rules in this document.
 Always apply `.agent/rules/` for global operations. Use `.agent/skills/` for specific tasks.
+
+## 3.0 Mirror Policy
+`AGENTS.md` and `docs/` are authoritative. `.agent/` is the Antigravity-facing mirror. `.codex/` is the Codex-facing mirror. When changing shared behavior, update the source doc first, then update both mirrors if the rule applies to both tools. If a mirror intentionally differs, state why in that mirror. Do not let RPI, context budget, code conventions, or skill procedures drift silently.
+
+## 3.0.1 Work Quality Rules
+Use code and shell tools for deterministic facts. Use the model for judgment, synthesis, and summarization. Make surgical changes and avoid adjacent refactors. State conflicts instead of blending them. Read immediate callers and shared utilities before code edits. Verify before saying done; if checks are skipped or fail, say so.
 
 ## 3.1 Knowledge System Rules
 RedThread uses a two-layer knowledge system:
@@ -90,7 +97,7 @@ If a change would push a file past the limit, extract sub-components, hooks, or 
 # Progressive Disclosure, Context Debloating, and RPI
 
 ## Start here
-- Start implementation tasks at root [README.md](README.md) and [docs/TECH_STACK.md](docs/TECH_STACK.md).
+- Start implementation tasks at [docs/ai-context-summary.md](docs/ai-context-summary.md), [docs/context-index.md](docs/context-index.md), root [README.md](README.md), and [docs/TECH_STACK.md](docs/TECH_STACK.md).
 - Open the matching repo-local skill before implementation work:
   - New features, architecture changes, multi-file work, or unclear impact → `.agent/skills/plan/SKILL.md` then `.agent/skills/implement/SKILL.md`
   - Small tweaks, isolated bugfixes, copy edits, or low-blast-radius polish → `.agent/skills/mini-rpi/SKILL.md`
@@ -127,3 +134,37 @@ If a change would push a file past the limit, extract sub-components, hooks, or 
 - `Implement`: patch only the minimal affected slice.
 - Escalate from mini-RPI to full RPI whenever the tweak crosses subsystem boundaries, changes data flow, or risks regressions.
 
+<!-- clarity-begin -->
+<!-- clarity-meta
+schema_version: 1
+mode: embedded
+protocol_dir_name: .clarity-protocol
+processes_dir: .clarity-agent/processes
+-->
+<!-- Clarity manages this block; edits between the clarity-begin / clarity-end markers will be overwritten on the next project open. Put project-specific guidance outside the markers. -->
+
+## Clarity Protocol
+
+This project uses the Clarity Protocol for structured thinking about consequential decisions — what to build and why, how it should be designed, where it might fail. Protocol documents live in `.clarity-protocol/`. Process guides live in `.clarity-agent/processes/`; the entry point for any Clarity work is `.clarity-agent/processes/clarity-agent.md`.
+
+### When to engage
+
+**Before building — think when it matters.** Two triggers:
+
+1. *The user asks.* When they want to explore what to build, clarify requirements, brainstorm risks, or work through a decision: call the `run_clarity` MCP tool, or read and follow `.clarity-agent/processes/clarity-agent.md` if MCP isn't available.
+
+2. *You recognize an inflection point.* Before making choices that would be expensive to reverse — new services, auth/trust models, data schemas, external integrations, significant API contracts — call `check_decision` with what you plan to do. It returns existing decisions, requirements, and architecture so you can check for conflicts. Don't interrupt for routine implementation. The test: "If this turns out wrong, is it a 5-minute fix or a multi-day rework?" Interrupt for the latter.
+
+**After building — keep the record current.** After significant implementation work (new features, architectural changes), call `get_packet_status` to find stale protocol documents. Update them with `read_protocol_document` / `write_protocol_document`. Record significant choices with `record_decision`; add risks with `record_failure`.
+
+### Behaviors (apply throughout)
+
+**Move quickly through what's obvious.** Many processes have multiple steps, but sometimes the answer to a step is already clear from context. When it is, just do it — write the result and present a summary for confirmation. Don't stop to ask permission at every small step. The goal is a natural conversation, not a checklist. Reserve interactive discussion for genuine ambiguity, tradeoffs, or decisions that need the user's judgment.
+
+**Keep outputs narrative but brief.** All `.md` files in this project — protocol documents, process guides, and instructions — are repeatedly read by both humans and LLMs. They should read as smooth, concise narrative: easy to understand on first read, with nothing that wastes the reader's attention. A reader must immediately understand both the "what" and the "why." Cut anything that doesn't carry meaningful information. Since many of these files are instructions for LLMs which create further `.md` files, they should encourage the same discipline.
+
+**Use `.clarity-protocol/notes.md` as shared memory.** At the start of every process, read `.clarity-protocol/notes.md` for guiding principles and cross-phase observations. When you notice something worth remembering — a design philosophy, a team constraint, an insight relevant to a future phase — add it. Tag actionable items for a specific phase with `[for: <phase>]` (e.g., `[for: failure-analysis] Authentication is a single point of failure`). When acting on a tagged item, remove it. Keep the file compact: consolidate redundant entries and remove items that have been absorbed into the relevant protocol documents.
+
+**Generate threat model artifacts.** When writing or updating `solution/architecture.md`, include a Mermaid threat model diagram directly in the file as a fenced ` ```mermaid ` block — the packet generator extracts it automatically. Write the diagram yourself; you'll produce a better diagram than any code generator. Also write `.clarity-protocol/system-design.json` with structured component/flow/threat data for tooling. After failure brainstorming or analysis, write `.clarity-protocol/threat-model.md` — a concise threat model summary (1-2 pages max) with top risks, severities, one-line mitigations, and single points of failure.
+
+<!-- clarity-end -->
