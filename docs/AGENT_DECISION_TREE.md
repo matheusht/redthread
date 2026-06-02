@@ -5,6 +5,7 @@ Use this table before opening deeper context. All paths are repo-root relative a
 | Task Type | Primary Doc | Secondary Docs |
 | :--- | :--- | :--- |
 | General project overview / product positioning | `docs/product.md` | `README.md`, `docs/TECH_STACK.md` |
+| Default AI context / context optimization | `docs/ai-context-summary.md` | `docs/context-index.md`, `AGENTS.md`, `README.md` |
 | Phase progression / roadmap / current status | `docs/PHASE_REGISTRY.md` | `docs/PROGRESS.md`, `docs/REDTHREAD_STATUS_AUDIT.md` |
 | Attack algorithms | `docs/algorithms.md` | `docs/PHASE_REGISTRY.md` |
 | Evaluation / JudgeAgent scoring | `docs/ANTI_HALLUCINATION_SOP.md` | `docs/algorithms.md`, `docs/PHASE_REGISTRY.md` |
@@ -16,6 +17,7 @@ Use this table before opening deeper context. All paths are repo-root relative a
 ## Source-of-truth order
 
 1. Current product and architecture docs win over historical ledgers.
-2. `docs/PHASE_REGISTRY.md` is the phase-status authority.
-3. `docs/PROGRESS.md` and `docs/REDTHREAD_STATUS_AUDIT.md` are historical unless their header says otherwise.
-4. `docs/wiki/` is a synthesis layer, not the engineering source of truth.
+2. `docs/ai-context-summary.md` and `docs/context-index.md` define default AI prompt-loading rules.
+3. `docs/PHASE_REGISTRY.md` is the phase-status authority.
+4. `docs/PROGRESS.md` and `docs/REDTHREAD_STATUS_AUDIT.md` are historical unless their header says otherwise.
+5. `docs/wiki/` is a synthesis layer, not the engineering source of truth.
