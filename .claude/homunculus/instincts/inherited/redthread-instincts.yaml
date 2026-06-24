@@ -1,0 +1,449 @@
+# Instincts generated from https://github.com/matheusht/redthread
+# Generated: 2026-06-24T14:05:30.991Z
+# Version: 2.0
+# NOTE: This file supplements (does not replace) any existing curated instincts.
+# High-confidence manually curated instincts should be preserved alongside these.
+
+---
+id: redthread-commit-conventional
+trigger: "when writing a commit message"
+confidence: 0.85
+domain: git
+source: repo-analysis
+source_repo: https://github.com/matheusht/redthread
+---
+
+# Redthread Commit Conventional
+
+## Action
+
+Use conventional commit format with prefixes: feat, docs
+
+## Evidence
+
+- 5 commits analyzed
+- Detected conventional commit pattern
+- Examples: feat(research): GEPA Phase 0 shadow harness + per-objective plumbing, docs: change repo state
+
+---
+id: redthread-commit-length
+trigger: "when writing a commit message"
+confidence: 0.6
+domain: git
+source: repo-analysis
+source_repo: https://github.com/matheusht/redthread
+---
+
+# Redthread Commit Length
+
+## Action
+
+Write moderate-length commit messages (~60 characters)
+
+## Evidence
+
+- Average commit message length: 60 chars
+- Based on 5 commits
+
+---
+id: redthread-naming-files
+trigger: "when creating a new file"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/matheusht/redthread
+---
+
+# Redthread Naming Files
+
+## Action
+
+Use snake_case naming convention
+
+## Evidence
+
+- Analyzed file naming patterns in repository
+- Dominant pattern: snake_case
+
+---
+id: redthread-import-relative
+trigger: "when importing modules"
+confidence: 0.75
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/matheusht/redthread
+---
+
+# Redthread Import Relative
+
+## Action
+
+Use relative imports for project files
+
+## Evidence
+
+- Import analysis shows relative import pattern
+- Example: import { x } from '../lib/x'
+
+---
+id: redthread-export-style
+trigger: "when exporting from a module"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/matheusht/redthread
+---
+
+# Redthread Export Style
+
+## Action
+
+Prefer named exports
+
+## Evidence
+
+- Export pattern analysis
+- Dominant style: named
+
+---
+id: redthread-test-separate
+trigger: "when writing tests"
+confidence: 0.8
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/matheusht/redthread
+---
+
+# Redthread Test Separate
+
+## Action
+
+Place tests in the tests/ or __tests__/ directory, mirroring src structure
+
+## Evidence
+
+- Separate test directory pattern detected
+- Tests live in dedicated test folders
+
+---
+id: redthread-test-naming
+trigger: "when creating a test file"
+confidence: 0.85
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/matheusht/redthread
+---
+
+# Redthread Test Naming
+
+## Action
+
+Name test files using the pattern: *.test.ts
+
+## Evidence
+
+- File pattern: *.test.ts
+- Consistent across test files
+
+---
+id: redthread-workflow-add-new-research-module
+trigger: "when doing add new research module"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/matheusht/redthread
+---
+
+# Redthread Workflow Add New Research Module
+
+## Action
+
+Follow the add-new-research-module workflow:
+1. Create or modify one or more new Python modules under src/redthread/research/ (e.g., gepa_phase.py, gepa_adapter.py, gepa_pareto.py, etc.)
+2. Update or add corresponding test files under tests/ (e.g., test_gepa_phase0.py, test_gepa_adapter.py, test_gepa_pareto.py)
+3. Update or create any necessary supporting files (e.g., models.py, workspace.py) to integrate the new module
+4. Ensure ruff and mypy pass, and all relevant tests are green
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: src/redthread/research/*.py, tests/test_*.py
+
+---
+id: redthread-workflow-add-or-update-research-dependency
+trigger: "when doing add or update research dependency"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/matheusht/redthread
+---
+
+# Redthread Workflow Add Or Update Research Dependency
+
+## Action
+
+Follow the add-or-update-research-dependency workflow:
+1. Edit pyproject.toml to add or update the dependency under an [optional] group (e.g., [research-gepa])
+2. Update uv.lock to reflect the new/updated dependency
+3. Ensure that the dependency is imported lazily or optionally in the relevant research module
+4. Verify that core installs do not require the optional dependency
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: pyproject.toml, uv.lock, src/redthread/research/*.py
+
+---
+id: redthread-instinct-file-naming
+trigger: "When creating or renaming a source file"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: matheusht/redthread
+---
+
+# Redthread Instinct File Naming
+
+## Action
+
+Use snake_case for file names
+
+## Evidence
+
+- Pattern in src/redthread/research/*.py
+- Architecture namingConventions.files: snake_case
+
+---
+id: redthread-instinct-function-naming
+trigger: "When defining a new function"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: matheusht/redthread
+---
+
+# Redthread Instinct Function Naming
+
+## Action
+
+Use camelCase for function names
+
+## Evidence
+
+- Architecture namingConventions.functions: camelCase
+
+---
+id: redthread-instinct-class-naming
+trigger: "When defining a new class"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: matheusht/redthread
+---
+
+# Redthread Instinct Class Naming
+
+## Action
+
+Use PascalCase for class names
+
+## Evidence
+
+- Architecture namingConventions.classes: PascalCase
+
+---
+id: redthread-instinct-constant-naming
+trigger: "When defining a constant"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: matheusht/redthread
+---
+
+# Redthread Instinct Constant Naming
+
+## Action
+
+Use SCREAMING_SNAKE_CASE for constant names
+
+## Evidence
+
+- Architecture namingConventions.constants: SCREAMING_SNAKE_CASE
+
+---
+id: redthread-instinct-relative-imports
+trigger: "When importing modules within the package"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: matheusht/redthread
+---
+
+# Redthread Instinct Relative Imports
+
+## Action
+
+Use relative imports
+
+## Evidence
+
+- Architecture importStyle: relative
+
+---
+id: redthread-instinct-named-exports
+trigger: "When exporting functions or classes"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: matheusht/redthread
+---
+
+# Redthread Instinct Named Exports
+
+## Action
+
+Use named exports (do not use wildcard or default exports)
+
+## Evidence
+
+- Architecture exportStyle: named
+
+---
+id: redthread-instinct-test-file-location
+trigger: "When adding or updating tests"
+confidence: 0.9
+domain: testing
+source: repo-analysis
+source_repo: matheusht/redthread
+---
+
+# Redthread Instinct Test File Location
+
+## Action
+
+Place test files in the separate tests/ directory, following the pattern tests/test_*.py
+
+## Evidence
+
+- Pattern in tests/test_*.py
+- Architecture testLocation: separate
+
+---
+id: redthread-instinct-test-type-unit
+trigger: "When writing tests"
+confidence: 0.8
+domain: testing
+source: repo-analysis
+source_repo: matheusht/redthread
+---
+
+# Redthread Instinct Test Type Unit
+
+## Action
+
+Write unit tests for new or modified modules
+
+## Evidence
+
+- Testing testTypes: unit
+
+---
+id: redthread-instinct-test-pattern-py
+trigger: "When naming a test file"
+confidence: 0.9
+domain: testing
+source: repo-analysis
+source_repo: matheusht/redthread
+---
+
+# Redthread Instinct Test Pattern Py
+
+## Action
+
+Use the pattern test_*.py for test file names
+
+## Evidence
+
+- Pattern in tests/test_*.py
+
+---
+id: redthread-instinct-git-commit-prefix
+trigger: "When writing a commit message"
+confidence: 0.9
+domain: git
+source: repo-analysis
+source_repo: matheusht/redthread
+---
+
+# Redthread Instinct Git Commit Prefix
+
+## Action
+
+Use a conventional commit prefix (e.g., feat, docs) followed by a scope in parentheses if applicable
+
+## Evidence
+
+- feat(research): GEPA Phase 0 shadow harness + per-objective plumbing
+- docs: change repo state
+
+---
+id: redthread-instinct-git-commit-length
+trigger: "When writing a commit message"
+confidence: 0.7
+domain: git
+source: repo-analysis
+source_repo: matheusht/redthread
+---
+
+# Redthread Instinct Git Commit Length
+
+## Action
+
+Keep the commit message concise, around 60 characters on average
+
+## Evidence
+
+- commits.averageLength: 60
+
+---
+id: redthread-instinct-add-new-research-module
+trigger: "When adding a new research phase, module, or major algorithmic component"
+confidence: 0.95
+domain: workflow
+source: repo-analysis
+source_repo: matheusht/redthread
+---
+
+# Redthread Instinct Add New Research Module
+
+## Action
+
+Create or modify Python modules in src/redthread/research/, add or update corresponding tests in tests/, update supporting files as needed, and ensure ruff, mypy, and tests all pass
+
+## Evidence
+
+- Workflow: add-new-research-module
+- Example commit sequence for new research modules
+
+---
+id: redthread-instinct-add-or-update-research-dependency
+trigger: "When introducing or updating a research-related dependency"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: matheusht/redthread
+---
+
+# Redthread Instinct Add Or Update Research Dependency
+
+## Action
+
+Edit pyproject.toml to add/update the dependency under an [optional] group, update uv.lock, ensure lazy/optional import in relevant research module, and verify core installs do not require the dependency
+
+## Evidence
+
+- Workflow: add-or-update-research-dependency
+- Example commit sequence for dependency updates
+
