@@ -27,10 +27,14 @@ async def finalize_node(state: SupervisorState) -> dict[str, Any]:
     )
     telemetry = build_persona_outcome_telemetry(results, persona_profiles_by_id(personas, profile))
     runtime_summary = build_runtime_summary(state)
+    ended_at = datetime.now(timezone.utc)
+    started_at_raw = state.get("campaign_started_at")
+    started_at = datetime.fromisoformat(started_at_raw) if started_at_raw else ended_at
     campaign = CampaignResult(
         config=config,
         results=results,
-        ended_at=datetime.now(timezone.utc),
+        started_at=started_at,
+        ended_at=ended_at,
         metadata={
             "runtime_summary": runtime_summary,
             "agentic_security_report": state.get("agentic_security_report", {}),

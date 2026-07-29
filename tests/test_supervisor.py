@@ -328,6 +328,8 @@ async def test_supervisor_invoke_dry_run_returns_campaign_result() -> None:
     assert result.metadata["runtime_summary"]["attack_worker_total"] == 2
     assert result.metadata["agentic_security_report"]["enabled"] is False
     assert result.metadata["degraded_runtime"] is False
+    assert result.ended_at is not None
+    assert result.started_at <= result.ended_at
 
 
 # ── Test: state transition — finalize node ────────────────────────────────────
