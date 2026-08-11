@@ -17,6 +17,7 @@ class SupervisorState(TypedDict):
 
     settings_dict: dict[str, Any]
     config_dict: dict[str, Any]
+    campaign_started_at: str
     persona_dicts: list[dict[str, Any]]
 
     attack_results: Annotated[list[dict[str, Any]], merge_lists]

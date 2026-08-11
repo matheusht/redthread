@@ -65,6 +65,7 @@ def _initial_state(settings: RedThreadSettings, config: CampaignConfig) -> Super
     return {
         "settings_dict": settings.model_dump(mode="json"),
         "config_dict": config.model_dump(mode="json"),
+        "campaign_started_at": datetime.now(timezone.utc).isoformat(),
         "persona_dicts": [],
         "attack_results": [],
         "attack_worker_total": 0,
