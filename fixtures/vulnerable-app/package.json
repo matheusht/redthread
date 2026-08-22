@@ -1,0 +1,13 @@
+{
+  "name": "vulnerable-app-fixture",
+  "version": "0.0.0",
+  "private": true,
+  "description": "INTENTIONALLY VULNERABLE npm manifest. Test fixture only - do not install or deploy.",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "lodash": "4.17.11",
+    "minimist": "1.2.0",
+    "axios": "0.21.0",
+    "handlebars": "4.0.13"
+  }
+}

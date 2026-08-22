@@ -1,0 +1,23 @@
+# ⚠️ INTENTIONALLY VULNERABLE — test fixture for advisory-scanning pipeline.
+# Every pin below has a published GitHub Security Advisory. Do not copy.
+
+# GHSA-8q59-q68h-6hv4 / CVE-2020-14343 — arbitrary code execution via yaml.full_load
+PyYAML==5.3.1
+
+# GHSA-462w-v97r-4m45 / CVE-2019-10906 — sandbox escape in the Jinja2 sandbox
+Jinja2==2.10
+
+# GHSA-x84v-xcm2-53pg / CVE-2018-18074 — Authorization header leaked across redirects
+requests==2.19.1
+
+# GHSA-mh33-7rrq-662w / CVE-2019-11324 — CA cert handling regression
+urllib3==1.24.1
+
+# GHSA-5wv5-4vpf-pj6m / CVE-2018-1000656 — denial of service on malformed JSON
+Flask==0.12.2
+
+# GHSA-8vj2-vgrf-5rv6 / CVE-2021-25287 — out-of-bounds read in the JPEG2000 decoder
+Pillow==8.1.0
+
+# GHSA-x4qr-2fvf-3mr5 / CVE-2023-23931 — memory corruption via Cipher.update_into
+cryptography==3.3.2
