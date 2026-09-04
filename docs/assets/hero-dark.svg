@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 420" width="880" height="420" role="img" aria-label="Three red attack threads converge through an amber judge gate into one green verified guardrail, which loops back to be replayed against the original attacks">
+  <rect width="880" height="420" fill="#0D1117"/>
+  <g fill="none" stroke="#E5534B" stroke-width="30" stroke-linecap="round">
+    <!-- adversarial threads probing the target -->
+    <path d="M74 80 H300 C400 80 380 185 455 185"/>
+    <path d="M74 185 H500"/>
+    <path d="M74 290 H300 C400 290 380 185 455 185"/>
+  </g>
+  <!-- judge gate: evidence is weighed before anything is believed -->
+  <path d="M534 128 L612 152 L612 218 L534 242 Z" fill="#E8A33D"/>
+  <!-- verified guardrail -->
+  <path d="M626 185 H742" fill="none" stroke="#57A773" stroke-width="30" stroke-linecap="round"/>
+  <!-- replay loop: the guardrail is re-tested against the attacks that beat it -->
+  <path d="M750 232 C750 338 700 374 628 374 H166 C112 374 100 356 100 344"
+        fill="none" stroke="#57A773" stroke-width="10" stroke-linecap="round" stroke-dasharray="2 20"/>
+  <path d="M100 318 L84 348 L116 348 Z" fill="#57A773"/>
+</svg>

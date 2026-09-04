@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96" role="img" aria-label="RedThread logo: an open red thread closed by a green verified seal around an amber core of evidence">
+  <!-- the attack thread: open, with two loose ends -->
+  <path d="M65.2 72.6 A30 30 0 1 1 60.7 20.8" fill="none" stroke="#E5534B" stroke-width="12" stroke-linecap="round"/>
+  <!-- the validated guardrail that closes the loop -->
+  <path d="M69.2 26.8 A30 30 0 0 1 74 63" fill="none" stroke="#57A773" stroke-width="12" stroke-linecap="round"/>
+  <!-- evidence at the center -->
+  <circle cx="48" cy="48" r="8" fill="#E8A33D"/>
+</svg>
