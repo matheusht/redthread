@@ -1,4 +1,4 @@
-<h1 align="center"><img src="docs/assets/logo.svg" alt="" width="72" height="72" align="absmiddle">&nbsp;RedThread</h1>
+<h1 align="center"><img src="docs/assets/readme-hero.jpg" alt="RedThread" width="520"></h1>
 
 <p align="center"><strong>Find the exploit. Judge it. Draft the fix. Prove what changed.</strong></p>
 
@@ -14,10 +14,6 @@
 **[Install and run →](#quick-start)**
 
 </div>
-
-<p align="center">
-  <picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/hero-dark.svg"><img src="docs/assets/hero-light.svg" alt="Three red attack threads converge through an amber judge gate into one green verified guardrail, which loops back to be replayed against the original attacks" width="820"></picture>
-</p>
 
 Most AI red-team tools answer one question: _can I make this thing fail?_ You get
 a screenshot of a jailbreak, and then you are on your own — was that a real
@@ -173,8 +169,10 @@ reported as a fallback, everywhere it appears.
 
 ## What the test suite proves
 
-RedThread's own guarantees are enforced by a deterministic suite that needs no
-API keys and makes no network calls:
+RedThread checks its evidence, replay, and promotion boundaries with a
+deterministic suite that needs no API keys and makes no network calls. The
+figures below are the recorded README-rewrite snapshot at commit `0d12357`,
+using `.[dev,research-gepa]`; they are not a live count of the current suite:
 
 | Measure | Value |
 |---|---:|
@@ -182,13 +180,13 @@ API keys and makes no network calls:
 | Passing | **673** (1 skipped, 0 failed) |
 | Network calls or API keys required | **none** |
 | Test files | 138 |
-| Source modules under test | 275 (~26,000 LOC) |
+| Source modules in that snapshot | 275 (~26,000 LOC) |
 | Wall time, warm cache, M-series laptop | ~13 s |
 
-Reproduce:
+Run the suite with the same extras (counts may change on newer revisions):
 
 ```bash
-make dev
+pip install -e '.[dev,research-gepa]'
 make test
 ```
 
