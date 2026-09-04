@@ -1,6 +1,6 @@
-<h1 align="center"><img src="docs/assets/readme-hero.jpg" alt="RedThread" width="520"></h1>
+<h1 align="center"><img src="docs/assets/readme-logo.png" alt="" width="72" height="72" align="absmiddle">&nbsp;RedThread</h1>
 
-<p align="center"><strong>Find the exploit. Judge it. Draft the fix. Prove what changed.</strong></p>
+<p align="center"><strong>Test the model. Examine the evidence. Prepare a defense. Test the result.</strong></p>
 
 <div align="center">
 
@@ -15,30 +15,27 @@
 
 </div>
 
-Most AI red-team tools answer one question: _can I make this thing fail?_ You get
-a screenshot of a jailbreak, and then you are on your own — was that a real
-failure or a flaky judge? Which turn actually caused it? What would you even
-change? And if you change it, did anything get better?
+RedThread is a command-line tool for security tests of large language models
+(LLMs). A campaign is a group of tests against a target model or application.
+RedThread records the results and their evidence classes.
 
-**RedThread is the loop that starts where the jailbreak ends.** It runs
-adversarial campaigns, scores them with explicitly labeled evidence, isolates the
-minimal exploit, drafts a bounded guardrail, replays the exploit and benign
-probes against it, and keeps the promotion boundary explicit — so a candidate fix
-is never quietly mistaken for a deployed one.
+RedThread finds the smallest attack segment that caused a confirmed jailbreak.
+It then prepares a candidate guardrail, which is a proposed defense.
+Replay tests repeat the attack and benign requests against the candidate.
+Promotion is a separate decision that controls when a candidate can become active.
 
 ### Highlights
 
-- 🧵 **Closed evidence loop** — attack → judge → defend → replay → promotion evidence. The loop is the product, not the jailbreak.
-- ⚖️ **Evidence you can grade** — live, sealed, and fallback judge paths are labeled separately. A fallback keeps continuity; it is never reported as clean live proof.
-- 🛡️ **Defenses are candidates, not deploys** — an explicit `candidate → validated → promotable → active` chain, with every transition gated.
-- 🤖 **Agentic-security lane** — tool poisoning, confused-deputy chains, untrusted lineage, canary spread, and pre-action authorization.
-- 🔁 **Reproducible campaigns** — transcripts, runtime summaries, replay evidence, and promotion decisions persist as separate operator-facing artifacts.
+- **Test and review cycle.** RedThread connects attack generation, judge scoring, defense synthesis, replay tests, and promotion evidence.
+- **Evidence classes.** Reports identify live, sealed, and fallback judge results separately. Fallback results are not proof from a healthy live judge.
+- **Defense states.** The `candidate → validated → promotable → active` sequence has a gate at each transition.
+- **Agentic-security tests.** These tests include tool poisoning, confused-deputy chains, untrusted lineage, canary spread, and authorization before an action.
+- **Campaign records.** RedThread keeps transcripts, runtime summaries, replay evidence, and promotion decisions in separate files for operator review.
 
 > [!NOTE]
-> **Current status:** active research and engineering project. RedThread is
-> useful for local campaigns, replay evidence, deterministic agentic-security
-> checks, and operator review. It is **not** a claim of universal production
-> enforcement.
+> **Current status:** RedThread is an active research and engineering project.
+> It supports local campaigns, replay evidence, deterministic agentic-security
+> tests, and operator review. It does not provide universal production enforcement.
 
 ## Table of contents
 
@@ -61,16 +58,15 @@ is never quietly mistaken for a deployed one.
 
 ## Why RedThread
 
-A one-off jailbreak demo answers one question. RedThread is built to answer the
-five that actually decide whether you can act on it:
+RedThread provides evidence for five review questions:
 
 | Question | How RedThread answers it |
 |---|---|
-| Did it *really* fail? | Judge scoring with an explicit evidence class — live, sealed, or fallback |
-| What minimal behavior caused it? | Exploit-segment isolation before any fix is drafted |
-| Can we propose a bounded defense? | Gated defense synthesis, scoped to the target and prompt context |
-| Did the evidence get stronger? | Replay of the exploit *and* benign probes against the candidate |
-| Is this ready to promote? | An explicit promotion chain with control, utility, and replay gates |
+| Did the target fail? | Judge scoring identifies the evidence class: live, sealed, or fallback. |
+| What is the smallest behavior that caused the failure? | Exploit-segment isolation identifies the attack segment before defense synthesis. |
+| Can we propose a defense with a limited scope? | Defense synthesis uses gates and the specified target and prompt context. |
+| Did the candidate improve the result? | Replay tests repeat the exploit and benign requests against the candidate. |
+| Is the candidate ready for promotion? | The promotion sequence includes control, utility, and replay gates. |
 
 ## The loop
 
@@ -83,34 +79,36 @@ attack generation
           → promotion evidence
 ```
 
-**1. Attack.** Campaigns run through a LangGraph-style supervisor/worker runtime
-with four strategies:
+**1. Attack.** Campaigns use a LangGraph-style supervisor/worker runtime with four
+strategies:
 
 | Strategy | Approach |
 |---|---|
-| **PAIR** | iterative adversarial prompt refinement |
-| **TAP** | tree search with pruning for deeper exploration |
-| **Crescendo** | multi-turn escalation through conversation history |
-| **GS-MCTS** | bounded planning over possible conversational moves |
+| **PAIR** | Repeated changes to adversarial prompts |
+| **TAP** | Tree search with pruning to examine more attack paths |
+| **Crescendo** | Escalation through the history of a conversation with multiple turns |
+| **GS-MCTS** | Planning with limits across possible conversation steps |
 
-**2. Judge.** Results are scored, and the *evidence class* is recorded alongside
-the score — never collapsed into it.
+**2. Judge.** The judge scores the results. RedThread records the evidence class
+separately from the score.
 
-**3. Defend.** On a confirmed jailbreak, a gated pipeline isolates the minimal
-exploit segment, classifies it against security taxonomies, and generates a
-candidate guardrail.
+**3. Defend.** After a confirmed jailbreak, defense synthesis identifies the
+smallest exploit segment. It classifies the segment against security taxonomies.
+It then creates a candidate guardrail through a sequence of gates.
 
-**4. Replay.** The exploit is replayed against the candidate, and so are benign
-probes — a guardrail that blocks the attack by breaking normal use is not a fix.
+**4. Replay.** Replay tests repeat the exploit and benign requests against the
+candidate. A defense must not stop normal operation to block an attack.
 
-**5. Promote.** Evidence is persisted, scoped, and gated. Promotion is a separate
-explicit act.
+**5. Promote.** RedThread keeps the evidence with its scope and gate results.
+Promotion is a separate, explicit action.
 
 ## Quick start
 
-**Requirements:** Python 3.12+, a local virtualenv, and optionally Ollama for
-local attacker/target models or OpenAI-compatible credentials for judge and
-defense-architect roles.
+**Requirements:** Python 3.12 or later and a local virtual environment are
+necessary. Ollama is optional for local attacker and target models.
+OpenAI-compatible credentials are optional for judge and defense-architect roles.
+
+Install the development environment:
 
 ```bash
 git clone https://github.com/matheusht/redthread.git
@@ -119,7 +117,7 @@ python3 -m venv .venv && source .venv/bin/activate
 make dev
 ```
 
-Or install the CLI flow:
+Alternatively, install the command-line tool:
 
 ```bash
 make install-tool
@@ -127,7 +125,7 @@ redthread init
 redthread doctor
 ```
 
-Configure, then run a dry campaign against a synthetic secret:
+Prepare the configuration file. Start a dry campaign against a synthetic secret:
 
 ```bash
 cp .env.example .env      # never commit this
@@ -140,39 +138,45 @@ redthread run \
   --personas 2
 ```
 
-Reports are written to `reports/<campaign_id>/` (dry runs land in
-`.../dry-run/`; override with `--report-dir`). Each report opens with three
-operator-proof sections — what happened, why to trust it, what to do next — with
-evidence labels and uncertainty warnings *before* the detailed findings, so
-fallback or sealed proof is never mistaken for clean live proof.
+RedThread writes reports to `reports/<campaign_id>/`. It writes dry campaign
+reports to `.../dry-run/`. The `--report-dir` option changes the report location.
+
+Each report starts with three sections: what happened, why the evidence is
+reliable, and what to do next. Evidence labels and uncertainty warnings come
+before detailed findings. These labels identify fallback and sealed results
+separately from healthy live-judge results.
+
+Do the local checks:
 
 ```bash
 make ci          # lint + typecheck + unit tests
 make ci-pr       # the full local mirror of PR CI
 ```
 
-RedThread also ships a composite GitHub Action for CI/PR security scans — see
+RedThread also provides a composite GitHub Action for security scans in CI and
+pull requests. Instructions are in
 [`docs/github-action.md`](docs/github-action.md).
 
 ## What counts as evidence
 
-RedThread separates evidence types instead of treating every score as equal:
+RedThread records the evidence class with each result:
 
 | Evidence class | What it means |
 |---|---|
-| **Live judge** | a healthy live judge path scored this result |
-| **Sealed / golden** | deterministic heuristic or golden-regression evidence |
-| **Live-judge fallback** | continuity preserved when the live path degraded — *not* equivalent to a healthy live judge |
+| **Live judge** | A healthy live judge scored the result. |
+| **Sealed / golden** | The result comes from deterministic heuristics or golden-regression tests. |
+| **Live-judge fallback** | The campaign continued after a problem with the live judge. The result is not equivalent to a healthy live-judge result. |
 
-That distinction is the point. A fallback can keep a campaign moving, but it is
-reported as a fallback, everywhere it appears.
+A fallback can keep a campaign in operation. All reports identify the result as
+a fallback.
 
 ## What the test suite proves
 
-RedThread checks its evidence, replay, and promotion boundaries with a
-deterministic suite that needs no API keys and makes no network calls. The
-figures below are the recorded README-rewrite snapshot at commit `0d12357`,
-using `.[dev,research-gepa]`; they are not a live count of the current suite:
+RedThread has deterministic tests for its evidence, replay, and promotion
+boundaries. These tests need no API keys or network calls.
+
+The following figures are historical results from the README rewrite at commit
+`0d12357`, with `.[dev,research-gepa]`. They are not current test counts.
 
 | Measure | Value |
 |---|---:|
@@ -183,7 +187,7 @@ using `.[dev,research-gepa]`; they are not a live count of the current suite:
 | Source modules in that snapshot | 275 (~26,000 LOC) |
 | Wall time, warm cache, M-series laptop | ~13 s |
 
-Run the suite with the same extras (counts may change on newer revisions):
+Use the same extras for the test suite. Newer revisions can have different test counts:
 
 ```bash
 pip install -e '.[dev,research-gepa]'
@@ -191,91 +195,104 @@ make test
 ```
 
 > [!NOTE]
-> Two GEPA-lane tests exercise the optional `research-gepa` extra. Install
-> `pip install -e '.[dev,research-gepa]'` for a fully green run; with only
-> `.[dev]` installed those two error on the optional import rather than
-> skipping.
+> Two GEPA tests use the optional `research-gepa` extra. With only `.[dev]`,
+> these tests fail on the optional import. They do not skip the import.
+> The installation command above includes this extra.
 
-The sealed golden regression (`make test-golden-offline`) is the same path CI
-runs, so local and CI evidence agree. Live golden regression
-(`make test-golden`) additionally requires `OPENAI_API_KEY`.
+CI uses the sealed golden regression command, `make test-golden-offline`.
+The same command gives local evidence from that test path. The live golden
+regression command, `make test-golden`, also needs `OPENAI_API_KEY`.
 
 > [!IMPORTANT]
-> These numbers describe **RedThread's own correctness suite** — coverage of the
-> evidence, replay, and promotion boundaries. They are not a benchmark of attack
-> success rates against any third-party model, and should not be read as one.
+> These figures describe tests of RedThread itself: its evidence, replay, and
+> promotion boundaries. They do not measure attack success rates against
+> third-party models.
 
 ## Example campaign
 
 ![RedThread campaign result showing failure, partial, and success outcomes](docs/assets/example-campaign-result.png)
 
-One attack succeeded, one partially succeeded, one failed. RedThread treats these
-as evidence signals for review — **not** as proof that a whole model or app is
-unsafe. This run was confirmed by local judge scoring *in that campaign context*.
-The screenshot redacts the transcript path; publishable evidence should use
-sanitized transcripts or scoped reports, never raw runtime logs.
+One attack succeeded. One attack had partial success. One attack failed.
+These results are evidence for review. They do not prove that the full model
+or application is unsafe.
 
-A campaign is designed to answer: which persona or strategy found the issue,
-which turn caused the failure, whether the judge ran live/sealed/fallback,
-whether a defense candidate was generated, whether replay blocked the exploit,
-whether benign replay still worked, and whether the result is promotable or only
-diagnostic.
+Local judge scoring confirmed the results in that campaign context. The
+screenshot hides the transcript path. Public evidence must use transcripts
+without sensitive data or reports with a limited scope. Raw runtime logs are
+not suitable for publication.
+
+A campaign provides information about:
+
+- The persona or strategy that found the issue.
+- The turn that caused the failure.
+- The live, sealed, or fallback judge mode.
+- The creation of a defense candidate, if applicable.
+- The result of the exploit replay against the candidate.
+- The result of benign replay against the candidate.
+- The status of the result: suitable for promotion or for diagnosis only.
 
 ## Safety model
 
-RedThread uses explicit boundaries, each one deliberately narrow:
+RedThread separates the following boundaries:
 
 | Boundary | Rule |
 |---|---|
-| **Evidence** | A score is only as strong as its evidence mode. Sealed, live, fallback, weak-imported, candidate, promotable, and active are never treated as equivalent. |
-| **Promotion** | `candidate_defense → validated_candidate → promotable_defense → active_guardrail`. A validated candidate passed replay/indexing but **is not active**. |
-| **Mutation** | Bounded autoresearch lanes may propose changes; they cannot bypass validation or promotion logic. |
-| **Execution** | Agentic-security controls prefer deterministic checks *outside* the model — permission inheritance, authorization decisions, canary containment, runtime budget stops. |
-| **Telemetry** | Telemetry triggers investigation. It never proves safety by itself. |
+| **Evidence** | The evidence mode limits what a score proves. Sealed, live, fallback, weak-imported, candidate, promotable, and active have different meanings. |
+| **Promotion** | `candidate_defense → validated_candidate → promotable_defense → active_guardrail`. A validated candidate passed replay and indexing. It is not active. |
+| **Mutation** | Bounded autoresearch can propose changes. It cannot bypass validation or promotion logic. |
+| **Execution** | Agentic-security controls prefer deterministic checks outside the model. These include permission inheritance, authorization decisions, canary containment, and runtime budget stops. |
+| **Telemetry** | Telemetry starts an investigation. Telemetry alone does not prove safety. |
 
-`promotable_defense` requires live replay evidence, a utility-gate pass, an
-accepted proposal state, and a control-gate pass. `active_guardrail` appears only
-after explicit promotion. Runtime injection writes `logs/guardrail_audit.jsonl`
-with non-secret proof: action, active trace IDs, clause hashes, target model, and
-prompt hash.
+The `promotable_defense` state needs live replay evidence and a utility-gate
+pass. It also needs an accepted proposal state and a control-gate pass.
+The `active_guardrail` state follows explicit promotion only.
 
-> Legacy `defense_deployed` metadata is a compatibility alias for validated
-> candidate state — **not** proof of production deployment.
+Runtime injection writes non-secret evidence to `logs/guardrail_audit.jsonl`.
+The record includes the action, active trace IDs, clause hashes, target model,
+and prompt hash.
+
+> Legacy `defense_deployed` metadata is a compatibility alias for a validated
+> candidate. It does not prove production deployment.
 
 ## Agentic-security lane
 
-Modern LLM systems do not only produce text. They call tools, delegate tasks,
-write memory, and trigger external effects. This lane targets that execution
-risk:
+LLM systems can call tools, assign tasks, write memory, and cause external
+actions. The agentic-security test path examines these risks:
 
-- poisoned tool returns and MCP-style tool-output injection
-- confused-deputy chains and privilege laundering through workers
-- untrusted lineage reaching high-risk actions
-- canary spread into protected seams
-- repeated retries and cost amplification
-- pre-action authorization before sensitive execution
+- Poisoned tool responses and MCP-style tool-output injection.
+- Confused-deputy chains and privilege laundering through workers.
+- Untrusted lineage that reaches high-risk actions.
+- Canary spread across protected boundaries.
+- Repeated retries and increased costs.
+- Missing authorization before sensitive actions.
 
-Current evidence class: **sealed runtime review**, with limited controlled
-live-adapter proof paths. Useful for operator visibility and promotion
-preparation — not universal live enforcement.
+The current evidence class is **sealed runtime review**. Limited, controlled
+live-adapter paths provide additional evidence. These paths support operator
+review and preparation for promotion. They do not provide universal live
+enforcement.
 
 ## Bounded autoresearch
 
-Two conservative self-improvement lanes: `research phase5` (offense-side
-source-patch proposals) and `research phase6` (defense-prompt mutation
-proposals). Both use template-driven mutation, protected safety surfaces,
-reversible patch artifacts, explicit review states, and promotion discipline.
+Bounded autoresearch has two test paths. The `research phase5` path proposes
+source patches for attack code. The `research phase6` path proposes changes
+to defense prompts.
 
-The goal is not uncontrolled recursive self-modification. It is safer research
-loops with inspectable artifacts.
+Both paths use mutation templates and protect safety controls. They produce
+reversible patches and explicit review states. Promotion rules apply to both
+paths. These controls limit automatic changes and keep the results available
+for inspection.
 
-**GEPA lane (hidden, experimental).** A fully contained reflective
-prompt-optimizer lane ([arXiv 2507.19457](https://arxiv.org/abs/2507.19457)):
-candidate fields are allowlisted to a small set of attacker prompt-profile
-fields, the only channel to a reflection model is a redacted, transcript-free
-side-info payload, the control lane is a fail-closed gate rather than a reward
-bonus, and optimizer acceptance never implies RedThread promotion. Optional
-install: `pip install 'redthread[research-gepa]'`.
+**GEPA lane (hidden, experimental).** This contained test path uses a reflective
+prompt optimizer ([arXiv 2507.19457](https://arxiv.org/abs/2507.19457)).
+An allowlist limits candidate changes to a small set of attacker prompt-profile
+fields.
+
+The reflection model receives only a side-info payload with sensitive data
+removed. This payload contains no transcripts. The control path is a
+fail-closed gate, not an additional reward. Optimizer acceptance does not imply
+RedThread promotion.
+
+For the optional GEPA installation, use `pip install 'redthread[research-gepa]'`.
 
 ## Architecture
 
@@ -310,31 +327,31 @@ Supporting systems:
 
 ## How RedThread compares
 
-RedThread is not trying to replace every AI security tool — it occupies the part
-of the problem that begins after a finding exists.
+RedThread connects test findings to defense candidates and replay evidence.
+The following table shows the main function of each tool:
 
-| Tool | Strongest at | Overlap with RedThread |
-|---|---|---|
-| **[garak](https://github.com/NVIDIA/garak)** | broad LLM vulnerability scanning | finds issues; does not judge, defend, or replay them |
-| **[promptfoo](https://github.com/promptfoo/promptfoo)** | eval workflow, provider comparison, CI reporting | strong eval harness; not a defense-synthesis loop |
-| **[PyRIT](https://github.com/Azure/PyRIT)** | red-team infrastructure layer | RedThread builds *on* PyRIT adapters |
-| **RedThread** | the closed loop: attack → judge → defend → replay → promotion evidence | — |
+| Tool | Main function |
+|---|---|
+| **[garak](https://github.com/NVIDIA/garak)** | Broad LLM vulnerability scans |
+| **[promptfoo](https://github.com/promptfoo/promptfoo)** | Evaluation workflows, provider comparison, and CI reports |
+| **[PyRIT](https://github.com/Azure/PyRIT)** | Infrastructure for red-team tests |
+| **RedThread** | Attack → judge → defend → replay → promotion evidence |
 
-Future integrations can treat external scanners as surface expanders while
-keeping the evidence loop intact.
+RedThread uses PyRIT adapters. Future integrations could use external scanners to test more targets.
+RedThread would keep its evidence cycle.
 
 ## What RedThread is not
 
-Stated plainly, because the failure mode of this tool category is overclaiming:
+RedThread has the following limits:
 
-- not a generic chatbot safety badge
-- not a replacement for human security review
-- not proof that a model is safe
-- not automatic production patch deployment
-- not broad live tool enforcement by default
-- not a promise that all generated defenses should be promoted
+- It does not give a general chatbot safety approval.
+- It does not replace human security review.
+- It does not prove that a model is safe.
+- It does not automatically deploy patches to production.
+- It does not enforce controls on all live tools by default.
+- It does not approve every defense candidate for promotion.
 
-Promotion requires explicit gates and stronger evidence.
+Promotion needs explicit gates and stronger evidence.
 
 ## Documentation map
 
@@ -350,24 +367,28 @@ Promotion requires explicit gates and stronger evidence.
 
 ## Contributing
 
-This project favors small, evidence-backed changes. Before changing behavior:
+This project uses small changes with supporting evidence.
 
-1. read the relevant docs,
-2. identify the runtime evidence class affected,
-3. add or update tests,
-4. avoid weakening promotion, replay, or safety boundaries,
-5. keep claims in docs aligned with what the code proves.
+Before you change behavior:
 
-Run `make ci-pr` locally before opening a PR.
+1. Read the applicable documents.
+2. Identify the runtime evidence class that the change affects.
+3. Add or update tests.
+4. Keep the promotion, replay, and safety boundaries.
+5. Make sure that documentation claims agree with the evidence from the code.
+
+Before you open a pull request, use `make ci-pr` for local checks.
 
 ## Security and responsible use
 
-**Use RedThread only on systems you own or are authorized to test.**
+**Use RedThread only on systems that you own or have authorization to test.**
 
-Never commit API keys, `.env` files, private campaign logs, raw transcripts with
-sensitive data, local operator artifacts, or screenshots containing private
-information. If you plan to publish a fork, review tracked files, ignored files,
-and git history first.
+Do not commit API keys or `.env` files. Do not commit private campaign logs,
+transcripts with sensitive data, or local operator files. Do not commit
+screenshots with private information.
+
+Before you publish a fork, examine the tracked files. Examine the ignored files.
+Examine the Git history.
 
 ## Star history
 
@@ -381,4 +402,4 @@ and git history first.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+This project uses the MIT license. The terms are in [LICENSE](LICENSE).
