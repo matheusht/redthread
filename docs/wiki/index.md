@@ -49,6 +49,9 @@ This is the primary content map for the RedThread wiki.
 
 ## Research
 
+- [research/launch-readiness-verification.md](research/launch-readiness-verification.md) — Named preset, scoped replay gates, artifacts, and explicit evidence limits.
+- [research/open-issues-final-verification.md](research/open-issues-final-verification.md) — Integrated tests, independent review, and final scope audit.
+
 - [research/open-issues-security-verification.md](research/open-issues-security-verification.md) — Argument schemas, authoritative sensitivity, and specialized agent runtime evidence.
 
 - [research/open-issues-storage-verification.md](research/open-issues-storage-verification.md) — Model compatibility, telemetry WAL, concurrent memory writes, and legacy guardrail parsing evidence.

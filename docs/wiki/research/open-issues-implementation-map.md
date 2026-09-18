@@ -2,7 +2,7 @@
 title: Open Issues Implementation Map
 type: research
 status: active
-summary: Research, specifications, implementation, and verification for the complete open-issue snapshot.
+summary: Scope ledger and verification for eleven implemented issues; ten external-owned issues excluded.
 source_of_truth:
   - docs/research/sources/open-issues-2026-09-18.json
   - AGENTS.md
@@ -28,41 +28,41 @@ Implement the remaining intake issues: 19, 75, 76, 78, 79, 82, 85, 88, 91, 92, 9
 
 ## Current evidence and constraints
 
-- Three research agents inspect evaluation/replay, security/runtime, and product/storage separately.
+- Three research agents completed evaluation/replay, security/runtime, and product/storage analysis separately.
 - Repo references absent `.agent/skills/plan`, `.agent/skills/implement`, and `.agent/rules`; installed workflow skills plus authoritative docs supply procedures.
 - MemPalace local command supports `--room`, not documented `--wing`. Keyword search for redthread production readiness returned no results.
 - GitHub viewer permission is READ; assignment rejected. Local ledger records ownership; no issue claimed or closed remotely.
 - Fresh Python 3.12 virtualenv installed with project dev dependencies.
-- Baseline Ruff passed. Baseline mypy passed across 301 source files. Baseline pytest: 714 passed, 3 skipped, 2 terminal-wrap assertion failures. Both failing tests pass with `COLUMNS=240 REDTHREAD_DRY_RUN=true`; full final suite will use that reproducible environment.
+- Baseline Ruff passed. Baseline mypy passed across 301 source files. Baseline pytest: 714 passed, 3 skipped, 2 terminal-wrap assertion failures. Both failing tests pass with `COLUMNS=240 REDTHREAD_DRY_RUN=true`; final suite used that reproducible environment.
 
 ## Requirements ledger
 
-Each row remains pending until implementation and validation evidence is linked.
+All eleven scoped issues are implemented. [Integrated verification](open-issues-final-verification.md) records full-suite checks and independent review. Detailed evidence: [launch](launch-readiness-verification.md), [evaluation](open-issues-evaluation-verification.md), [security/runtime](open-issues-security-verification.md), [storage/models](open-issues-storage-verification.md).
 
 | Issue | Work | State |
 | --- | --- | --- |
-| [19](https://github.com/matheusht/redthread/issues/19) | If only Fable had a RedThread report: launch-readiness preset | Implementation |
+| [19](https://github.com/matheusht/redthread/issues/19) | If only Fable had a RedThread report: launch-readiness preset | Implemented; integrated checks passed |
 | [74](https://github.com/matheusht/redthread/issues/74) | [Map] RedThread System Evolution & Production Readiness (Wave 2) | Tracking only |
-| [75](https://github.com/matheusht/redthread/issues/75) | Architecture: Decompose monolithic evaluation pipeline (pipeline.py) into orchestrator, heuristics, and metrics | Implemented; focused checks passed; integration review pending |
-| [76](https://github.com/matheusht/redthread/issues/76) | Architecture: Decompose core data models (models.py) to enforce separation of concerns | Implemented; focused checks passed; integration review pending |
+| [75](https://github.com/matheusht/redthread/issues/75) | Architecture: Decompose monolithic evaluation pipeline (pipeline.py) into orchestrator, heuristics, and metrics | Implemented; integrated checks passed |
+| [76](https://github.com/matheusht/redthread/issues/76) | Architecture: Decompose core data models (models.py) to enforce separation of concerns | Implemented; integrated checks passed |
 | [77](https://github.com/matheusht/redthread/issues/77) | Architecture: Modularize benchmark exports and regression handoff serialization | External owner — excluded |
-| [78](https://github.com/matheusht/redthread/issues/78) | Security: Enforce strict parameter validation in ActionEnvelope authorization engine | Implementation |
-| [79](https://github.com/matheusht/redthread/issues/79) | Security: Prevent authorization bypass via spoofed target sensitivity in ActionEnvelope | Implementation |
+| [78](https://github.com/matheusht/redthread/issues/78) | Security: Enforce strict parameter validation in ActionEnvelope authorization engine | Implemented; integrated checks passed |
+| [79](https://github.com/matheusht/redthread/issues/79) | Security: Prevent authorization bypass via spoofed target sensitivity in ActionEnvelope | Implemented; integrated checks passed |
 | [80](https://github.com/matheusht/redthread/issues/80) | Security: Guard promotion gate against empty replay bundles | External owner — excluded |
 | [81](https://github.com/matheusht/redthread/issues/81) | Security: Add deterministic least-agency policy presets for filesystem and network egress | External owner — excluded |
-| [82](https://github.com/matheusht/redthread/issues/82) | Architecture: Wire specialized agent pipeline (ReconAgent -> SocialAgent -> ExploitAgent) into SupervisorGraph | Implementation |
+| [82](https://github.com/matheusht/redthread/issues/82) | Architecture: Wire specialized agent pipeline (ReconAgent -> SocialAgent -> ExploitAgent) into SupervisorGraph | Implemented; integrated checks passed |
 | [83](https://github.com/matheusht/redthread/issues/83) | Resilience: Implement worker-level execution timeouts and cancellation tripwires in AttackGraph | External owner — excluded |
 | [84](https://github.com/matheusht/redthread/issues/84) | Observability: Propagate agentic security summaries and canary events into campaign metadata | External owner — excluded |
-| [85](https://github.com/matheusht/redthread/issues/85) | Robustness: Add explicit degraded evidence warnings when Judge LLM fails in EvaluationPipeline | Implemented; focused checks passed; integration review pending |
+| [85](https://github.com/matheusht/redthread/issues/85) | Robustness: Add explicit degraded evidence warnings when Judge LLM fails in EvaluationPipeline | Implemented; integrated checks passed |
 | [86](https://github.com/matheusht/redthread/issues/86) | Robustness: Resilient markdown fence and JSON parsing in JudgeAgent evaluation responses | External owner — excluded |
 | [87](https://github.com/matheusht/redthread/issues/87) | Feature: Expand Golden Dataset coverage for multi-turn Crescendo and confused deputy traces | External owner — excluded |
-| [88](https://github.com/matheusht/redthread/issues/88) | Performance: Enable SQLite WAL mode and busy timeout in TelemetryStorage | Implemented; focused checks passed; integration review pending |
+| [88](https://github.com/matheusht/redthread/issues/88) | Performance: Enable SQLite WAL mode and busy timeout in TelemetryStorage | Implemented; integrated checks passed |
 | [89](https://github.com/matheusht/redthread/issues/89) | Robustness: Handle zero-variance and stationary series in ARIMA drift detector | External owner — excluded |
 | [90](https://github.com/matheusht/redthread/issues/90) | Robustness: Guard AgentStabilityIndex (ASI) calculation against zero or insufficient records | External owner — excluded |
-| [91](https://github.com/matheusht/redthread/issues/91) | Concurrency: Atomic cross-process file locking for MEMORY.md and deployments.jsonl | Implemented; focused checks passed; integration review pending |
-| [92](https://github.com/matheusht/redthread/issues/92) | Robustness: Replace brittle string splitting with structured block parser in MemoryIndex | Implemented; focused checks passed; integration review pending |
+| [91](https://github.com/matheusht/redthread/issues/91) | Concurrency: Atomic cross-process file locking for MEMORY.md and deployments.jsonl | Implemented; integrated checks passed |
+| [92](https://github.com/matheusht/redthread/issues/92) | Robustness: Replace brittle string splitting with structured block parser in MemoryIndex | Implemented; integrated checks passed |
 | [93](https://github.com/matheusht/redthread/issues/93) | Safety: Comprehensive dictionary value redaction and identifier scrubbing in gepa_side_info.py | External owner — excluded |
-| [94](https://github.com/matheusht/redthread/issues/94) | Feature: Add redthread replay run CLI command for offline agentic promotion verification | Implemented; focused checks passed; integration review pending |
+| [94](https://github.com/matheusht/redthread/issues/94) | Feature: Add redthread replay run CLI command for offline agentic promotion verification | Implemented; integrated checks passed |
 
 ## Research and specification
 
@@ -81,11 +81,11 @@ Each row remains pending until implementation and validation evidence is linked.
 - Launch readiness consumes truthful evaluation/replay/security evidence; integrate after those contracts settle.
 - Replay CLI uses existing evaluator. Empty-replay rejection belongs to external-owned issue 80; do not duplicate its fix.
 
-## Open questions
+## Resolved execution questions
 
-- Resolve reported behavior against actual source; issue descriptions may have stale locations or assumptions.
-- Establish baseline suite failures before attributing failures to this work.
-- Final remote publication depends on fork/PR permissions; local implementation does not.
+- Requirements were checked against current source and public behavior; independent reviews corrected implementation gaps.
+- Baseline terminal-wrap assertions were isolated before integrated checks.
+- Fork publication is available; upstream maintainer assignment remains unavailable.
 
 ## Scope correction
 
@@ -93,4 +93,4 @@ User excluded ten issues after initial research; no runtime implementation had b
 
 ## Storage/model verification checkpoint
 
-Model decomposition, WAL, memory locks, and legacy Markdown parsing have landed. Agent reports 56 focused checks passed and touched-module Ruff/mypy clean. Independent concurrency/parser review is pending. New memory helper modules match an existing broad gitignore rule and must be explicitly included in the final commit.
+Model decomposition, WAL, memory locks, and legacy Markdown parsing have landed. Agent reports 56 focused checks passed and touched-module Ruff/mypy clean. Independent concurrency/parser review found metadata-boundary defects; regression fixes passed. New memory helper modules matched an existing broad gitignore rule and were explicitly included in checkpoint `a2cae47`.

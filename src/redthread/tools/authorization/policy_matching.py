@@ -12,6 +12,7 @@ from redthread.tools.authorization.sensitivity import (
     REASON_SENSITIVITY_SPOOFED,
     SENSITIVITY_ORDER,
 )
+from redthread.tools.authorization.validation import argument_keys_match_policy
 
 
 def matches_denied_policy(action: ActionEnvelope, policy: AuthorizationPolicy) -> bool:
@@ -26,12 +27,7 @@ def matches_denied_policy(action: ActionEnvelope, policy: AuthorizationPolicy) -
 def matches_allowed_policy(action: ActionEnvelope, policy: AuthorizationPolicy) -> bool:
     if action.actor_role not in policy.actor_roles or action.capability not in policy.allowed_capabilities:
         return False
-    keys = set(action.arguments)
-    declared_keys = set(policy.argument_schema)
-    return (
-        (not declared_keys or keys.issubset(declared_keys))
-        and set(policy.required_argument_keys).issubset(keys)
-    )
+    return argument_keys_match_policy(action.arguments, policy)
 
 
 def exceeds_sensitivity(actual: str, maximum: str) -> bool:

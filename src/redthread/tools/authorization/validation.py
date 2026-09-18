@@ -45,9 +45,9 @@ def validate_arguments(
             continue
         matched_policy = True
         keys = set(arguments)
-        if not keys.issubset(policy.argument_schema):
-            return "argument keys are not allowed by policy"
-        if not set(policy.required_argument_keys).issubset(keys):
+        if not argument_keys_match_policy(arguments, policy):
+            if not keys.issubset(policy.argument_schema):
+                return "argument keys are not allowed by policy"
             return "required argument is missing"
         if arguments and not policy.argument_schema:
             return "policy has no scalar argument schema"
@@ -69,6 +69,17 @@ def validate_arguments(
             if reason:
                 return reason
     return None
+
+
+def argument_keys_match_policy(
+    arguments: dict[str, Any],
+    policy: AuthorizationPolicy,
+) -> bool:
+    keys = set(arguments)
+    return (
+        keys.issubset(policy.argument_schema)
+        and set(policy.required_argument_keys).issubset(keys)
+    )
 
 
 def _validate_rule(key: str, value: object, rule: ArgumentRule) -> str | None:

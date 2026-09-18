@@ -643,3 +643,18 @@
 - Recorded argument schema checks, authoritative sensitivity, and supervised agent-chain execution with shared canary sends.
 - Focused caller/runtime suite passed 53 tests; independent review remains separate from this checkpoint.
 - Preserved excluded timeout, new preset, security-summary, and reflection-redaction ownership.
+
+## [2026-09-18] review | Core specification checkpoint
+- Committed ten core issue slices as `a2cae47`; independent specification review found no acceptance gaps.
+- Standards review identified registry override and schema/transport separation corrections; fixes in progress.
+- Launch-readiness remains in integration, with baseline replay separated from defense promotion.
+
+## [2026-09-18] implement | Launch-readiness evidence packet
+- Added named preset over normal PAIR/TAP/Crescendo campaign paths, standard report bundles, and executive artifacts.
+- Kept scoped baseline replay separate from defense records and promotion; documented bounded single-turn coverage.
+- Full-suite integration exposed replay authorization metadata compatibility; added explicit schema and prompt digest metadata.
+
+## [2026-09-18] verify | Integrated completion audit
+- Recorded full offline suite, Ruff, strict mypy, module-size audit, and real CLI artifact smoke.
+- Independent Standards/Spec reviews corrected registry and transport boundaries, parser metadata, and baseline replay evidence labels.
+- Preserved all ten externally owned exclusions; replay empty-bundle gate remains issue 80 dependency.

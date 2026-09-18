@@ -5,7 +5,8 @@ from __future__ import annotations
 import logging
 
 from redthread.config.settings import RedThreadSettings
-from redthread.orchestration.agents.models import AgentPhaseState, send_agent_message
+from redthread.orchestration.agents.models import AgentPhaseState
+from redthread.orchestration.agents.transport import send_agent_message
 from redthread.personas.models import Persona
 from redthread.pyrit_adapters.targets import RedThreadTarget, build_attacker, build_target
 
@@ -79,7 +80,12 @@ class SocialAgent:
                 lane="target.social",
                 conversation_id="social-target",
             )
-            turns.append({"agent": "social", "pretext": pretext_msg, "response": target_resp})
+            turns.append({
+                "agent": "social",
+                "attacker_prompt": pretext_msg,
+                "pretext": pretext_msg,
+                "response": target_resp,
+            })
 
             logger.info("🤝 SocialAgent established pretext: %s", pretext_msg[:80])
             social_pretext = f"Established Pretext: {pretext_msg}\nTarget Acknowledgment: {target_resp}"

@@ -31,12 +31,14 @@ Complete the remaining authorized intake as one verified change set, using exist
 
 - Reuse existing public interfaces and normal campaign execution. Preserve model identity and backward-compatible imports during decomposition.
 - Keep each changed runtime module at or below two hundred lines, with the tighter component budgets requested by architecture tickets where applicable.
-- Fail closed at authorization boundaries. Parameter validation and authoritative sensitivity form one coherent policy contract; least-agency preset changes are externally owned.
+- Fail closed at authorization boundaries. Parameter validation and authoritative sensitivity form one coherent policy contract; new least-agency presets are externally owned. Existing presets receive scalar schemas needed to preserve their authorized calls.
 - Keep dry-run, sealed, live, and degraded judge evidence distinct. Exceptions must not upgrade evidence or activate defenses.
 - Specialized-agent results must be consumed by the existing attack path. Worker timeout changes are externally owned.
 - Use standard-library locking and SQLite concurrency controls; avoid new infrastructure.
 - Treat unavailable scope, uplift, replay, and utility evidence as unknown, never as success.
 - Preserve human-controlled guardrail activation. Launch readiness is an evidence review, not a safety certification.
+- Expose the preset as `redthread run --preset launch-readiness`. Run PAIR, TAP, and Crescendo through the normal engine, retain standard per-strategy reports, and put an aggregate executive decision before the detailed findings.
+- Clean traces need distinct baseline target replay and benign utility evidence; use the existing bounded replay runner without generating, indexing, or activating a defense. Preserve target prompt scope and its hash. A baseline replay is not a second live JudgeAgent verdict. Confirmed findings require their matching defense validation records; baseline evidence cannot substitute for patched-defense proof.
 - Research artifacts refine implementation details before each bounded implementation batch. Any requirement reinterpretation must retain the complete requested behavior.
 
 ## Testing Decisions

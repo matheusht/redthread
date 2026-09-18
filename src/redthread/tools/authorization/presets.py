@@ -24,6 +24,13 @@ def default_least_agency_policies() -> list[AuthorizationPolicy]:
             policy_id="defense-validator-replay",
             actor_roles=["defense_validator"],
             allowed_capabilities=["target.replay"],
+            argument_schema={
+                "trace_id": ArgumentRule(max_length=256),
+                "case_id": ArgumentRule(max_length=256),
+                "kind": ArgumentRule(max_length=32),
+                "prompt_sha256": ArgumentRule(max_length=64),
+            },
+            required_argument_keys=["trace_id", "case_id", "kind", "prompt_sha256"],
             max_target_sensitivity="medium",
             reason="trusted defense replay validation is allowed on controlled target paths",
         ),

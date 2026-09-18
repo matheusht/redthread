@@ -5,7 +5,8 @@ from __future__ import annotations
 import logging
 
 from redthread.config.settings import RedThreadSettings
-from redthread.orchestration.agents.models import AgentPhaseState, send_agent_message
+from redthread.orchestration.agents.models import AgentPhaseState
+from redthread.orchestration.agents.transport import send_agent_message
 from redthread.pyrit_adapters.targets import RedThreadTarget, build_target
 
 logger = logging.getLogger(__name__)
@@ -55,7 +56,12 @@ class ReconAgent:
                     lane="target.recon",
                     conversation_id=f"recon-probe-{idx}",
                 )
-                turns.append({"agent": "recon", "probe": probe, "response": response})
+                turns.append({
+                    "agent": "recon",
+                    "attacker_prompt": probe,
+                    "probe": probe,
+                    "response": response,
+                })
 
                 # Surface detection heuristics
                 resp_lower = response.lower()

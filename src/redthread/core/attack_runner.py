@@ -42,9 +42,6 @@ class AttackRunnerRegistry:
         self._factories[algorithm] = factory
 
     def create(self, algorithm: AlgorithmType, settings: RedThreadSettings) -> AttackStrategyRunner:
-        if algorithm == AlgorithmType.AGENT_CHAIN:
-            from redthread.orchestration.agents.specialized_adapter import SpecializedAttackRunner
-            return SpecializedAttackRunner(settings)
         try:
             return self._factories[algorithm](settings)
         except KeyError as exc:
@@ -77,10 +74,15 @@ def build_default_attack_runner_registry() -> AttackRunnerRegistry:
         from redthread.core.mcts import MCTSAttack
         return MCTSAttack(settings)
 
+    def agent_chain(settings: RedThreadSettings) -> AttackStrategyRunner:
+        from redthread.orchestration.agents.specialized_adapter import SpecializedAttackRunner
+        return SpecializedAttackRunner(settings)
+
     registry.register(AlgorithmType.PAIR, pair)
     registry.register(AlgorithmType.TAP, tap)
     registry.register(AlgorithmType.CRESCENDO, crescendo)
     registry.register(AlgorithmType.MCTS, mcts)
+    registry.register(AlgorithmType.AGENT_CHAIN, agent_chain)
     return registry
 
 

@@ -9,6 +9,7 @@ source_of_truth:
   - src/redthread/tools/authorization/sensitivity.py
   - src/redthread/orchestration/supervisor_graph.py
   - src/redthread/orchestration/agents/specialized_adapter.py
+  - src/redthread/orchestration/agents/transport.py
   - tests/test_authorization_runtime_security.py
   - tests/test_specialized_agent_supervisor.py
 updated_by: codex
@@ -45,7 +46,7 @@ The focused test marks `secrets.read` high, submits a low caller assertion, and 
 
 `AlgorithmType.AGENT_CHAIN` is accepted by settings and the CLI choice in [`run.py`](../../../src/redthread/cli/run.py#L71-L80). Supervisor fan-out sends this algorithm to `specialized_attack_worker`; other algorithms continue to use `attack_worker`. [`fan_out_attack_workers`](../../../src/redthread/orchestration/supervisor_routing.py#L15-L35) and [`build_supervisor_graph`](../../../src/redthread/orchestration/supervisor_graph.py#L37-L65) show the branch.
 
-The specialized worker runs Recon → Social → Exploit through [`run_specialized_attack`](../../../src/redthread/orchestration/agents/specialized_adapter.py#L54-L104), then converts phase turns to the existing `AttackTrace`/`AttackResult` contract. Production phase sends use the shared execution/canary helper with an agent-chain trace identifier; recon probes remain isolated while social and exploit target turns share one target conversation so target history is preserved ([`send_agent_message`](../../../src/redthread/orchestration/agents/models.py#L37-L59)). Phase failures are retained in trace metadata and the worker error field, incrementing collection failure counters; a failed exploit is marked failed rather than completed. The judge passes an error trace through without upgrading it.
+The specialized worker runs Recon → Social → Exploit through [`run_specialized_attack`](../../../src/redthread/orchestration/agents/specialized_adapter.py#L54-L104), then converts phase turns to the existing `AttackTrace`/`AttackResult` contract. Production phase sends use the shared execution/canary helper with an agent-chain trace identifier; recon probes remain isolated while social and exploit target turns share one target conversation so target history is preserved ([`send_agent_message`](../../../src/redthread/orchestration/agents/transport.py#L12-L38)). Phase failures are retained in trace metadata and the worker error field, incrementing collection failure counters; a failed exploit is marked failed rather than completed. The judge passes an error trace through without upgrading it.
 
 The specialized heuristic is diagnostic metadata only. The adapter emits a non-jailbreak verdict, and the normal supervisor Judge stage remains responsible for independent confirmation before defense routing. The adapter contains no timeout implementation; timeout ownership remains with #83.
 
@@ -65,7 +66,7 @@ PYTHONPATH=src COLUMNS=240 REDTHREAD_DRY_RUN=true .venv/bin/pytest -q \
   tests/test_specialized_agent_supervisor.py \
   tests/test_supervisor.py \
   tests/test_attack_runner_registry.py
-55 passed
+56 passed
 ```
 
 Ruff passed for the changed security/runtime modules and focused tests. Mypy passed for the same source set. The focused run covers authorization engine and policy precedence, agentic-security scenarios, live authorization/interception, the isolated specialized agents, supervisor routing, result conversion, and the existing attack-runner registry.

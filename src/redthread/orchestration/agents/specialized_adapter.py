@@ -19,6 +19,19 @@ from redthread.orchestration.agents.models import AgentPhaseState
 from redthread.personas.models import Persona
 
 
+def _conversation_turn(index: int, raw: dict[str, Any]) -> ConversationTurn:
+    """Adapt canonical phase turns while reading legacy aliases."""
+    prompt = raw.get("attacker_prompt")
+    if prompt is None:
+        prompt = raw.get("probe") or raw.get("pretext") or raw.get("payload") or ""
+    return ConversationTurn(
+        turn_number=index,
+        attacker_prompt=str(prompt),
+        target_response=str(raw.get("response", "")),
+        improvement_rationale=str(raw.get("agent", "")),
+    )
+
+
 def _result(
     persona: Persona,
     target_prompt: str,
@@ -75,14 +88,7 @@ async def run_specialized_attack(state: AgentPhaseState) -> AttackResult:
         }
         final_state = await run_specialized_pipeline(state)
         turns = [
-            ConversationTurn(
-                turn_number=index,
-                attacker_prompt=str(
-                    raw.get("probe") or raw.get("pretext") or raw.get("payload") or ""
-                ),
-                target_response=str(raw.get("response", "")),
-                improvement_rationale=str(raw.get("agent", "")),
-            )
+            _conversation_turn(index, raw)
             for index, raw in enumerate(final_state.get("turns", []), 1)
         ]
         return _result(
