@@ -13,7 +13,11 @@ from redthread.config.settings import RedThreadSettings
 from redthread.core.defense_status import validated_candidate_count_fields
 from redthread.models import CampaignConfig, CampaignResult
 from redthread.orchestration.supervisor_finalize import finalize_node
-from redthread.orchestration.supervisor_graph import attack_worker_node, build_supervisor_graph
+from redthread.orchestration.supervisor_graph import (
+    attack_worker_node,
+    build_supervisor_graph,
+    specialized_attack_worker_node,
+)
 from redthread.orchestration.supervisor_nodes import (
     _worker_canary_update,
     analyze_agentic_security_node,
@@ -97,6 +101,7 @@ __all__ = [
     "_worker_canary_update",
     "analyze_agentic_security_node",
     "attack_worker_node",
+    "specialized_attack_worker_node",
     "build_supervisor_graph",
     "collect_results_node",
     "defense_synthesis_node",

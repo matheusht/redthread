@@ -615,3 +615,31 @@
 - added concept page for `concepts/pre-action-authorization.md` (Arxiv)
 - added entity page for `entities/open-agent-passport.md` (Arxiv)
 - updated wiki index to include new research synthesis
+
+## [2026-09-18] ingest | Open issues implementation map
+- Captured immutable open-issue snapshot; retained Wave 2 plus launch-readiness scope.
+- Started three Luna high research agents and documented workflow, baseline, and tracker permission limits.
+- MemPalace keyword search returned no matching prior context.
+
+## [2026-09-18] scope | Respect concurrent issue ownership
+- User excluded 80, 89, 83, 86, 90, 93, 84, 77, 81, 87; marked external-owned.
+- No runtime implementation had started. Reduced specs and agent assignments to remaining eleven issues.
+
+## [2026-09-18] research | Source-backed implementation handoff
+- Linked three research artifacts and active specification; published spec as issue 105.
+- Began bounded implementation of remaining eleven issues across Luna high agents.
+- Confirmed baseline CLI failures were terminal wrapping: both pass at COLUMNS=240.
+
+## [2026-09-18] verify | Evaluation and replay implementation
+- Recorded evaluation decomposition, explicit fallback evidence, and offline replay CLI with 59 passing focused checks.
+- Preserved external ownership of empty-bundle rejection, judge parsing, and golden expansion.
+
+## [2026-09-18] verify | Storage and model review corrections
+- Added source-backed storage/model verification page.
+- Independent review found parser entry and validation-field gaps; corrected both and added regression cases.
+- Distinct-process append tests now verify JSONL and Markdown integrity; final focused memory/storage set passed 17 tests.
+
+## [2026-09-18] verify | Authorization and specialized runtime
+- Recorded argument schema checks, authoritative sensitivity, and supervised agent-chain execution with shared canary sends.
+- Focused caller/runtime suite passed 53 tests; independent review remains separate from this checkpoint.
+- Preserved excluded timeout, new preset, security-summary, and reflection-redaction ownership.

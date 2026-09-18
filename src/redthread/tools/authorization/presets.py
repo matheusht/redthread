@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from redthread.orchestration.models import AuthorizationDecisionType, TrustLevel
 from redthread.tools.authorization.capabilities import HIGH_RISK_CAPABILITIES
-from redthread.tools.authorization.models import AuthorizationPolicy
+from redthread.tools.authorization.models import ArgumentRule, AuthorizationPolicy
 
 
 def default_least_agency_policies() -> list[AuthorizationPolicy]:
@@ -13,6 +13,11 @@ def default_least_agency_policies() -> list[AuthorizationPolicy]:
             policy_id="read-only-retriever",
             actor_roles=["retriever", "analyst", "tool_executor"],
             allowed_capabilities=["lookup_status", "web.fetch", "tool.read"],
+            argument_schema={
+                "tenant": ArgumentRule(max_length=256),
+                "url": ArgumentRule(max_length=2048),
+                "resource": ArgumentRule(max_length=1024),
+            },
             reason="read-only retrieval is allowed",
         ),
         AuthorizationPolicy(
@@ -34,6 +39,11 @@ def default_least_agency_policies() -> list[AuthorizationPolicy]:
             policy_id="escalate-high-sensitivity-writes",
             actor_roles=["privileged_executor", "executor"],
             allowed_capabilities=["db.write", "memory.write", "file.write"],
+            argument_schema={
+                "table": ArgumentRule(max_length=256),
+                "entry": ArgumentRule(max_length=4096),
+                "path": ArgumentRule(max_length=4096, kind="path"),
+            },
             max_target_sensitivity="medium",
             decision=AuthorizationDecisionType.ESCALATE,
             reason="high-sensitivity writes and mutations require explicit approval",

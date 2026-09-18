@@ -49,6 +49,14 @@ This is the primary content map for the RedThread wiki.
 
 ## Research
 
+- [research/open-issues-security-verification.md](research/open-issues-security-verification.md) — Argument schemas, authoritative sensitivity, and specialized agent runtime evidence.
+
+- [research/open-issues-storage-verification.md](research/open-issues-storage-verification.md) — Model compatibility, telemetry WAL, concurrent memory writes, and legacy guardrail parsing evidence.
+
+- [research/open-issues-evaluation-verification.md](research/open-issues-evaluation-verification.md) — Evaluation decomposition, degraded evidence, replay CLI checks, and external dependencies.
+
+- [research/open-issues-implementation-map.md](research/open-issues-implementation-map.md) — Complete open-issue scope, dependencies, research, and verification ledger.
+
 - [research/README.md](research/README.md) — How to structure ongoing investigations.
 - [research/ai-red-teaming-academic-papers.md](research/ai-red-teaming-academic-papers.md) — Curated bibliography of must-read academic papers on AI Red Teaming.
 - [research/open-source-redteam-tool-integration-strategy.md](research/open-source-redteam-tool-integration-strategy.md) — Strategy for using garak, promptfoo, and Strix as RedThread surface expanders without replacing the closed-loop defense engine.

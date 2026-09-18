@@ -18,6 +18,8 @@ def fan_out_attack_workers(state: SupervisorState) -> list[Send]:
 
     config = state["config_dict"]
     sends = []
+    algorithm = state["settings_dict"].get("algorithm")
+    worker_node = "specialized_attack_worker" if algorithm == "agent_chain" else "attack_worker"
     for persona_dict in state["persona_dicts"]:
         worker_state: AttackWorkerState = {
             "settings_dict": state["settings_dict"],
@@ -27,7 +29,7 @@ def fan_out_attack_workers(state: SupervisorState) -> list[Send]:
             "result_dict": None,
             "error": None,
         }
-        sends.append(Send("attack_worker", worker_state))
+        sends.append(Send(worker_node, worker_state))
 
     logger.info("⚡ Supervisor: fanning out %d attack workers...", len(sends))
     return sends

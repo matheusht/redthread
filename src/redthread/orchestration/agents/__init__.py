@@ -10,6 +10,10 @@ from redthread.orchestration.agents.exploit_agent import ExploitAgent, exploit_a
 from redthread.orchestration.agents.models import AgentNodeResult, AgentPhaseState
 from redthread.orchestration.agents.recon_agent import ReconAgent, recon_agent_node
 from redthread.orchestration.agents.social_agent import SocialAgent, social_agent_node
+from redthread.orchestration.agents.specialized_adapter import (
+    SpecializedAttackRunner,
+    run_specialized_attack,
+)
 
 __all__ = [
     "AgentNodeResult",
@@ -17,9 +21,11 @@ __all__ = [
     "ExploitAgent",
     "ReconAgent",
     "SocialAgent",
+    "SpecializedAttackRunner",
     "build_specialized_agent_graph",
     "exploit_agent_node",
     "recon_agent_node",
     "run_specialized_pipeline",
+    "run_specialized_attack",
     "social_agent_node",
 ]

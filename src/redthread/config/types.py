@@ -6,6 +6,7 @@ from enum import Enum
 
 
 class AlgorithmType(str, Enum):
+    AGENT_CHAIN = "agent_chain"
     PAIR = "pair"
     TAP = "tap"
     CRESCENDO = "crescendo"

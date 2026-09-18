@@ -6,7 +6,8 @@ from collections.abc import Callable, Sequence
 from typing import Protocol
 
 from redthread.config.settings import AlgorithmType, RedThreadSettings
-from redthread.models import AttackResult, Persona
+from redthread.models import AttackResult
+from redthread.personas.models import Persona
 
 
 class AttackStrategyRunner(Protocol):
@@ -41,6 +42,9 @@ class AttackRunnerRegistry:
         self._factories[algorithm] = factory
 
     def create(self, algorithm: AlgorithmType, settings: RedThreadSettings) -> AttackStrategyRunner:
+        if algorithm == AlgorithmType.AGENT_CHAIN:
+            from redthread.orchestration.agents.specialized_adapter import SpecializedAttackRunner
+            return SpecializedAttackRunner(settings)
         try:
             return self._factories[algorithm](settings)
         except KeyError as exc:

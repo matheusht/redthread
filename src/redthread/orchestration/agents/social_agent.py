@@ -5,8 +5,8 @@ from __future__ import annotations
 import logging
 
 from redthread.config.settings import RedThreadSettings
-from redthread.models import Persona
-from redthread.orchestration.agents.models import AgentPhaseState
+from redthread.orchestration.agents.models import AgentPhaseState, send_agent_message
+from redthread.personas.models import Persona
 from redthread.pyrit_adapters.targets import RedThreadTarget, build_attacker, build_target
 
 logger = logging.getLogger(__name__)
@@ -57,14 +57,28 @@ class SocialAgent:
         )
 
         turns = list(state.get("turns") or [])
+        phase_errors = list(state.get("phase_errors") or [])
+        phase_failed = False
         try:
             attacker = self._get_attacker()
             target = self._get_target()
 
-            pretext_msg = await attacker.send(prompt=social_prompt, conversation_id="social-generate")
+            pretext_msg = await send_agent_message(
+                attacker,
+                prompt=social_prompt,
+                state=state,
+                lane="attacker.social",
+                conversation_id="social-generate",
+            )
             pretext_msg = pretext_msg.strip()
 
-            target_resp = await target.send(prompt=pretext_msg, conversation_id="social-target")
+            target_resp = await send_agent_message(
+                target,
+                prompt=pretext_msg,
+                state=state,
+                lane="target.social",
+                conversation_id="social-target",
+            )
             turns.append({"agent": "social", "pretext": pretext_msg, "response": target_resp})
 
             logger.info("🤝 SocialAgent established pretext: %s", pretext_msg[:80])
@@ -73,12 +87,15 @@ class SocialAgent:
         except Exception as exc:
             logger.warning("SocialAgent execution encountered error: %s", exc)
             social_pretext = f"Default Pretext: {cover_story} ({exc})"
+            phase_errors.append({"phase": "social", "error": str(exc)})
+            phase_failed = True
 
         return {
             **state,
             "social_pretext": social_pretext,
             "turns": turns,
-            "current_phase": "social_completed",
+            "current_phase": "social_failed" if phase_failed else "social_completed",
+            "phase_errors": phase_errors,
         }
 
 
@@ -86,5 +103,10 @@ async def social_agent_node(state: AgentPhaseState) -> AgentPhaseState:
     """LangGraph node function for SocialAgent."""
     settings_dict = state.get("metadata", {}).get("settings_dict")
     settings = RedThreadSettings.model_validate(settings_dict) if settings_dict else None
-    agent = SocialAgent(settings=settings)
+    metadata = state.get("metadata", {})
+    agent = SocialAgent(
+        settings=settings,
+        attacker=metadata.get("_shared_attacker"),
+        target=metadata.get("_shared_target"),
+    )
     return await agent.run(state)

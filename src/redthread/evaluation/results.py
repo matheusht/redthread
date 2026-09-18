@@ -52,3 +52,4 @@ class TraceEvalResult:
     verdict: JudgeVerdict | None = None
     error: str | None = None
     fallback_reason: str | None = None
+    evidence_class: str | None = None
