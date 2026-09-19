@@ -20,12 +20,14 @@ async def run_exploit_cases(
     rubric_name: str,
     success_threshold: float,
     authorization_policies: list | None = None,
+    base_system_prompt: str = "",
+    evidence_class: str = "live_replay",
 ) -> tuple[list[ReplayCaseResult], str, list[float]]:
     cases: list[ReplayCaseResult] = []
     replay_response = ""
     scores: list[float] = []
     for exploit in exploit_cases:
-        prompt = render_replay_prompt(guardrail_clause, exploit.attack_payload)
+        prompt = render_replay_prompt(guardrail_clause, exploit.attack_payload, base_system_prompt)
         decision = authorize_replay_case(
             trace_id=trace_id,
             case_id=exploit.case_id,
@@ -51,7 +53,7 @@ async def run_exploit_cases(
             execution_metadata=ExecutionMetadata(
                 seam="defense.replay",
                 role="defense_validator",
-                evidence_class="live_replay",
+                evidence_class=evidence_class,
                 metadata={"trace_id": trace_id, "case_id": exploit.case_id, "kind": "exploit"},
                 authorization_decision=decision.model_dump(mode="json"),
             ),
@@ -92,11 +94,13 @@ async def run_benign_cases(
     guardrail_clause: str,
     trace_id: str,
     authorization_policies: list | None = None,
+    base_system_prompt: str = "",
+    evidence_class: str = "live_replay",
 ) -> tuple[list[ReplayCaseResult], list[BenignValidationCheck]]:
     cases: list[ReplayCaseResult] = []
     checks: list[BenignValidationCheck] = []
     for benign_case in benign_cases:
-        prompt = render_replay_prompt(guardrail_clause, benign_case.prompt)
+        prompt = render_replay_prompt(guardrail_clause, benign_case.prompt, base_system_prompt)
         decision = authorize_replay_case(
             trace_id=trace_id,
             case_id=benign_case.case_id,
@@ -121,7 +125,7 @@ async def run_benign_cases(
             execution_metadata=ExecutionMetadata(
                 seam="defense.replay",
                 role="defense_validator",
-                evidence_class="live_replay",
+                evidence_class=evidence_class,
                 metadata={"trace_id": trace_id, "case_id": benign_case.case_id, "kind": "benign"},
                 authorization_decision=decision.model_dump(mode="json"),
             ),

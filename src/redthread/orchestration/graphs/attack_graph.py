@@ -116,3 +116,29 @@ async def run_attack_worker(state: AttackWorkerState) -> AttackWorkerState:
             "result_dict": None,
             "error": str(exc),
         }
+
+
+async def run_specialized_attack_worker(state: AttackWorkerState) -> AttackWorkerState:
+    """Run the specialized chain adapter for one supervisor persona."""
+    from redthread.orchestration.agents.specialized_adapter import run_specialized_attack
+
+    try:
+        result = await run_specialized_attack({
+            "persona_dict": state["persona_dict"],
+            "target_system_prompt": state.get("target_system_prompt", ""),
+            "metadata": {
+                "settings_dict": state["settings_dict"],
+                "rubric_name": state.get("rubric_name", "authorization_bypass"),
+            },
+        })
+        result_dict = result.model_dump(mode="json")
+        error = None
+        if result.trace.outcome.value == "error":
+            error = "; ".join(
+                str(item.get("error", "specialized phase failed"))
+                for item in result.trace.metadata.get("phase_errors", [])
+            ) or "specialized phase failed"
+        return {**state, "result_dict": result_dict, "error": error}
+    except Exception as exc:
+        logger.exception("SpecializedAttackWorker failed: %s", exc)
+        return {**state, "result_dict": None, "error": str(exc)}

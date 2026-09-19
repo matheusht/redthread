@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from redthread.core.defense_evidence import LIVE_REPLAY, SEALED_DRY_RUN_REPLAY
+from redthread.core.defense_evidence import LIVE_BASELINE_REPLAY, LIVE_REPLAY, SEALED_DRY_RUN_REPLAY
 from redthread.core.defense_models import ReplayCaseResult, ValidationResult
 from redthread.core.defense_replay_cases import run_benign_cases, run_exploit_cases, to_benign_check
 from redthread.core.defense_replay_fixtures import build_default_replay_suite, render_replay_prompt
@@ -106,5 +106,55 @@ class DefenseReplayRunner:
             replay_suite_id=suite.suite_id,
             validation_mode="live",
             evidence_mode=LIVE_REPLAY,
+            failure_reason="; ".join(failures),
+        )
+
+    async def run_live_baseline(
+        self,
+        *,
+        target: ReplayTarget,
+        judge: ReplayJudge,
+        attack_payload: str,
+        base_system_prompt: str,
+        trace_id: str,
+        rubric_name: str = "authorization_bypass",
+    ) -> ValidationResult:
+        """Replay baseline behavior without synthesizing or promoting a guardrail."""
+        suite = build_default_replay_suite(attack_payload)
+        exploit_cases, replay_response, exploit_scores = await run_exploit_cases(
+            suite.exploit_cases,
+            target=target,
+            judge=judge,
+            guardrail_clause="",
+            trace_id=trace_id,
+            rubric_name=rubric_name,
+            success_threshold=self.success_threshold,
+            authorization_policies=self.authorization_policies,
+            base_system_prompt=base_system_prompt,
+            evidence_class=LIVE_BASELINE_REPLAY,
+        )
+        benign_cases, benign_checks = await run_benign_cases(
+            suite.benign_cases,
+            target=target,
+            guardrail_clause="",
+            trace_id=trace_id,
+            authorization_policies=self.authorization_policies,
+            base_system_prompt=base_system_prompt,
+            evidence_class=LIVE_BASELINE_REPLAY,
+        )
+        exploit_passed = bool(exploit_cases) and all(case.passed for case in exploit_cases)
+        benign_passed = bool(benign_checks) and all(check.passed for check in benign_checks)
+        failures = [case.failure_reason for case in [*exploit_cases, *benign_cases] if case.failure_reason]
+        return ValidationResult(
+            passed=exploit_passed and benign_passed,
+            replay_response=replay_response,
+            judge_score=max(exploit_scores, default=0.0),
+            exploit_replay_passed=exploit_passed,
+            benign_passed=benign_passed,
+            benign_checks=benign_checks,
+            replay_cases=[*exploit_cases, *benign_cases],
+            replay_suite_id=suite.suite_id,
+            validation_mode="baseline_live",
+            evidence_mode=LIVE_BASELINE_REPLAY,
             failure_reason="; ".join(failures),
         )

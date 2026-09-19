@@ -169,6 +169,16 @@ PYTHONPATH=src .venv/bin/pytest -q \
 - authorization denies dangerous derived actions
 - replay/promotion rules work
 
+### Inspect an existing replay bundle locally
+
+Use the offline replay command to inspect a JSON bundle without executing a target, tool, LLM, network call, or live adapter:
+
+```bash
+PYTHONPATH=src .venv/bin/redthread replay run ./replay-bundle.json
+```
+
+The command prints bundle status, per-trace expected/actual authorization and budget values, sealed/live canary reports, and failure reasons. It returns nonzero when the current promotion evaluator fails or when the bundle is invalid. Empty-bundle rejection belongs to external issue #80 and is not duplicated here.
+
 ---
 
 ## B. Test runtime integration only

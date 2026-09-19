@@ -38,6 +38,20 @@ async def run_specialized_pipeline(
 ) -> AgentPhaseState:
     current: AgentPhaseState = state.copy()
 
+    if recon_agent is None and social_agent is None and exploit_agent is None:
+        from redthread.config.settings import RedThreadSettings
+        from redthread.pyrit_adapters.targets import build_attacker, build_target
+
+        settings = RedThreadSettings.model_validate(
+            current.get("metadata", {}).get("settings_dict", {})
+        )
+        metadata = {
+            **current.get("metadata", {}),
+            "_shared_target": build_target(settings),
+            "_shared_attacker": build_attacker(settings),
+        }
+        current = {**current, "metadata": metadata}
+
     if recon_agent is not None:
         current = await recon_agent.run(current)
     else:

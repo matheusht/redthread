@@ -16,6 +16,7 @@ from redthread.cli.evidence import register_evidence_commands
 from redthread.cli.home import render_home_screen
 from redthread.cli.init_cmd import run_init
 from redthread.cli.monitor import register_monitor_commands
+from redthread.cli.replay import register_replay_commands
 from redthread.cli.research import register_research_commands
 from redthread.cli.run import register_run_command
 from redthread.cli.testing import register_test_commands
@@ -59,6 +60,7 @@ register_run_command(main, console)
 register_evidence_commands(main, console)
 register_benchmark_eval_commands(main, console)
 register_monitor_commands(main, console)
+register_replay_commands(main, console)
 register_test_commands(main, console)
 register_consolidate_command(main, console)
 register_dashboard_command(main, console)

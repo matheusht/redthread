@@ -73,3 +73,11 @@ def test_telemetry_storage_creates_composite_indexes(tmp_path: Path) -> None:
         )
         canary_details = " ".join(row[3] for row in canary_plan.fetchall())
         assert "idx_telemetry_canary" in canary_details
+
+
+def test_telemetry_storage_configures_concurrent_connections(tmp_path: Path) -> None:
+    storage = TelemetryStorage(make_settings(tmp_path))
+
+    with storage._connection() as conn:
+        assert conn.execute("PRAGMA journal_mode").fetchone()[0].lower() == "wal"
+        assert conn.execute("PRAGMA busy_timeout").fetchone()[0] == 5000

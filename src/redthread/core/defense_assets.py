@@ -104,7 +104,10 @@ def append_guardrails_to_system_prompt(base_prompt: str, clauses: list[str]) -> 
 
 def build_guardrail_replay_prompt(clause: str, user_prompt: str, base_system_prompt: str = "") -> str:
     """Render a sandbox replay prompt in the same shape as runtime guardrail injection."""
-    patched_system_prompt = append_guardrails_to_system_prompt(base_system_prompt, [clause])
+    patched_system_prompt = append_guardrails_to_system_prompt(
+        base_system_prompt,
+        [clause] if clause.strip() else [],
+    )
     if patched_system_prompt:
         return f"[SYSTEM]: {patched_system_prompt}\n\n[USER]: {user_prompt}"
     return f"[USER]: {user_prompt}"

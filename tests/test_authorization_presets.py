@@ -15,14 +15,24 @@ from redthread.tools.authorization.presets import (
 )
 
 
-def _action(role: str, capability: str, **arguments: str) -> ActionEnvelope:
+def _action(
+    role: str,
+    capability: str,
+    target_sensitivity: str | None = None,
+    **arguments: str,
+) -> ActionEnvelope:
+    sensitivity = target_sensitivity or (
+        "high"
+        if capability == "http.post"
+        else ("medium" if "write" in capability else "low")
+    )
     return ActionEnvelope(
         actor_id="preset-test",
         actor_role=role,
         capability=capability,
         tool_name=capability,
         arguments=arguments,
-        target_sensitivity="low",
+        target_sensitivity=sensitivity,
         provenance={
             "source_kind": "internal_agent",
             "trust_level": "trusted",
@@ -30,6 +40,7 @@ def _action(role: str, capability: str, **arguments: str) -> ActionEnvelope:
         },
         requested_effect="read" if capability.endswith("read") else "write",
     )
+
 
 
 def test_presets_are_frozen_and_part_of_default_policy_set() -> None:

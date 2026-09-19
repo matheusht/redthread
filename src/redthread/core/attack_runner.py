@@ -6,7 +6,8 @@ from collections.abc import Callable, Sequence
 from typing import Protocol
 
 from redthread.config.settings import AlgorithmType, RedThreadSettings
-from redthread.models import AttackResult, Persona
+from redthread.models import AttackResult
+from redthread.personas.models import Persona
 
 
 class AttackStrategyRunner(Protocol):
@@ -73,10 +74,15 @@ def build_default_attack_runner_registry() -> AttackRunnerRegistry:
         from redthread.core.mcts import MCTSAttack
         return MCTSAttack(settings)
 
+    def agent_chain(settings: RedThreadSettings) -> AttackStrategyRunner:
+        from redthread.orchestration.agents.specialized_adapter import SpecializedAttackRunner
+        return SpecializedAttackRunner(settings)
+
     registry.register(AlgorithmType.PAIR, pair)
     registry.register(AlgorithmType.TAP, tap)
     registry.register(AlgorithmType.CRESCENDO, crescendo)
     registry.register(AlgorithmType.MCTS, mcts)
+    registry.register(AlgorithmType.AGENT_CHAIN, agent_chain)
     return registry
 
 

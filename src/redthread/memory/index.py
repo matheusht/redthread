@@ -16,7 +16,9 @@ from redthread.core.defense_synthesis import (
     ValidationResult,
     VulnerabilityClassification,
 )
+from redthread.memory.file_locks import locked_append, locked_path
 from redthread.memory.formatting import HEADER, format_entry
+from redthread.memory.legacy_parser import load_legacy_guardrails
 from redthread.orchestration.canary_containment import evaluate_canary_containment
 
 logger = logging.getLogger(__name__)
@@ -53,18 +55,18 @@ class MemoryIndex:
                 canary_decision.canary_tags,
             )
             return False
-        if self._is_duplicate(record.trace_id):
-            logger.debug("MemoryIndex: duplicate trace_id=%s — skipping.", record.trace_id)
-            return False
-        record.metadata = {
-            **record.metadata,
-            "guardrail_status": guardrail_status,
-            "active_guardrail": guardrail_status == "active_guardrail",
-        }
-        with self._path.open("a", encoding="utf-8") as handle:
-            handle.write(format_entry(record))
-        with self._deployments_path.open("a", encoding="utf-8") as handle:
-            handle.write(json.dumps(asdict(record)) + "\n")
+        with locked_append(self._deployments_path) as deployments_handle:
+            if self._is_duplicate(record.trace_id):
+                logger.debug("MemoryIndex: duplicate trace_id=%s — skipping.", record.trace_id)
+                return False
+            record.metadata = {
+                **record.metadata,
+                "guardrail_status": guardrail_status,
+                "active_guardrail": guardrail_status == "active_guardrail",
+            }
+            with locked_append(self._path) as handle:
+                handle.write(format_entry(record))
+            deployments_handle.write(json.dumps(asdict(record)) + "\n")
         logger.info("📚 MemoryIndex updated | trace=%s | category=%s", record.trace_id, record.classification.category)
         return True
 
@@ -84,7 +86,8 @@ class MemoryIndex:
         return written
 
     def all_entries_raw(self) -> str:
-        return self._path.read_text(encoding="utf-8") if self._path.exists() else ""
+        with locked_path(self._path):
+            return self._all_entries_raw_unlocked()
 
     def known_trace_ids(self) -> list[str]:
         deployments = self.iter_deployments()
@@ -97,9 +100,8 @@ class MemoryIndex:
         ]
 
     def iter_deployments(self) -> list[DeploymentRecord]:
-        if not self._deployments_path.exists():
-            return []
-        return [self._deserialize(line) for line in self._deployments_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+        with locked_path(self._deployments_path):
+            return self._iter_deployments_unlocked()
 
     def deployments_by_trace_ids(self, trace_ids: Iterable[str]) -> list[DeploymentRecord]:
         wanted = set(trace_ids)
@@ -127,22 +129,15 @@ class MemoryIndex:
         deployments = self.iter_deployments()
         if deployments:
             return [record.guardrail_clause for record in self.load_scoped_guardrail_records(target_model, prompt_hash)]
-        clauses: list[str] = []
-        for block in self.all_entries_raw().split("---\n\n"):
-            if "✅ YES" not in block or f"model=`{target_model}` | prompt_hash=`{prompt_hash}`" not in block:
-                continue
-            for line in block.splitlines():
-                if line.startswith("> **Guardrail clause:**"):
-                    clauses.append(line.replace("> **Guardrail clause:**", "").strip())
-                    break
-        return clauses
+        return load_legacy_guardrails(self.all_entries_raw(), target_model, prompt_hash)
 
     def _ensure_files(self) -> None:
-        if not self._path.exists():
-            self._path.parent.mkdir(parents=True, exist_ok=True)
-            self._path.write_text(HEADER, encoding="utf-8")
-        if not self._deployments_path.exists():
-            self._deployments_path.touch()
+        self._path.parent.mkdir(parents=True, exist_ok=True)
+        with locked_append(self._path) as handle:
+            if self._path.stat().st_size == 0:
+                handle.write(HEADER)
+        with locked_append(self._deployments_path):
+            pass
 
     def _deserialize(self, line: str) -> DeploymentRecord:
         payload = json.loads(line)
@@ -174,4 +169,23 @@ class MemoryIndex:
         )
 
     def _is_duplicate(self, trace_id: str) -> bool:
-        return trace_id in self.known_trace_ids()
+        deployments = self._iter_deployments_unlocked()
+        if deployments:
+            return trace_id in {record.trace_id for record in deployments}
+        return any(
+            line.replace("**Trace:**", "").strip().strip("`") == trace_id
+            for line in self._all_entries_raw_unlocked().splitlines()
+            if line.startswith("**Trace:**")
+        )
+
+    def _all_entries_raw_unlocked(self) -> str:
+        return self._path.read_text(encoding="utf-8") if self._path.exists() else ""
+
+    def _iter_deployments_unlocked(self) -> list[DeploymentRecord]:
+        if not self._deployments_path.exists():
+            return []
+        return [
+            self._deserialize(line)
+            for line in self._deployments_path.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
