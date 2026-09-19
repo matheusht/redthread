@@ -85,8 +85,6 @@ from redthread.benchmarks.prompt_materials import (
 from redthread.benchmarks.regression_handoff import (
     BenchmarkRegressionCaseSummary,
     BenchmarkRegressionHandoffArtifact,
-    BenchmarkRegressionHandoffError,
-    BenchmarkRegressionSkip,
     build_benchmark_regression_handoff,
     write_benchmark_regression_handoff_artifact,
 )
@@ -142,8 +140,6 @@ __all__ = [
     "ApprovedBenchmarkReplayBundle",
     "BenchmarkRegressionCaseSummary",
     "BenchmarkRegressionHandoffArtifact",
-    "BenchmarkRegressionHandoffError",
-    "BenchmarkRegressionSkip",
     "BenchmarkReplayError",
     "BenchmarkRunContext",
     "BenchmarkRunContextError",
