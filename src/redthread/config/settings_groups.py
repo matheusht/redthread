@@ -66,6 +66,7 @@ class RuntimeStorageSettings:
     research_runtime_dir: Path | None = Field(default=None)
     verbose: bool = Field(default=False)
     dry_run: bool = Field(default=False)
+    worker_timeout_seconds: float = Field(default=300.0, gt=0)
     canary_policy_preset: CanaryPolicyPreset = Field(
         default=CanaryPolicyPreset.BLOCK_MEMORY_AND_OUTBOUND,
     )

@@ -7,10 +7,13 @@ fanned-out in parallel by the supervisor via LangGraph's Send API.
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from typing import Any
 
 from typing_extensions import TypedDict
+
+from redthread.models import AttackOutcome, AttackResult, AttackTrace, JudgeVerdict, Persona
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +29,30 @@ class AttackWorkerState(TypedDict):
     error: str | None
 
 
+def _timeout_result(persona: Persona, algorithm: str, rubric_name: str) -> AttackResult:
+    """Build an explicit failed result when a worker is cancelled by its deadline."""
+    trace = AttackTrace(
+        persona=persona,
+        algorithm=algorithm,
+        outcome=AttackOutcome.ERROR,
+        metadata={"worker_status": "worker_timeout", "worker_error": "worker_timeout"},
+    )
+    verdict = JudgeVerdict(
+        score=0.0,
+        raw_score=0,
+        reasoning="Attack worker timed out before producing a result.",
+        feedback="",
+        rubric_name=rubric_name,
+        is_jailbreak=False,
+    )
+    return AttackResult(
+        trace=trace,
+        verdict=verdict,
+        iterations_used=0,
+        duration_seconds=0.0,
+    )
+
+
 async def run_attack_worker(state: AttackWorkerState) -> AttackWorkerState:
     """Executes a single attack run for one persona.
 
@@ -35,7 +62,6 @@ async def run_attack_worker(state: AttackWorkerState) -> AttackWorkerState:
     """
 
     from redthread.config.settings import RedThreadSettings
-    from redthread.models import Persona
 
     try:
         settings = RedThreadSettings.model_validate(state["settings_dict"])
@@ -51,11 +77,31 @@ async def run_attack_worker(state: AttackWorkerState) -> AttackWorkerState:
 
         attacker = build_default_attack_runner_registry().create(settings.algorithm, settings)
 
-        result = await attacker.run(
-            persona=persona,
-            target_system_prompt=state.get("target_system_prompt", ""),
-            rubric_name=state["rubric_name"],
-        )
+        try:
+            result = await asyncio.wait_for(
+                attacker.run(
+                    persona=persona,
+                    target_system_prompt=state.get("target_system_prompt", ""),
+                    rubric_name=state["rubric_name"],
+                ),
+                timeout=settings.worker_timeout_seconds,
+            )
+        except TimeoutError:
+            logger.warning(
+                "AttackWorker timed out after %.2fs: persona=%s",
+                settings.worker_timeout_seconds,
+                persona.name,
+            )
+            timeout_result = _timeout_result(
+                persona,
+                settings.algorithm.value,
+                state["rubric_name"],
+            )
+            return {
+                **state,
+                "result_dict": timeout_result.model_dump(mode="json"),
+                "error": "worker_timeout",
+            }
 
         return {
             **state,
