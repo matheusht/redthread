@@ -9,14 +9,12 @@ from dataclasses import asdict
 from pathlib import Path
 
 from redthread.config.settings import RedThreadSettings
-from redthread.core.defense_models import BenignValidationCheck, ReplayCaseResult
-from redthread.core.defense_reporting_models import DefenseValidationReport
-from redthread.core.defense_synthesis import (
-    DeploymentRecord,
-    ValidationResult,
-    VulnerabilityClassification,
+from redthread.core.defense_synthesis import DeploymentRecord
+from redthread.memory.formatting import (
+    HEADER,
+    deserialize_deployment_record,
+    format_entry,
 )
-from redthread.memory.formatting import HEADER, format_entry
 from redthread.orchestration.canary_containment import evaluate_canary_containment
 
 logger = logging.getLogger(__name__)
@@ -61,11 +59,20 @@ class MemoryIndex:
             "guardrail_status": guardrail_status,
             "active_guardrail": guardrail_status == "active_guardrail",
         }
-        with self._path.open("a", encoding="utf-8") as handle:
-            handle.write(format_entry(record))
+        if not self._is_duplicate_clause(record):
+            with self._path.open("a", encoding="utf-8") as handle:
+                handle.write(format_entry(record))
+        else:
+            logger.debug(
+                "MemoryIndex: duplicate clause for %s — skipped MEMORY.md write", record.trace_id
+            )
         with self._deployments_path.open("a", encoding="utf-8") as handle:
             handle.write(json.dumps(asdict(record)) + "\n")
-        logger.info("📚 MemoryIndex updated | trace=%s | category=%s", record.trace_id, record.classification.category)
+        logger.info(
+            "📚 MemoryIndex updated | trace=%s | category=%s",
+            record.trace_id,
+            record.classification.category,
+        )
         return True
 
     def _settings_canary_policy(self) -> str:
@@ -99,7 +106,11 @@ class MemoryIndex:
     def iter_deployments(self) -> list[DeploymentRecord]:
         if not self._deployments_path.exists():
             return []
-        return [self._deserialize(line) for line in self._deployments_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+        return [
+            self._deserialize(line)
+            for line in self._deployments_path.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
 
     def deployments_by_trace_ids(self, trace_ids: Iterable[str]) -> list[DeploymentRecord]:
         wanted = set(trace_ids)
@@ -107,7 +118,9 @@ class MemoryIndex:
             return []
         return [record for record in self.iter_deployments() if record.trace_id in wanted]
 
-    def load_scoped_guardrail_records(self, target_model: str, prompt_hash: str) -> list[DeploymentRecord]:
+    def load_scoped_guardrail_records(
+        self, target_model: str, prompt_hash: str
+    ) -> list[DeploymentRecord]:
         """Load active structured guardrail records for one target scope."""
         return [
             record
@@ -124,18 +137,34 @@ class MemoryIndex:
         Structured deployment records are authoritative when present. Markdown is
         only a backward-compatible fallback for legacy memory files.
         """
+
+        def _dedup(items: Iterable[str]) -> list[str]:
+            seen: set[str] = set()
+            out: list[str] = []
+            for item in items:
+                norm = " ".join(item.lower().split())
+                if norm not in seen:
+                    seen.add(norm)
+                    out.append(item)
+            return out
+
         deployments = self.iter_deployments()
         if deployments:
-            return [record.guardrail_clause for record in self.load_scoped_guardrail_records(target_model, prompt_hash)]
+            return _dedup(
+                r.guardrail_clause
+                for r in self.load_scoped_guardrail_records(target_model, prompt_hash)
+            )
         clauses: list[str] = []
         for block in self.all_entries_raw().split("---\n\n"):
-            if "✅ YES" not in block or f"model=`{target_model}` | prompt_hash=`{prompt_hash}`" not in block:
-                continue
-            for line in block.splitlines():
-                if line.startswith("> **Guardrail clause:**"):
-                    clauses.append(line.replace("> **Guardrail clause:**", "").strip())
-                    break
-        return clauses
+            if (
+                "✅ YES" in block
+                and f"model=`{target_model}` | prompt_hash=`{prompt_hash}`" in block
+            ):
+                for line in block.splitlines():
+                    if line.startswith("> **Guardrail clause:**"):
+                        clauses.append(line.replace("> **Guardrail clause:**", "").strip())
+                        break
+        return _dedup(clauses)
 
     def _ensure_files(self) -> None:
         if not self._path.exists():
@@ -145,33 +174,16 @@ class MemoryIndex:
             self._deployments_path.touch()
 
     def _deserialize(self, line: str) -> DeploymentRecord:
-        payload = json.loads(line)
-        validation_payload = payload["validation"]
-        benign_checks = [
-            BenignValidationCheck(**check)
-            for check in validation_payload.get("benign_checks", [])
-        ]
-        replay_cases = [
-            ReplayCaseResult(**case)
-            for case in validation_payload.get("replay_cases", [])
-        ]
-        report_payload = payload.get("validation_report")
-        return DeploymentRecord(
-            trace_id=payload["trace_id"],
-            guardrail_clause=payload["guardrail_clause"],
-            classification=VulnerabilityClassification(**payload["classification"]),
-            validation=ValidationResult(
-                **{
-                    **validation_payload,
-                    "benign_checks": benign_checks,
-                    "replay_cases": replay_cases,
-                }
-            ),
-            target_model=payload["target_model"],
-            target_system_prompt_hash=payload["target_system_prompt_hash"],
-            validation_report=DefenseValidationReport(**report_payload) if report_payload else None,
-            metadata=payload.get("metadata", {}),
-        )
+        return deserialize_deployment_record(line)
 
     def _is_duplicate(self, trace_id: str) -> bool:
         return trace_id in self.known_trace_ids()
+
+    def _is_duplicate_clause(self, record: DeploymentRecord) -> bool:
+        norm_incoming = " ".join(record.guardrail_clause.lower().split())
+        if not norm_incoming:
+            return False
+        existing = self.load_scoped_guardrails(
+            record.target_model, record.target_system_prompt_hash
+        )
+        return any(" ".join(c.lower().split()) == norm_incoming for c in existing)

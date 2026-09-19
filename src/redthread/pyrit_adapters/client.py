@@ -1,17 +1,16 @@
 from __future__ import annotations
 
+import logging
 from collections.abc import Sequence
-from dataclasses import replace
 from uuid import uuid4
 
 from redthread.config.settings import RedThreadSettings, TargetBackend
-from redthread.orchestration.canary_containment import evaluate_canary_containment
-from redthread.pyrit_adapters.capabilities import (
-    CapabilityRequirement,
-    UnsupportedTargetCapabilityError,
-    check_requirement,
-    from_pyrit_target,
+from redthread.pyrit_adapters.capabilities import CapabilityRequirement
+from redthread.pyrit_adapters.client_guards import (
+    apply_canary_containment,
+    apply_capability_preflight,
 )
+from redthread.pyrit_adapters.client_retry import send_with_retry
 from redthread.pyrit_adapters.execution_context import get_execution_recorder
 from redthread.pyrit_adapters.execution_records import (
     ExecutionMetadata,
@@ -26,9 +25,11 @@ from redthread.pyrit_adapters.runtime import (
     import_pyrit_runtime,
 )
 
+logger = logging.getLogger(__name__)
+
 
 class RedThreadTarget:
-    """Thin async wrapper around a PyRIT PromptChatTarget."""
+    """Thin async wrapper around a PyRIT PromptChatTarget with resilience and containment."""
 
     def __init__(
         self,
@@ -39,6 +40,7 @@ class RedThreadTarget:
         self._target = pyrit_target
         self.model_name = model_name
         self._execution_recorder = execution_recorder
+
     @classmethod
     def from_settings(
         cls,
@@ -54,7 +56,10 @@ class RedThreadTarget:
             base_url=base_url or settings.target_base_url,
             api_key=settings.openai_api_key,
         )
-        return cls(pyrit_target=pyrit_target, model_name=model, execution_recorder=execution_recorder)
+        return cls(
+            pyrit_target=pyrit_target, model_name=model, execution_recorder=execution_recorder
+        )
+
     async def send(
         self,
         prompt: str,
@@ -66,9 +71,10 @@ class RedThreadTarget:
         if not conversation_id:
             conversation_id = str(uuid4())
         try:
-            execution_metadata = self._apply_canary_containment(prompt, execution_metadata)
+            execution_metadata = apply_canary_containment(prompt, execution_metadata)
             maybe_intercept_live_execution(execution_metadata)
-            execution_metadata, capability_error = self._apply_capability_preflight(
+            execution_metadata, capability_error = apply_capability_preflight(
+                self._target,
                 execution_metadata,
                 capability_requirement,
             )
@@ -81,7 +87,11 @@ class RedThreadTarget:
                 conversation_id=conversation_id,
             )
             message = message_cls(message_pieces=[piece])
-            response_messages = await self._target.send_prompt_async(message=message)
+
+            async def _do_send() -> Sequence[PyritMessage]:
+                return await self._target.send_prompt_async(message=message)
+
+            response_messages = await send_with_retry(_do_send)
             response = _extract_response_text(response_messages)
         except Exception as exc:
             self._record_execution(
@@ -97,6 +107,7 @@ class RedThreadTarget:
             success=True,
         )
         return response
+
     async def send_with_usage(
         self,
         prompt: str,
@@ -111,58 +122,14 @@ class RedThreadTarget:
             capability_requirement=capability_requirement,
         )
         return response, (len(prompt) + len(response)) // 4
-    def _apply_canary_containment(
-        self,
-        prompt: str,
-        execution_metadata: ExecutionMetadata | None,
-    ) -> ExecutionMetadata | None:
-        if execution_metadata is None:
-            return None
-        if execution_metadata.canary_containment is not None:
-            return execution_metadata
-        decision = evaluate_canary_containment(
-            seam=execution_metadata.seam,
-            prompt=prompt,
-            metadata=execution_metadata.metadata,
-            canary_tags=execution_metadata.canary_tags,
-        )
-        updated = replace(
-            execution_metadata,
-            canary_tags=list(dict.fromkeys([*execution_metadata.canary_tags, *decision.canary_tags])),
-            canary_containment=decision.model_dump(mode="json"),
-        )
-        if decision.blocked:
-            raise RuntimeError(decision.reason)
-        return updated
-    def _apply_capability_preflight(
-        self,
-        execution_metadata: ExecutionMetadata | None,
-        requirement: CapabilityRequirement | None,
-    ) -> tuple[ExecutionMetadata | None, UnsupportedTargetCapabilityError | None]:
-        capabilities = from_pyrit_target(self._target)
-        check = check_requirement(capabilities, requirement)
-        if check.supported:
-            return execution_metadata, None
 
-        detail = {
-            **check.as_metadata(),
-            "failure_stage": "capability_preflight",
-            "provider_call": False,
-            "requirement": (requirement or CapabilityRequirement()).as_metadata(),
-            "target_capabilities": capabilities.as_metadata(),
-        }
-        if execution_metadata is not None:
-            execution_metadata = replace(
-                execution_metadata,
-                metadata={**dict(execution_metadata.metadata), "capability_preflight": detail},
-            )
-        return execution_metadata, UnsupportedTargetCapabilityError(check.reason)
     def close(self) -> None:
         if hasattr(self._target, "dispose_db_engine"):
             try:
                 self._target.dispose_db_engine()  # type: ignore[attr-defined]
             except Exception:
                 pass
+
     def _record_execution(
         self,
         *,
@@ -184,10 +151,12 @@ class RedThreadTarget:
             )
         )
 
+
 def execution_metadata_id(execution_metadata: ExecutionMetadata | None) -> str:
     if execution_metadata is None or execution_metadata.conversation_id is None:
         return ""
     return execution_metadata.conversation_id
+
 
 def _extract_response_text(response_messages: Sequence[PyritMessage]) -> str:
     if not response_messages:

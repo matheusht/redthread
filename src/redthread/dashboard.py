@@ -29,9 +29,18 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from redthread.dashboard_history import load_campaign_history
+from redthread.dashboard_history import (
+    export_campaign_history,
+    filter_campaign_history,
+    load_campaign_history,
+)
 
-__all__ = ["load_campaign_history", "render_dashboard"]
+__all__ = [
+    "export_campaign_history",
+    "filter_campaign_history",
+    "load_campaign_history",
+    "render_dashboard",
+]
 
 logger = logging.getLogger(__name__)
 
@@ -102,16 +111,8 @@ def render_dashboard(history: list[dict[str, Any]], console: Console) -> None:
             ts_str = ts[:16] if ts else "—"
 
         asr_str = f"[{row_color}]{asr:.0%}[/{row_color}]"
-        asi_str = (
-            f"[{row_color}]{asi:.1f}[/{row_color}]"
-            if asi is not None
-            else "[dim]—[/dim]"
-        )
-        tier_str = (
-            f"[{row_color}]{tier}[/{row_color}]"
-            if tier != "—"
-            else "[dim]—[/dim]"
-        )
+        asi_str = f"[{row_color}]{asi:.1f}[/{row_color}]" if asi is not None else "[dim]—[/dim]"
+        tier_str = f"[{row_color}]{tier}[/{row_color}]" if tier != "—" else "[dim]—[/dim]"
 
         table.add_row(
             camp["id"],
@@ -138,7 +139,9 @@ def render_dashboard(history: list[dict[str, Any]], console: Console) -> None:
         "",
         f"[bold]{total_runs}[/bold]",
         f"[bold {footer_color}]{avg_asr:.0%}[/bold {footer_color}]",
-        f"[bold {footer_color}]{avg_asi:.1f}[/bold {footer_color}]" if avg_asi is not None else "[dim]—[/dim]",
+        f"[bold {footer_color}]{avg_asi:.1f}[/bold {footer_color}]"
+        if avg_asi is not None
+        else "[dim]—[/dim]",
         "",
     )
 
@@ -169,7 +172,4 @@ def _runtime_cell(campaign: dict[str, Any], row_color: str) -> str:
     judge = campaign.get("judge_worker_failures", 0)
     defense = campaign.get("defense_worker_failures", 0)
     error_count = campaign.get("error_count", 0)
-    return (
-        f"[{row_color}]degraded {error_count}e "
-        f"A{attack}/J{judge}/D{defense}[/{row_color}]"
-    )
+    return f"[{row_color}]degraded {error_count}e A{attack}/J{judge}/D{defense}[/{row_color}]"

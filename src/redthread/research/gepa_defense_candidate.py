@@ -73,6 +73,11 @@ def validate_defense_candidate_file(
 
 
 def _assignment(name: str, value: str) -> str:
-    safe = value.replace('"""', '\"\"\"')
-    body = safe if safe.endswith("\n") else f"{safe}\n"
-    return f'{name} = """\\\n{body}"""'
+    escaped = value.replace('"""', r"\"\"\"")
+    body = escaped if escaped.endswith("\n") else f"{escaped}\n"
+    candidate_code = f'{name} = """\\\n{body}"""'
+    try:
+        ast.parse(candidate_code)
+        return candidate_code
+    except SyntaxError:
+        return f"{name} = {repr(value)}"

@@ -2,9 +2,16 @@
 
 from __future__ import annotations
 
+import json
 from datetime import datetime, timezone
 
-from redthread.core.defense_synthesis import DeploymentRecord
+from redthread.core.defense_models import BenignValidationCheck, ReplayCaseResult
+from redthread.core.defense_reporting_models import DefenseValidationReport
+from redthread.core.defense_synthesis import (
+    DeploymentRecord,
+    ValidationResult,
+    VulnerabilityClassification,
+)
 
 HEADER = (
     "# RedThread Threat Knowledge Base\n\n"
@@ -53,4 +60,31 @@ def format_entry(record: DeploymentRecord) -> str:
     )
 
 
-__all__ = ["HEADER", "format_entry"]
+def deserialize_deployment_record(line: str) -> DeploymentRecord:
+    """Deserialize a JSONL string into a DeploymentRecord."""
+    payload = json.loads(line)
+    validation_payload = payload["validation"]
+    benign_checks = [
+        BenignValidationCheck(**check) for check in validation_payload.get("benign_checks", [])
+    ]
+    replay_cases = [ReplayCaseResult(**case) for case in validation_payload.get("replay_cases", [])]
+    report_payload = payload.get("validation_report")
+    return DeploymentRecord(
+        trace_id=payload["trace_id"],
+        guardrail_clause=payload["guardrail_clause"],
+        classification=VulnerabilityClassification(**payload["classification"]),
+        validation=ValidationResult(
+            **{
+                **validation_payload,
+                "benign_checks": benign_checks,
+                "replay_cases": replay_cases,
+            }
+        ),
+        target_model=payload["target_model"],
+        target_system_prompt_hash=payload["target_system_prompt_hash"],
+        validation_report=DefenseValidationReport(**report_payload) if report_payload else None,
+        metadata=payload.get("metadata", {}),
+    )
+
+
+__all__ = ["HEADER", "format_entry", "deserialize_deployment_record"]
