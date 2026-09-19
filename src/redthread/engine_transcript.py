@@ -143,6 +143,7 @@ def _build_asi_line(campaign: CampaignResult) -> dict[str, object]:
         "type": "asi_report",
         "campaign_id": campaign.id,
         "asi_score": score,
+        "status": report.get("status", "ok"),
         "health_tier": tier,
         "is_alert": report.get("is_alert", False),
         "response_consistency": report.get("response_consistency", 0.0),

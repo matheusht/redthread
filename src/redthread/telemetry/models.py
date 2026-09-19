@@ -73,6 +73,7 @@ class ASIReport(BaseModel):
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     target_model: str
     window_size: int
+    status: str = "ok"
 
     overall_score: float
 
