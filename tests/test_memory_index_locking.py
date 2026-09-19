@@ -16,10 +16,10 @@ from redthread.memory.index import MemoryIndex
 from tests.defense_helpers import make_settings
 
 
-def _record(trace_id: str) -> DeploymentRecord:
+def _record(trace_id: str, clause: str | None = None) -> DeploymentRecord:
     return DeploymentRecord(
         trace_id=trace_id,
-        guardrail_clause="Do not disclose protected data.",
+        guardrail_clause=clause or f"Do not disclose protected data for {trace_id}.",
         classification=VulnerabilityClassification(
             category="authorization_bypass",
             owasp_ref="LLM01",

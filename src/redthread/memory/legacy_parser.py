@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Iterable
 
 _SCOPE = re.compile(
     r"^\s*\*\*Scope:\*\*\s*model\s*=\s*`([^`]+)`\s*\|\s*prompt_hash\s*=\s*`([^`]+)`\s*$"
@@ -66,5 +67,17 @@ def load_legacy_guardrails(content: str, target_model: str, prompt_hash: str) ->
             break
     return clauses
 
+def dedup_clauses(items: Iterable[str]) -> list[str]:
+    """Deduplicate clauses preserving order using normalized lower-case text."""
+    seen: set[str] = set()
+    out: list[str] = []
+    for item in items:
+        norm = " ".join(item.lower().split())
+        if norm not in seen:
+            seen.add(norm)
+            out.append(item)
+    return out
 
-__all__ = ["load_legacy_guardrails"]
+
+__all__ = ["dedup_clauses", "load_legacy_guardrails"]
+
