@@ -48,6 +48,7 @@ def _write_summary_line(settings: RedThreadSettings, campaign: CampaignResult, h
         "runtime_summary": runtime_summary,
         "execution_truth_summary": campaign.metadata.get("execution_truth_summary", {}),
         "execution_records_sample": campaign.metadata.get("execution_records_sample", []),
+        "agentic_security": campaign.metadata.get("agentic_security", runtime_summary.get("agentic_security", {})),
         "agentic_security_report": campaign.metadata.get("agentic_security_report", {}),
         "operator_report_manifest": campaign.metadata.get("operator_report_manifest", {}),
         "num_runs": len(campaign.results),

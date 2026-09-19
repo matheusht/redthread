@@ -161,3 +161,35 @@ def test_runtime_summary_merges_live_canary_execution_records() -> None:
 
     assert merged["agentic_security"]["live_canary_event_total"] == 1
     assert merged["agentic_security"]["live_canary_report"]["contained"] is True
+
+
+def test_engine_syncs_live_canary_summary_to_campaign_metadata() -> None:
+    from redthread.engine import RedThreadEngine
+    from redthread.models import CampaignConfig, CampaignResult
+    from redthread.pyrit_adapters.execution_records import ExecutionRecord
+
+    campaign = CampaignResult(
+        config=CampaignConfig(objective="probe", target_system_prompt="guarded"),
+        metadata={"runtime_summary": build_runtime_summary({"errors": []}), "agentic_security": {}},
+    )
+    record = ExecutionRecord(
+        seam="judge.score",
+        role="judge",
+        evidence_class="live_judge",
+        model_name="test",
+        conversation_id="test",
+        runtime_mode="live_provider",
+        success=True,
+        metadata={
+            "canary_containment": {
+                "decision": "allow",
+                "seam": "judge.score",
+                "boundary": "analysis_only",
+                "canary_tags": ["CANARY_EXT_TOOL_01"],
+            }
+        },
+    )
+    RedThreadEngine._attach_execution_truth(None, campaign, [record])  # type: ignore[arg-type]
+
+    assert campaign.metadata["agentic_security"]["live_canary_event_total"] == 1
+    assert campaign.metadata["agentic_security"]["live_canary_report"]["contained"] is True

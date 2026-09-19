@@ -33,6 +33,7 @@ async def finalize_node(state: SupervisorState) -> dict[str, Any]:
         ended_at=datetime.now(timezone.utc),
         metadata={
             "runtime_summary": runtime_summary,
+            "agentic_security": runtime_summary.get("agentic_security", {}),
             "agentic_security_report": state.get("agentic_security_report", {}),
             "degraded_runtime": runtime_summary["degraded_runtime"],
             "error_count": runtime_summary["error_count"],

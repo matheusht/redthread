@@ -79,7 +79,9 @@ class RedThreadEngine:
         if isinstance(runtime_summary, dict):
             from redthread.orchestration.runtime_summary import merge_live_canary_report
 
-            campaign.metadata["runtime_summary"] = merge_live_canary_report(
+            merged_summary = merge_live_canary_report(
                 runtime_summary,
                 execution_records,
             )
+            campaign.metadata["runtime_summary"] = merged_summary
+            campaign.metadata["agentic_security"] = merged_summary.get("agentic_security", {})
