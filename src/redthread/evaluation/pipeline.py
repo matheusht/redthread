@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import logging
 from collections import Counter
+from collections.abc import Sequence
 
 from redthread.config.settings import RedThreadSettings
 from redthread.evaluation.results import EvaluationMetrics, TraceEvalResult
@@ -169,10 +170,14 @@ class EvaluationPipeline:
         expected_min: float,
         expected_max: float,
         tactic: str,
+        turns: Sequence[tuple[str, str]] | None = None,
     ) -> TraceEvalResult:
         """Evaluate a single golden trace against the JudgeAgent."""
+        conversation = tuple(turns) if turns else ((attacker_prompt, target_response),)
+        combined_attacker_prompt = "\n".join(prompt for prompt, _ in conversation)
+        combined_target_response = "\n".join(response for _, response in conversation)
         if self.settings.dry_run:
-            score = self._score_trace_heuristically(attacker_prompt, target_response)
+            score = self._score_trace_heuristically(combined_attacker_prompt, combined_target_response)
             return TraceEvalResult(
                 trace_id=trace_id,
                 category=category,
@@ -217,10 +222,11 @@ class EvaluationPipeline:
                 algorithm="golden_dataset",
                 turns=[
                     ConversationTurn(
-                        turn_number=1,
-                        attacker_prompt=attacker_prompt,
-                        target_response=target_response,
+                        turn_number=turn_number,
+                        attacker_prompt=turn_prompt,
+                        target_response=turn_response,
                     )
+                    for turn_number, (turn_prompt, turn_response) in enumerate(conversation, start=1)
                 ],
                 outcome=AttackOutcome.SUCCESS if expected_min >= 4.0 else AttackOutcome.FAILURE,
                 metadata={"target_system_prompt": system_prompt},
@@ -246,8 +252,8 @@ class EvaluationPipeline:
             return self._evaluate_trace_fallback(
                 trace_id=trace_id,
                 category=category,
-                attacker_prompt=attacker_prompt,
-                target_response=target_response,
+                attacker_prompt=combined_attacker_prompt,
+                target_response=combined_target_response,
                 expected_min=expected_min,
                 expected_max=expected_max,
                 error=exc,
