@@ -47,9 +47,28 @@ class ControlledLiveAdapter:
     ) -> str:
         if not self._gate.enabled or not self._gate.approval_id:
             raise RuntimeError("controlled live adapter is locked")
+        decision: AuthorizationDecision | None = None
         if action is not None:
             decision = authorize_live_action(action, policies=self._policies)
             if decision.decision.value != "allow":
+                if hasattr(self._target, "_record_execution"):
+                    metadata = ExecutionMetadata(
+                        seam="controlled.live_adapter",
+                        role="live_adapter",
+                        evidence_class="controlled_live_send",
+                        authorization_decision=decision.model_dump(mode="json"),
+                        canary_tags=action.canary_tags,
+                        metadata={
+                            "approval_id": self._gate.approval_id,
+                            "replay_bundle_id": self._gate.replay_bundle_id,
+                        },
+                    )
+                    self._target._record_execution(
+                        conversation_id=conversation_id or action.action_id,
+                        execution_metadata=metadata,
+                        success=False,
+                        error=f"LiveAuthorizationInterceptionError: {decision.decision.value}",
+                    )
                 raise LiveAuthorizationInterceptionError(decision)
         return await send_with_execution_metadata(
             self._target,
@@ -59,8 +78,13 @@ class ControlledLiveAdapter:
                 seam="controlled.live_adapter",
                 role="live_adapter",
                 evidence_class="controlled_live_send",
-                authorization_decision=decision.model_dump(mode="json") if action is not None else None,
+                authorization_decision=decision.model_dump(mode="json")
+                if decision is not None
+                else None,
                 canary_tags=action.canary_tags if action is not None else [],
-                metadata={"approval_id": self._gate.approval_id, "replay_bundle_id": self._gate.replay_bundle_id},
+                metadata={
+                    "approval_id": self._gate.approval_id,
+                    "replay_bundle_id": self._gate.replay_bundle_id,
+                },
             ),
         )

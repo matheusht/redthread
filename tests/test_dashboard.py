@@ -3,9 +3,11 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from click.testing import CliRunner
 from rich.console import Console
 
-from redthread.dashboard import render_dashboard
+from redthread.cli import main
+from redthread.dashboard import export_campaign_history, filter_campaign_history, render_dashboard
 from redthread.dashboard_history import load_campaign_history
 
 
@@ -91,3 +93,66 @@ def test_render_dashboard_surfaces_runtime_truth() -> None:
     assert "sealed_dry_run/skipped_in_dry_run" in output
     assert "degraded 2e A1/J1/D0" in output
     assert "campaign-1234" in output
+
+
+def test_filter_and_export_campaign_history() -> None:
+    campaigns = [
+        {
+            "id": "c1",
+            "algorithm": "PAIR",
+            "attack_success_rate": 0.5,
+            "started_at": "2026-09-01T10:00:00",
+        },
+        {
+            "id": "c2",
+            "algorithm": "TAP",
+            "attack_success_rate": 0.0,
+            "started_at": "2026-09-02T10:00:00",
+        },
+    ]
+
+    by_algo = filter_campaign_history(campaigns, algorithm="pair")
+    assert len(by_algo) == 1 and by_algo[0]["id"] == "c1"
+
+    by_outcome_jb = filter_campaign_history(campaigns, outcome="jailbreak")
+    assert len(by_outcome_jb) == 1 and by_outcome_jb[0]["id"] == "c1"
+
+    by_outcome_bn = filter_campaign_history(campaigns, outcome="benign")
+    assert len(by_outcome_bn) == 1 and by_outcome_bn[0]["id"] == "c2"
+
+    by_since = filter_campaign_history(campaigns, since="2026-09-02")
+    assert len(by_since) == 1 and by_since[0]["id"] == "c2"
+
+    json_out = export_campaign_history(campaigns, "json")
+    assert json.loads(json_out) == campaigns
+
+    csv_out = export_campaign_history(campaigns, "csv")
+    assert "id,started_at" in csv_out
+    assert "c1,2026-09-01T10:00:00" in csv_out
+
+
+def test_cli_dashboard_export_flags(tmp_path: Path) -> None:
+    log_dir = tmp_path / "logs"
+    log_dir.mkdir()
+    _write_campaign_log(
+        log_dir / "camp-test.jsonl",
+        {
+            "type": "campaign_result",
+            "id": "c-test-1",
+            "started_at": "2026-09-18T10:00:00",
+            "target_model": "test-model",
+            "algorithm": "MCTS",
+            "attack_success_rate": 0.0,
+            "average_score": 1.0,
+            "num_runs": 1,
+        },
+    )
+
+    runner = CliRunner()
+    res_json = runner.invoke(main, ["dashboard", "--log-dir", str(log_dir), "--export", "json"])
+    assert res_json.exit_code == 0
+    assert "c-test-1" in res_json.output
+
+    res_csv = runner.invoke(main, ["dashboard", "--log-dir", str(log_dir), "--export", "csv"])
+    assert res_csv.exit_code == 0
+    assert "c-test-1" in res_csv.output

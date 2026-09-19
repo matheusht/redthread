@@ -1,7 +1,9 @@
-"""Campaign history loading helpers for the dashboard."""
+"""Campaign history loading, filtering, and export helpers for the dashboard."""
 
 from __future__ import annotations
 
+import csv
+import io
 import json
 import logging
 from pathlib import Path
@@ -77,3 +79,68 @@ def parse_campaign_jsonl(path: Path) -> dict[str, Any] | None:
         "health_tier": asi_report.get("health_tier"),
         "is_alert": asi_report.get("is_alert", False),
     }
+
+
+def filter_campaign_history(
+    campaigns: list[dict[str, Any]],
+    *,
+    algorithm: str | None = None,
+    outcome: str | None = None,
+    since: str | None = None,
+) -> list[dict[str, Any]]:
+    """Filter loaded campaigns by algorithm, outcome (jailbreak/benign), and timestamp."""
+    filtered = list(campaigns)
+
+    if algorithm:
+        algo_upper = algorithm.strip().upper()
+        filtered = [c for c in filtered if c.get("algorithm", "").upper() == algo_upper]
+
+    if outcome:
+        out_lower = outcome.strip().lower()
+        if out_lower == "jailbreak":
+            filtered = [
+                c for c in filtered if c.get("attack_success_rate", 0.0) > 0 or c.get("is_alert")
+            ]
+        elif out_lower == "benign":
+            filtered = [
+                c
+                for c in filtered
+                if c.get("attack_success_rate", 0.0) == 0.0 and not c.get("is_alert")
+            ]
+
+    if since:
+        since_str = since.strip()
+        filtered = [c for c in filtered if c.get("started_at", "") >= since_str]
+
+    return filtered
+
+
+def export_campaign_history(campaigns: list[dict[str, Any]], fmt: str) -> str:
+    """Serialize campaigns list into JSON or CSV string."""
+    fmt_lower = fmt.strip().lower()
+    if fmt_lower == "json":
+        return json.dumps(campaigns, indent=2)
+    if fmt_lower == "csv":
+        output = io.StringIO()
+        fieldnames = [
+            "id",
+            "started_at",
+            "target_model",
+            "algorithm",
+            "runtime_mode",
+            "telemetry_mode",
+            "num_runs",
+            "attack_success_rate",
+            "average_score",
+            "asi_score",
+            "health_tier",
+            "is_alert",
+            "degraded_runtime",
+            "error_count",
+        ]
+        writer = csv.DictWriter(output, fieldnames=fieldnames, extrasaction="ignore")
+        writer.writeheader()
+        for camp in campaigns:
+            writer.writerow(camp)
+        return output.getvalue()
+    raise ValueError(f"Unsupported export format: {fmt}. Use 'json' or 'csv'.")

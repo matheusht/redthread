@@ -1,12 +1,16 @@
 from __future__ import annotations
 
+import logging
 from dataclasses import replace
 from typing import Any
 
 from redthread.orchestration.canary_containment import evaluate_canary_containment
 from redthread.pyrit_adapters.capabilities import CapabilityRequirement
-from redthread.pyrit_adapters.execution_records import ExecutionMetadata
+from redthread.pyrit_adapters.execution_context import get_execution_recorder
+from redthread.pyrit_adapters.execution_records import ExecutionMetadata, build_execution_record
 from redthread.pyrit_adapters.interceptors import LiveExecutionInterceptionError
+
+logger = logging.getLogger(__name__)
 
 
 async def send_with_execution_metadata(
@@ -31,6 +35,7 @@ async def send_with_execution_metadata(
     except TypeError as exc:
         if "execution_metadata" not in str(exc):
             raise
+        _record_fallback(target, conversation_id, execution_metadata)
         return await target.send(prompt=prompt, conversation_id=conversation_id)
 
 
@@ -55,7 +60,31 @@ async def send_with_usage_and_execution_metadata(
     except TypeError as exc:
         if "execution_metadata" not in str(exc):
             raise
+        _record_fallback(target, conversation_id, execution_metadata)
         return await target.send_with_usage(prompt=prompt, conversation_id=conversation_id)
+
+
+def _record_fallback(
+    target: Any,
+    conversation_id: str,
+    execution_metadata: ExecutionMetadata | None,
+) -> None:
+    if execution_metadata is None:
+        return
+    recorder = get_execution_recorder()
+    if recorder is not None:
+        fallback_meta = replace(
+            execution_metadata,
+            metadata={**dict(execution_metadata.metadata), "signature_fallback": True},
+        )
+        recorder(
+            build_execution_record(
+                model_name=getattr(target, "model_name", "unknown"),
+                conversation_id=conversation_id,
+                execution_metadata=fallback_meta,
+                success=True,
+            )
+        )
 
 
 def _with_canary_decision(
@@ -69,7 +98,9 @@ def _with_canary_decision(
         prompt=prompt,
         metadata=execution_metadata.metadata,
         canary_tags=execution_metadata.canary_tags,
-        mode=str(execution_metadata.metadata.get("canary_policy_preset", "block_memory_and_outbound")),
+        mode=str(
+            execution_metadata.metadata.get("canary_policy_preset", "block_memory_and_outbound")
+        ),
     )
     updated_tags = list(dict.fromkeys([*execution_metadata.canary_tags, *decision.canary_tags]))
     updated_metadata = replace(
