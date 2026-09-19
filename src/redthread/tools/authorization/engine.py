@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import posixpath
+
 from redthread.orchestration.models import (
     ActionEffect,
     ActionEnvelope,
@@ -45,6 +47,14 @@ class AuthorizationEngine:
         if decision is not None:
             return decision
 
+        if self._matches_scoped_allow_without_scope(action):
+            return AuthorizationDecision(
+                decision=AuthorizationDecisionType.DENY,
+                policy_id="scope-boundary",
+                reason="action target is outside the policy allowlist",
+                matched_rules=["scope_boundary"],
+            )
+
         decision = self._evaluate_allow_policies(action)
         if decision is not None:
             return decision
@@ -75,12 +85,12 @@ class AuthorizationEngine:
 
     def _evaluate_deny_policies(self, action: ActionEnvelope) -> AuthorizationDecision | None:
         for policy in self.policies:
-            if policy.decision != AuthorizationDecisionType.DENY:
+            if not policy.denied_capabilities:
                 continue
             if not self._matches_denied_policy(action, policy):
                 continue
             return AuthorizationDecision(
-                decision=policy.decision,
+                decision=AuthorizationDecisionType.DENY,
                 policy_id=policy.policy_id,
                 reason=policy.reason,
                 matched_rules=[policy.policy_id],
@@ -143,7 +153,41 @@ class AuthorizationEngine:
         return not policy.required_trust_levels or trust not in policy.required_trust_levels
 
     def _matches_allowed_policy(self, action: ActionEnvelope, policy: AuthorizationPolicy) -> bool:
-        return action.actor_role in policy.actor_roles and action.capability in policy.allowed_capabilities
+        if action.actor_role not in policy.actor_roles or action.capability not in policy.allowed_capabilities:
+            return False
+        if policy.allowed_path_prefixes and not self._matches_path_prefix(action, policy.allowed_path_prefixes):
+            return False
+        return not policy.allowed_domains or self._matches_allowed_domain(action, policy.allowed_domains)
+
+    def _matches_scoped_allow_without_scope(self, action: ActionEnvelope) -> bool:
+        return any(
+            action.actor_role in policy.actor_roles
+            and action.capability in policy.allowed_capabilities
+            and (policy.allowed_path_prefixes or policy.allowed_domains)
+            and not self._matches_allowed_policy(action, policy)
+            for policy in self.policies
+        )
+
+    @staticmethod
+    def _matches_path_prefix(action: ActionEnvelope, prefixes: tuple[str, ...]) -> bool:
+        path = action.arguments.get("path")
+        if not isinstance(path, str):
+            return False
+        normalized_path = posixpath.normpath(path)
+        return any(
+            normalized_path == prefix
+            or normalized_path.startswith(f"{prefix.rstrip('/')}/")
+            for prefix in prefixes
+        )
+
+    @staticmethod
+    def _matches_allowed_domain(action: ActionEnvelope, domains: tuple[str, ...]) -> bool:
+        value = action.arguments.get("domain") or action.arguments.get("host") or action.arguments.get("url")
+        if not isinstance(value, str):
+            return False
+        clean = value.lower().strip().removeprefix("https://").removeprefix("http://")
+        clean = clean.split("/", 1)[0].split(":", 1)[0]
+        return any(clean == domain or clean.endswith(f".{domain}") for domain in domains)
 
     def _exceeds_sensitivity(self, actual: str, maximum: str) -> bool:
         return SENSITIVITY_ORDER.get(actual, 2) > SENSITIVITY_ORDER.get(maximum, 2)

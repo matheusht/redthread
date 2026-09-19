@@ -18,14 +18,17 @@ class CapabilityClass(str, Enum):
     UNKNOWN = "unknown"
 
 
-READ_ONLY_CAPABILITIES = {"lookup_status", "tool.read", "web.fetch", "docs.search", "db.read"}
+READ_ONLY_CAPABILITIES = {"lookup_status", "tool.read", "web.fetch", "docs.search", "db.read", "file.read"}
 HIGH_RISK_CAPABILITIES = {
     "agent.delegate",
     "db.export",
     "db.write",
     "file.write",
+    "file.delete",
+    "file.chmod",
     "http.post",
     "memory.write",
+    "network.egress",
     "prompt.update",
     "secrets.read",
     "shell.exec",
@@ -38,8 +41,12 @@ CAPABILITY_PREFIX_CLASSES: tuple[tuple[str, CapabilityClass], ...] = (
     ("db.write", CapabilityClass.WRITE),
     ("docs.", CapabilityClass.READ_ONLY),
     ("file.write", CapabilityClass.WRITE),
+    ("file.read", CapabilityClass.READ_ONLY),
+    ("file.delete", CapabilityClass.WRITE),
+    ("file.chmod", CapabilityClass.CONFIG_MUTATION),
     ("http.post", CapabilityClass.NETWORK_EGRESS),
     ("memory.write", CapabilityClass.MEMORY_MUTATION),
+    ("network.", CapabilityClass.NETWORK_EGRESS),
     ("prompt.", CapabilityClass.CONFIG_MUTATION),
     ("secrets.", CapabilityClass.SECRET_ACCESS),
     ("shell.", CapabilityClass.EXECUTION),
