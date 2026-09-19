@@ -105,7 +105,7 @@ class TestASIPerfectHealth:
         self, asi: AgentStabilityIndex, settings: RedThreadSettings
     ) -> None:
         collector = TelemetryCollector(settings)
-        _populate_collector_stable(collector, n=30)
+        _populate_collector_stable(collector, n=50)
         _populate_canaries_stable(collector, n_rounds=3)
 
         report = asi.compute(collector)
@@ -139,7 +139,7 @@ class TestASIScoreBounds:
         self, asi: AgentStabilityIndex, settings: RedThreadSettings
     ) -> None:
         collector = TelemetryCollector(settings)
-        _populate_collector_stable(collector, n=10)
+        _populate_collector_stable(collector, n=50)
 
         report = asi.compute(collector)
         assert 0.0 <= report.overall_score <= 100.0
@@ -148,7 +148,7 @@ class TestASIScoreBounds:
         self, asi: AgentStabilityIndex, settings: RedThreadSettings
     ) -> None:
         collector = TelemetryCollector(settings)
-        _populate_collector_stable(collector, n=10)
+        _populate_collector_stable(collector, n=50)
         _populate_canaries_stable(collector, n_rounds=1)
 
         report = asi.compute(collector)
@@ -160,16 +160,37 @@ class TestASIScoreBounds:
 class TestASINoCanaryDefault:
     """When no canary records exist, RC defaults to 100 (unknown = healthy)."""
 
+    def test_empty_collector_reports_insufficient_data(
+        self, asi: AgentStabilityIndex, settings: RedThreadSettings
+    ) -> None:
+        report = asi.compute(TelemetryCollector(settings))
+
+        assert report.status == "insufficient_data"
+        assert report.overall_score == pytest.approx(100.0)
+        assert report.is_alert is False
+        assert any("insufficient" in warning.lower() for warning in report.metadata["evidence_warnings"])
+
     def test_no_canary_rc_defaults_to_100(
         self, asi: AgentStabilityIndex, settings: RedThreadSettings
     ) -> None:
         collector = TelemetryCollector(settings)
-        _populate_collector_stable(collector, n=20)
+        _populate_collector_stable(collector, n=50)
 
         report = asi.compute(collector)
         assert report.response_consistency == pytest.approx(100.0), (
             f"Expected RC=100 with no canaries, got {report.response_consistency}"
         )
+
+    def test_partial_collector_reports_insufficient_data(
+        self, asi: AgentStabilityIndex, settings: RedThreadSettings
+    ) -> None:
+        collector = TelemetryCollector(settings)
+        _populate_collector_stable(collector, n=2)
+
+        report = asi.compute(collector)
+
+        assert report.status == "insufficient_data"
+        assert any("insufficient telemetry" in warning.lower() for warning in report.metadata["evidence_warnings"])
 
 
 class TestASIOperationalHealth:
@@ -228,7 +249,7 @@ class TestASIRecommendation:
         self, asi: AgentStabilityIndex, settings: RedThreadSettings
     ) -> None:
         collector = TelemetryCollector(settings)
-        _populate_collector_stable(collector, n=30)
+        _populate_collector_stable(collector, n=50)
         _populate_canaries_stable(collector, n_rounds=5)
 
         report = asi.compute(collector)
@@ -244,7 +265,7 @@ class TestASIRecommendation:
         self, asi: AgentStabilityIndex, settings: RedThreadSettings
     ) -> None:
         collector = TelemetryCollector(settings)
-        _populate_collector_stable(collector, n=10)
+        _populate_collector_stable(collector, n=50)
 
         report = asi.compute(collector)
         if report.overall_score < settings.asi_alert_threshold:

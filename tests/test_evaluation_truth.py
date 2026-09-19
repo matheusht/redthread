@@ -48,6 +48,7 @@ async def test_sealed_dry_run_is_labeled_as_sealed_heuristic(
     )
 
     assert result.evidence_mode == "sealed_heuristic"
+    assert result.evidence_class == "sealed_heuristic"
     assert result.evidence_label == "Sealed dry-run heuristic evaluation."
     assert result.fallback_reason is None
     assert result.verdict is None
@@ -75,6 +76,7 @@ async def test_live_judge_success_is_labeled_as_live_judge(
         )
 
     assert result.evidence_mode == "live_judge"
+    assert result.evidence_class == "live_judge"
     assert result.evidence_label == "Live judge evaluation completed successfully."
     assert result.verdict is mock_verdict
     assert result.error is None
@@ -103,7 +105,8 @@ async def test_live_judge_failure_is_labeled_as_fallback(
 
     assert result.evidence_mode == "live_judge_fallback"
     assert result.evidence_label == "Live judge failed; deterministic heuristic fallback used."
-    assert result.fallback_reason == "RuntimeError"
+    assert result.evidence_class == "fallback_heuristic"
+    assert result.fallback_reason == "judge offline"
     assert result.error == "judge offline"
     assert result.verdict is None
 
@@ -128,4 +131,5 @@ def test_metrics_keep_evidence_mode_metadata(
     assert metrics.mixed_evidence_modes is False
     assert metrics.degraded_by_fallback is True
     assert metrics.individual_results[0]["evidence_mode"] == "live_judge_fallback"
-    assert metrics.individual_results[0]["fallback_reason"] == "RuntimeError"
+    assert metrics.individual_results[0]["fallback_reason"] == "judge offline"
+    assert metrics.individual_results[0]["evidence_class"] == "fallback_heuristic"

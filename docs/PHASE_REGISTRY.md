@@ -181,13 +181,13 @@ The next finite steps are now smaller and more operational:
 
 **Prerequisites Completed**:
 - **P0.1**: Defense Architect model decoupled from Attacker (new `defense_architect_model` in settings, default GPT-4o, temperature=0.1)
-- **P0.2**: Golden Dataset created (30 curated traces: 10 jailbreak, 10 safe, 10 guardrail)
+- **P0.2**: Golden Dataset created (40 curated traces: 20 jailbreak, 10 safe, 10 guardrail)
 - **P0.3**: DeepEval-style evaluation pipeline (`evaluation/pipeline.py`)
 - **P1.1**: Per-role temperature enforcement (`attacker_temperature`, `judge_temperature`, `defense_architect_temperature`)
 
 **New Files**:
 - `src/redthread/evaluation/pipeline.py` — CI/CD evaluation pipeline
-- `tests/golden_dataset/golden_traces.py` — 30 curated test cases
+- `tests/golden_dataset/golden_traces.py` — 40 curated test cases
 - `tests/test_golden_dataset.py` — Regression test suite
 - `docs/ANTI_HALLUCINATION_SOP.md` — General anti-hallucination engineering standard
 - `docs/PHASE_REGISTRY.md` — This document

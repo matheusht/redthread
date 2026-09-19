@@ -18,5 +18,5 @@ def register_test_commands(main: click.Group, console: Console) -> None:
     @click.option("--env-file", type=click.Path(exists=False), default=".env", help="Path to .env file")
     @click.option("--verbose", "-v", is_flag=True, default=False, help="Enable debug logging")
     def test_golden(model: str | None, env_file: str, verbose: bool) -> None:
-        """Run regression tests across the Golden Dataset (30 traces)."""
+        """Run regression tests across the Golden Dataset (40 traces)."""
         run_golden_evaluation(console, model, env_file, verbose)

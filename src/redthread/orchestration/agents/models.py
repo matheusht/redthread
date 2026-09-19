@@ -20,6 +20,7 @@ class AgentPhaseState(TypedDict, total=False):
     is_jailbreak: bool
     metadata: dict[str, Any]
     error: str | None
+    phase_errors: list[dict[str, str]]
 
 
 class AgentNodeResult(TypedDict, total=False):

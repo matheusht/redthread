@@ -22,6 +22,7 @@ from redthread.cli.run_reports import write_run_reports
 from redthread.cli.shared import run_async_command, setup_logging
 from redthread.config.settings import AlgorithmType, RedThreadSettings
 from redthread.engine import RedThreadEngine
+from redthread.launch_readiness.cli import execute_launch_readiness
 from redthread.models import CampaignConfig
 
 
@@ -70,7 +71,7 @@ def register_run_command(main: click.Group, console: Console) -> None:
     @click.option("--dry-run", is_flag=True, default=False, help="Generate personas but skip actual attack execution")
     @click.option("--verbose", "-v", is_flag=True, default=False, help="Enable debug logging")
     @click.option("--env-file", type=click.Path(exists=False), default=".env", help="Path to .env file")
-    @click.option("--algorithm", "-a", type=click.Choice(["pair", "tap", "crescendo", "mcts"], case_sensitive=False), default=None, help="Attack algorithm (default: pair)")
+    @click.option("--algorithm", "-a", type=click.Choice(["pair", "tap", "crescendo", "mcts", "agent_chain"], case_sensitive=False), default=None, help="Attack algorithm (default: pair)")
     @click.option("--depth", "-d", type=int, default=None, help="TAP maximum search depth")
     @click.option("--width", "-w", type=int, default=None, help="TAP maximum tree width")
     @click.option("--branching", "-b", type=int, default=None, help="TAP branching factor")
@@ -84,6 +85,7 @@ def register_run_command(main: click.Group, console: Console) -> None:
     @click.option("--report-json", type=click.Path(dir_okay=False), default=None, help="Write guide-style operator report as JSON")
     @click.option("--report-sarif", type=click.Path(dir_okay=False), default=None, help="Write security findings as SARIF v2.1.0 JSON")
     @click.option("--report-dir", type=click.Path(file_okay=False), default=None, help="Write standard campaign report directory")
+    @click.option("--preset", type=click.Choice(["launch-readiness"], case_sensitive=False), default=None, help="Run a named campaign preset")
     @click.option("--include-internal-sidecars", is_flag=True, default=False, hidden=True, help="Expose adaptive-learning sidecars in the report manifest")
     @click.option("--cop", is_flag=True, default=False, help="Enable CoP (Composition of Principles) strategy generation — composes triggers instead of atomic strategies")
     @click.option("--show-research", is_flag=True, is_eager=True, expose_value=False, callback=show_research_help, help="Show hidden research controls and exit")
@@ -110,6 +112,7 @@ def register_run_command(main: click.Group, console: Console) -> None:
         report_json: str | None,
         report_sarif: str | None,
         report_dir: str | None,
+        preset: str | None,
         include_internal_sidecars: bool,
         cop: bool,
     ) -> None:
@@ -145,24 +148,32 @@ def register_run_command(main: click.Group, console: Console) -> None:
                 )
             except PersonaWeightingPlanFileError as exc:
                 raise click.ClickException(str(exc)) from exc
+        config = CampaignConfig(
+                objective=run_objective,
+                target_system_prompt=system_prompt,
+                rubric_name=rubric,
+                num_personas=personas,
+                prompting_layer_profile=(
+                    benchmark_context.prompting_layer_profile.model_dump(mode="json")
+                    if benchmark_context else {}
+                ),
+                persona_weighting_plan=weighting_plan_payload,
+        )
+        if preset == "launch-readiness":
+            sys.exit(execute_launch_readiness(
+                console, settings=settings, campaign_config=config, trace_all=trace_all,
+                launch_preset=preset, benchmark_fixture_context=(
+                    benchmark_context.metadata() if benchmark_context else None
+                ), report_dir=report_dir, report_md=report_md, report_json=report_json,
+                report_sarif=report_sarif, include_internal_sidecars=include_internal_sidecars,
+                verbose=verbose,
+            ))
         render_campaign_header(console, settings, objective, personas)
         if benchmark_context:
             console.print("[bold]Benchmark Fixture Context[/bold]")
             for line in benchmark_context.summary_lines:
                 console.print(line)
             console.print()
-        config = CampaignConfig(
-            objective=run_objective,
-            target_system_prompt=system_prompt,
-            rubric_name=rubric,
-            num_personas=personas,
-            prompting_layer_profile=(
-                benchmark_context.prompting_layer_profile.model_dump(mode="json")
-                if benchmark_context
-                else {}
-            ),
-            persona_weighting_plan=weighting_plan_payload,
-        )
         engine = RedThreadEngine(settings, trace_all=trace_all)
         result = run_async_command(
             console,

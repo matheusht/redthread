@@ -79,6 +79,19 @@ async def run_judge_worker(state: JudgeWorkerState) -> JudgeWorkerState:
                 "error": None,
             }
 
+        if result.trace.outcome == AttackOutcome.ERROR:
+            result = _annotate_judge_runtime(
+                result,
+                status="live_failed_attack_passthrough",
+            )
+            return {
+                **state,
+                "judged_result_dict": result.model_dump(mode="json"),
+                "is_jailbreak": False,
+                "final_score": 0.0,
+                "error": state.get("error"),
+            }
+
         logger.info(
             "🔬 JudgeWorker | trace=%s | G-Eval re-evaluation...",
             result.trace.id,

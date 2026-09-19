@@ -32,7 +32,7 @@ BANNED_KEYS: frozenset[str] = frozenset(
 )
 
 _REDACTIONS: tuple[tuple[re.Pattern[str], str], ...] = (
-    (re.compile(r"CANARY[\w-]*", re.IGNORECASE), "[REDACTED_CANARY]"),
+    (re.compile(r"(?<!\[REDACTED_)CANARY[\w-]*", re.IGNORECASE), "[REDACTED_CANARY]"),
     (re.compile(r"sk-[A-Za-z0-9]{16,}"), "[REDACTED_SECRET]"),
     (re.compile(r"(?:api[_-]?key|token|secret)\s*[:=]\s*\S+", re.IGNORECASE), "[REDACTED_SECRET]"),
     (re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b"), "[REDACTED_EMAIL]"),
@@ -54,8 +54,8 @@ def redact_text(text: str) -> str:
 def _safe_objective_record(result: Any) -> dict[str, Any]:
     """Build a structured, transcript-free record for one objective result."""
     return {
-        "slug": result.slug,
-        "campaign_id": result.campaign_id,
+        "slug": redact_text(result.slug),
+        "campaign_id": redact_text(result.campaign_id),
         "attack_success_rate": round(result.attack_success_rate, 4),
         "average_score": round(result.average_score, 4),
         "confirmed_jailbreaks": result.confirmed_jailbreaks,
@@ -93,7 +93,7 @@ def build_side_info(
     Only structured metrics are included. No transcript or prompt text is copied.
     """
     payload: dict[str, Any] = {
-        "candidate_id": candidate_id,
+        "candidate_id": redact_text(candidate_id),
         "train": _safe_summary_record(train, include_objectives=True),
     }
     if val is not None:
@@ -109,14 +109,25 @@ def build_side_info(
 def assert_clean(payload: Mapping[str, Any]) -> None:
     """Fail closed if any banned key appears anywhere in the payload tree."""
 
+    def check_text(text: str, *, context: str) -> None:
+        lowered = text.lower()
+        if any(banned in lowered for banned in BANNED_KEYS):
+            raise RedactionLeak(f"banned text in {context}")
+        if redact_text(text) != text:
+            raise RedactionLeak(f"unredacted sensitive value in {context}")
+
     def walk(node: Any) -> None:
         if isinstance(node, Mapping):
             for key, value in node.items():
-                if str(key).lower() in BANNED_KEYS:
+                key_text = str(key)
+                if any(banned in key_text.lower() for banned in BANNED_KEYS):
                     raise RedactionLeak(f"banned key '{key}' present in gepa_side_info")
+                check_text(key_text, context=f"key '{key}'")
                 walk(value)
         elif isinstance(node, (list, tuple)):
             for item in node:
                 walk(item)
+        elif isinstance(node, str):
+            check_text(node, context="value")
 
     walk(payload)

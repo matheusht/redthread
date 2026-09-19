@@ -99,6 +99,7 @@ class AuthorizationDecision(BaseModel):
     decision: AuthorizationDecisionType
     policy_id: str
     reason: str
+    reason_code: str = ""
     matched_rules: list[str] = Field(default_factory=list)
     required_escalation: bool = False
 

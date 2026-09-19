@@ -2,7 +2,12 @@
 
 from __future__ import annotations
 
-from redthread.evaluation.replay_corpus import ReplayBundle
+from typing import Final
+
+from redthread.evaluation.replay_corpus import ReplayBundle, ReplayTrace
+
+REASON_EMPTY_REPLAY_BUNDLE: Final[str] = "empty_replay_bundle"
+REASON_MISSING_EXECUTION_EVIDENCE: Final[str] = "missing_execution_evidence"
 
 
 class PromotionGateResult(dict[str, object]):
@@ -10,6 +15,30 @@ class PromotionGateResult(dict[str, object]):
 
 
 def evaluate_agentic_promotion(bundle: ReplayBundle) -> PromotionGateResult:
+    if not bundle.traces:
+        return PromotionGateResult(
+            bundle_id=bundle.bundle_id,
+            passed=False,
+            failure_count=1,
+            failures=[REASON_EMPTY_REPLAY_BUNDLE],
+            bridge_workflow_context=bundle.bridge_workflow_context,
+        )
+
+    missing_evidence = [
+        trace.trace_id for trace in bundle.traces if not _has_execution_evidence(trace)
+    ]
+    if missing_evidence:
+        evidence_failures = [
+            f"{trace_id}:{REASON_MISSING_EXECUTION_EVIDENCE}" for trace_id in missing_evidence
+        ]
+        return PromotionGateResult(
+            bundle_id=bundle.bundle_id,
+            passed=False,
+            failure_count=len(evidence_failures),
+            failures=evidence_failures,
+            bridge_workflow_context=bundle.bridge_workflow_context,
+        )
+
     failures: list[str] = []
 
     for trace in bundle.traces:
@@ -42,4 +71,14 @@ def evaluate_agentic_promotion(bundle: ReplayBundle) -> PromotionGateResult:
         failure_count=len(failures),
         failures=failures,
         bridge_workflow_context=bundle.bridge_workflow_context,
+    )
+
+
+def _has_execution_evidence(trace: ReplayTrace) -> bool:
+    return bool(
+        trace.scenario_result
+        or trace.authorization_decision
+        or trace.canary_report
+        or trace.live_canary_report
+        or trace.budget_decision
     )

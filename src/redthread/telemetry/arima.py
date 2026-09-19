@@ -23,6 +23,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
+from redthread.telemetry.arima_helpers import constant_forecast
 from redthread.telemetry.models import ArimaForecast
 
 if TYPE_CHECKING:
@@ -95,6 +96,9 @@ class ArimaDetector:
             return None
 
         window = series[-self.window_size:]
+
+        if float(np.var(window)) < 1e-9:
+            return constant_forecast(window, metric_name)
 
         if len(window) < self.min_observations:
             logger.debug(

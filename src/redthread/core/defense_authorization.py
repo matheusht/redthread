@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import hashlib
+
 from redthread.core.defense_models import ReplayCaseResult
 from redthread.orchestration.models import ActionEffect, ActionEnvelope, AuthorizationDecision
 from redthread.tools.authorization import authorize_live_action
@@ -24,7 +26,7 @@ def authorize_replay_case(
             "trace_id": trace_id,
             "case_id": case_id,
             "kind": kind,
-            "prompt_excerpt": prompt[:120],
+            "prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest(),
         },
         target_sensitivity="low",
         provenance={

@@ -46,6 +46,14 @@ def run_golden_evaluation(console: Console, model: str | None, env_file: str, ve
         with console.status("[bold yellow]Evaluating golden traces...") as status:
             for index, trace in enumerate(ALL_GOLDEN_TRACES, start=1):
                 status.update(f"[bold yellow]Evaluating {trace.id} ({index}/{len(ALL_GOLDEN_TRACES)})...")
+                trace_turns = getattr(trace, "evaluation_turns", ())
+                if not trace_turns:
+                    turns = [(trace.attacker_prompt, trace.target_response)]
+                else:
+                    turns = [
+                        (turn.attacker_prompt, turn.target_response)
+                        for turn in trace_turns
+                    ]
                 results.append(await pipeline.evaluate_trace(
                     trace_id=trace.id,
                     category=trace.category,
@@ -56,6 +64,7 @@ def run_golden_evaluation(console: Console, model: str | None, env_file: str, ve
                     expected_min=trace.expected_score_min,
                     expected_max=trace.expected_score_max,
                     tactic=trace.tactic,
+                    turns=turns,
                 ))
         metrics = pipeline.compute_metrics(results)
         _render_golden_results(console, metrics)

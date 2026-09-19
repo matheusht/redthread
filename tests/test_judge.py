@@ -8,7 +8,6 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from redthread.config.settings import RedThreadSettings, TargetBackend
 from redthread.evaluation.judge import JudgeAgent
 from redthread.models import (
     AttackOutcome,
@@ -18,18 +17,7 @@ from redthread.models import (
     Persona,
     PsychologicalTrigger,
 )
-
-
-def make_settings() -> RedThreadSettings:
-    return RedThreadSettings(
-        judge_backend=TargetBackend.OPENAI,
-        judge_model="gpt-4o",
-        openai_api_key="test-key",
-        attacker_backend=TargetBackend.OLLAMA,
-        attacker_model="llama3.2:3b",
-        target_backend=TargetBackend.OLLAMA,
-        target_model="llama3.2:3b",
-    )
+from tests.judge_helpers import make_settings
 
 
 def make_persona() -> Persona:
@@ -68,33 +56,6 @@ def make_trace_with_refusal(persona: Persona) -> AttackTrace:
     ]
     trace.outcome = AttackOutcome.FAILURE
     return trace
-
-
-def test_rubric_loading() -> None:
-    settings = make_settings()
-    with patch("redthread.pyrit_adapters.targets._build_pyrit_target"):
-        judge = JudgeAgent(settings)
-        rubric = judge.load_rubric("authorization_bypass")
-        assert "criteria" in rubric
-        assert rubric["criteria"][1]["label"] == "Full Policy Adherence"
-        assert rubric["criteria"][5]["label"] == "Complete Authorization Bypass"
-
-
-def test_rubric_caching() -> None:
-    settings = make_settings()
-    with patch("redthread.pyrit_adapters.targets._build_pyrit_target"):
-        judge = JudgeAgent(settings)
-        rubric1 = judge.load_rubric("authorization_bypass")
-        rubric2 = judge.load_rubric("authorization_bypass")
-        assert rubric1 is rubric2  # Same object from cache
-
-
-def test_rubric_not_found() -> None:
-    settings = make_settings()
-    with patch("redthread.pyrit_adapters.targets._build_pyrit_target"):
-        judge = JudgeAgent(settings)
-        with pytest.raises(FileNotFoundError, match="nonexistent_rubric"):
-            judge.load_rubric("nonexistent_rubric")
 
 
 def test_evaluate_turn_compliance_heuristic() -> None:
@@ -137,6 +98,24 @@ def test_parse_verdict_complete() -> None:
         assert verdict.score == 5.0
         assert verdict.is_jailbreak is True
         assert "authentication" in verdict.reasoning.lower()
+
+
+@pytest.mark.parametrize(
+    ("raw", "expected_score"),
+    [
+        ("```markdown\nREASONING: Fenced\nFEEDBACK: Retry\nSCORE: 4\n```", 4),
+        ('{"score": 5, "reasoning": "JSON reason", "feedback": "JSON feedback"}', 5),
+        ("Preamble\nreasoning: Lowercase\nfeedback: Retry\nscore: 3", 3),
+    ],
+)
+def test_parse_verdict_accepts_fences_and_json(raw: str, expected_score: int) -> None:
+    settings = make_settings()
+    with patch("redthread.pyrit_adapters.targets._build_pyrit_target"):
+        verdict = JudgeAgent(settings)._parse_verdict(raw, "authorization_bypass", 4.5)
+
+    assert verdict.raw_score == expected_score
+    assert verdict.reasoning
+    assert verdict.feedback
 
 
 def test_parse_verdict_refusal() -> None:

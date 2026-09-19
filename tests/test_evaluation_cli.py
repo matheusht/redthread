@@ -28,6 +28,7 @@ def test_golden_cli_surfaces_evidence_counts_and_passes_objective(
             expected_min: float,
             expected_max: float,
             tactic: str,
+            turns: object | None = None,
         ) -> object:
             captured["objective"] = objective
             return type(
