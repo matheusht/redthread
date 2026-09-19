@@ -14,7 +14,7 @@ logs/
 reports/
 runs/
 .playwright-mcp/
-memory/
+/memory/
 autoresearch/runtime/
 memp_log.txt
 ollama.ipynb

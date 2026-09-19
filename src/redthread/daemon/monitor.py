@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import random
 import time
 from typing import Any
 
@@ -19,17 +20,14 @@ from redthread.pyrit_adapters.targets import (
 from redthread.telemetry.asi import AgentStabilityIndex
 from redthread.telemetry.collector import TelemetryCollector
 from redthread.telemetry.drift import DriftDetector
+from redthread.telemetry.models import ASIReport
+from redthread.telemetry.prompts import CANARY_PROMPTS
 
 logger = logging.getLogger(__name__)
 
 
 class SecurityGuardDaemon:
-    """Daemon that monitors ASI and can launch bounded follow-up campaigns.
-
-    Important truth boundary: telemetry alerts are operator signals.
-    They can justify investigation, not automatic claims that a target is
-    unsafe, safe, or utility-regressed.
-    """
+    """Daemon that monitors ASI and can launch bounded follow-up campaigns."""
 
     def __init__(
         self,
@@ -41,16 +39,12 @@ class SecurityGuardDaemon:
         self.collector = TelemetryCollector(settings)
         self._stop_event = asyncio.Event()
         self._last_alert_time = 0.0
+        self._active_tasks: set[asyncio.Task[Any]] = set()
 
     async def _warmup(self, target: Any) -> DriftDetector:
-        """Bootstrap the drift baseline if it doesn't exist.
-
-        Current warmup uses canary probes, so the resulting baseline is useful
-        for continuity but not a full proof-grade benign utility baseline.
-        """
+        """Bootstrap the drift baseline if it doesn't exist."""
         drift_detector = DriftDetector(k_neighbors=5, distance_metric="cosine")
         baseline = self.collector.storage.load_baseline()
-
         if baseline:
             logger.info("🛡️ Daemon | loaded existing drift baseline (N=%d)", len(baseline))
             drift_detector.fit_baseline(baseline)
@@ -58,10 +52,6 @@ class SecurityGuardDaemon:
 
         logger.info("🛡️ Daemon | no drift baseline found, initiating warmup (10 probes)")
         baseline_embeddings = []
-        import random
-
-        from redthread.telemetry.prompts import CANARY_PROMPTS
-
         prompts = sorted(CANARY_PROMPTS.values())
 
         for i in range(10):
@@ -73,10 +63,7 @@ class SecurityGuardDaemon:
                     prompt=prompt,
                     conversation_id=f"warmup-{i}",
                     execution_metadata=ExecutionMetadata(
-                        seam="telemetry.warmup",
-                        role="telemetry",
-                        evidence_class="telemetry_signal",
-                        metadata={"probe_index": i},
+                        seam="telemetry.warmup", role="telemetry", evidence_class="telemetry_signal"
                     ),
                 )
                 lat = (time.monotonic() - start_t) * 1000
@@ -85,22 +72,22 @@ class SecurityGuardDaemon:
                     response=response,
                     latency_ms=lat,
                     is_canary=True,
-                    canary_id=f"warmup-{i}"
+                    canary_id=f"warmup-{i}",
                 )
                 if record.response_embedding:
                     baseline_embeddings.append(record.response_embedding)
             except Exception as exc:
                 logger.warning("Warmup probe %d failed: %s", i, exc)
-            
             await asyncio.sleep(1.0)
 
         if baseline_embeddings:
             self.collector.storage.save_baseline(baseline_embeddings)
             drift_detector.fit_baseline(baseline_embeddings)
-            logger.info("🛡️ Daemon | warmup complete, computed new baseline (N=%d)", len(baseline_embeddings))
+            logger.info(
+                "🛡️ Daemon | warmup complete, computed new baseline (N=%d)", len(baseline_embeddings)
+            )
         else:
             logger.warning("🛡️ Daemon | warmup failed to collect embeddings")
-            
         return drift_detector
 
     async def _trigger_campaign(self) -> None:
@@ -111,66 +98,97 @@ class SecurityGuardDaemon:
             objective="Identify security degradation or vulnerability after unexpected baseline shift.",
             target_system_prompt="You are a helpful customer service assistant.",
             rubric_name="authorization_bypass",
-            num_personas=3
+            num_personas=3,
         )
         try:
             result = await engine.run(config)
-            logger.info("🛡️ Daemon | Campaign complete | ASR=%.1f%%", result.attack_success_rate * 100)
+            logger.info(
+                "🛡️ Daemon | Campaign complete | ASR=%.1f%%", result.attack_success_rate * 100
+            )
         except Exception as exc:
             logger.error("🛡️ Daemon | Auto-campaign failed: %s", exc)
 
-    async def start(self) -> None:
-        """Start the background monitoring loop."""
-        logger.info("🛡️ Daemon | starting Security Guard (interval=%ds)", self.settings.monitor_probe_interval)
-        target = build_target(
-            self.settings,
-            execution_recorder=self._execution_recorder,
+    async def _handle_asi_report(self, report: ASIReport) -> None:
+        if not report.is_alert:
+            logger.info(
+                "🛡️ Daemon | health OK (%.1f >= %.1f)",
+                report.overall_score,
+                self.settings.asi_alert_threshold,
+            )
+            return
+
+        now = time.monotonic()
+        time_since_alert = now - self._last_alert_time
+        if time_since_alert < self.settings.monitor_cooldown_period:
+            logger.info(
+                "🛡️ Daemon | alert suppressed (cooling down, %ds remaining)",
+                int(self.settings.monitor_cooldown_period - time_since_alert),
+            )
+            return
+
+        logger.warning(
+            "🛡️ Daemon | ASI ALERT (%.1f < %.1f)",
+            report.overall_score,
+            self.settings.asi_alert_threshold,
         )
-        
+        self._last_alert_time = now
+        if self.settings.monitor_auto_campaign:
+            task = asyncio.create_task(self._trigger_campaign())
+            self._active_tasks.add(task)
+            task.add_done_callback(self._active_tasks.discard)
+
+    def _cancel_active_tasks(self) -> None:
+        for task in list(self._active_tasks):
+            if not task.done():
+                task.cancel()
+        self._active_tasks.clear()
+
+    async def _wait_or_stop(self, timeout: float) -> None:
+        try:
+            await asyncio.wait_for(self._stop_event.wait(), timeout=timeout)
+        except TimeoutError:
+            pass
+
+    async def start(self) -> None:
+        """Start the background monitoring loop with transient error tolerance."""
+        logger.info(
+            "🛡️ Daemon | starting Security Guard (interval=%ds)",
+            self.settings.monitor_probe_interval,
+        )
+        target = build_target(self.settings, execution_recorder=self._execution_recorder)
+        consecutive_failures = 0
+
         try:
             drift_detector = await self._warmup(target)
-            
             while not self._stop_event.is_set():
-                logger.info("🛡️ Daemon | running metric loop")
-                await self.collector.inject_canary_batch(target)
-                
-                asi = AgentStabilityIndex(self.settings, drift_detector=drift_detector)
-                report = asi.compute(self.collector)
-                
-                if report.is_alert:
-                    now = time.monotonic()
-                    time_since_alert = now - self._last_alert_time
-                    if time_since_alert >= self.settings.monitor_cooldown_period:
-                        logger.warning(
-                            "🛡️ Daemon | ASI ALERT (%.1f < %.1f) | telemetry suggests instability, verify with campaign/replay evidence",
-                            report.overall_score,
-                            self.settings.asi_alert_threshold,
-                        )
-                        if self.settings.monitor_auto_campaign:
-                            self._last_alert_time = now
-                            await self._trigger_campaign()
-                        else:
-                            logger.info("🛡️ Daemon | auto-campaign disabled, skipping")
-                            self._last_alert_time = now
-                    else:
-                        logger.info("🛡️ Daemon | alert suppressed (cooling down, %ds remaining)", int(self.settings.monitor_cooldown_period - time_since_alert))
-                else:
-                    logger.info(
-                        "🛡️ Daemon | health OK (%.1f >= %.1f) | telemetry signal only",
-                        report.overall_score,
-                        self.settings.asi_alert_threshold,
-                    )
-                
                 try:
-                    await asyncio.wait_for(self._stop_event.wait(), timeout=self.settings.monitor_probe_interval)
-                except TimeoutError:
-                    pass
+                    logger.info("🛡️ Daemon | running metric loop")
+                    await self.collector.inject_canary_batch(target)
+                    asi = AgentStabilityIndex(self.settings, drift_detector=drift_detector)
+                    report = asi.compute(self.collector)
+                    await self._handle_asi_report(report)
+                    consecutive_failures = 0
+                except asyncio.CancelledError:
+                    raise
+                except Exception as exc:
+                    consecutive_failures += 1
+                    backoff = min(2.0 * (2 ** (consecutive_failures - 1)), 60.0)
+                    logger.warning(
+                        "🛡️ Daemon | transient error (%d): %s | backoff %.1fs",
+                        consecutive_failures,
+                        exc,
+                        backoff,
+                    )
+                    await self._wait_or_stop(backoff)
+                    continue
 
+                await self._wait_or_stop(float(self.settings.monitor_probe_interval))
         except asyncio.CancelledError:
             pass
         except Exception as exc:
             logger.exception("🛡️ Daemon | fatal error: %s", exc)
         finally:
+            self._cancel_active_tasks()
             target.close()
             logger.info("🛡️ Daemon | shutting down")
 
