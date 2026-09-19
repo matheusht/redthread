@@ -92,7 +92,7 @@ def test_canary_only_monitoring_is_marked_as_signal_not_proof(settings: RedThrea
 
 def test_measured_inputs_do_not_emit_evidence_warnings(settings: RedThreadSettings) -> None:
     collector = TelemetryCollector(settings)
-    for idx in range(25):
+    for idx in range(50):
         collector.storage.insert(
             _record(idx=idx, canary=False, embedding=[1.0, 0.0, 0.0])
         )

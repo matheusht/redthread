@@ -137,7 +137,7 @@ Every task gets a deterministic ID (prefixed by type), tracks `start_time`/`end_
 | **Scoring Framework** | G-Eval (custom implementation) | Auto-CoT + probability-weighted token summation → continuous float scores |
 | **Rubric Source** | OWASP Top 10 for LLMs + MITRE ATLAS | Structured failure taxonomies for security-specific evaluation |
 | **CI/CD Evaluation** | DeepEval (Pytest-native) | Regression gates: faithfulness ≥ 0.92, hallucination rate ≤ 0.08 |
-| **Golden Dataset** | 30 curated traces | 10 jailbreak + 10 safe + 10 guardrail validation test cases |
+| **Golden Dataset** | 40 curated traces | 20 jailbreak + 10 safe + 10 guardrail validation test cases |
 | **Observability** | Targeted LangSmith hooks | First-party LangGraph tracing for selected JudgeAgent and DefenseSynthesis paths |
 
 ### 6.1 Rubric Registry (`src/redthread/evaluation/rubrics/`)

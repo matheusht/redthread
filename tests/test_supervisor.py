@@ -347,6 +347,15 @@ async def test_finalize_node_builds_campaign_result() -> None:
         "defense_worker_failures": 0,
         "defense_validated_candidates": 0,
         "defense_deployments": 0,
+        "agentic_security_report": {"enabled": True},
+        "agentic_action_total": 2,
+        "authorization_decision_counts": {"deny": 1},
+        "canary_report": {"stage_count": 1},
+        "live_canary_event_total": 1,
+        "live_canary_report": {"stage_count": 1},
+        "amplification_metrics": {"budget_breached": True},
+        "budget_stop_triggered": True,
+        "untrusted_lineage_action_total": 1,
         "campaign_result_dict": None,
         "errors": [],
     }
@@ -359,6 +368,10 @@ async def test_finalize_node_builds_campaign_result() -> None:
     assert campaign.attack_success_rate == 0.0
     assert campaign.metadata["degraded_runtime"] is False
     assert campaign.metadata["runtime_summary"]["judge_worker_total"] == 2
+    assert campaign.metadata["agentic_security"]["action_total"] == 2
+    assert campaign.metadata["agentic_security"]["authorization_decision_counts"] == {"deny": 1}
+    assert campaign.metadata["agentic_security"]["live_canary_report"]["stage_count"] == 1
+    assert campaign.metadata["agentic_security"]["amplification_metrics"]["budget_breached"] is True
 
 
 @pytest.mark.asyncio

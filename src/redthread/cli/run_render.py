@@ -118,7 +118,33 @@ def _campaign_result_lines(result: CampaignResult, asr_color: str) -> list[str]:
         lines.append(f"  Evidence Warning:          {uncertainty}")
     if artifact_dir:
         lines.append(f"  Report:                    {artifact_dir}")
+    lines.extend(_format_agentic_security(metadata))
     lines.append(f"  Transcript:                logs/{result.id}.jsonl")
+    return lines
+
+
+def _format_agentic_security(metadata: dict[str, object]) -> list[str]:
+    agentic = metadata.get("agentic_security")
+    if not isinstance(agentic, dict):
+        runtime_summary = metadata.get("runtime_summary")
+        agentic = runtime_summary.get("agentic_security", {}) if isinstance(runtime_summary, dict) else {}
+    if not isinstance(agentic, dict):
+        return []
+
+    actions = int(agentic.get("action_total", 0) or 0)
+    canary_events = int(agentic.get("canary_event_total", 0) or 0)
+    decisions = agentic.get("authorization_decision_counts", {})
+    metrics = agentic.get("amplification_metrics", {})
+    reports = agentic.get("canary_report") or agentic.get("live_canary_report")
+    if not actions and not canary_events and not decisions and not metrics and not reports:
+        return []
+
+    lines = ["", "  Agentic Security:", f"    Actions: {actions}", f"    Canary events: {canary_events}"]
+    if isinstance(decisions, dict) and decisions:
+        summary = ", ".join(f"{key}={value}" for key, value in sorted(decisions.items()))
+        lines.append(f"    Decisions: {summary}")
+    if isinstance(metrics, dict) and metrics.get("budget_breached"):
+        lines.append("    Resource budget breached")
     return lines
 
 

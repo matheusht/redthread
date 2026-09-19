@@ -70,6 +70,17 @@ class TestArimaNoFalsePositives:
 class TestArimaFallback:
     """ArimaDetector should fall back to Z-score when < min_observations."""
 
+    def test_constant_series_returns_constant_forecast(self, detector: ArimaDetector) -> None:
+        result = detector.detect([42.0] * 30, "latency_ms")
+
+        assert result is not None
+        assert result.observed == pytest.approx(42.0)
+        assert result.predicted == pytest.approx(42.0)
+        assert result.lower_bound == pytest.approx(42.0)
+        assert result.upper_bound == pytest.approx(42.0)
+        assert result.is_anomaly is False
+        assert result.fallback_method == "constant"
+
     def test_z_score_fallback_when_few_observations(self) -> None:
         detector = ArimaDetector(min_observations=20, confidence_level=0.95)
         series = _stable_series(5, base=100.0, noise=5.0)

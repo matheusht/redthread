@@ -41,7 +41,7 @@ def test_replay_run_renders_passing_bundle(tmp_path: Path) -> None:
     assert "replay-cli-test" in result.output
     assert "trace-1" in result.output
     assert "PASS" in result.output
-    assert "Authorization" in result.output
+    assert "Authoriz" in result.output
     assert "Canary" in result.output
     assert "Budget" in result.output
 

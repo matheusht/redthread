@@ -21,6 +21,7 @@ from redthread.models import AttackResult
 _REDACTED_PROMPT = "[redacted: reviewed benchmark prompt material remains in private vault]"
 _REDACTED_RESPONSE = "[redacted: target response may echo reviewed benchmark material]"
 _REDACTED_TARGET_PROMPT = "[redacted: target system prompt stays outside public benchmark artifacts]"
+_RegressionHandoffSchema = Literal["redthread.jailbreak_benchmark_regression_handoff.v1"]
 
 
 class BenchmarkRegressionHandoffError(ValueError):
@@ -55,9 +56,7 @@ class BenchmarkRegressionCaseSummary(BaseModel):
 class BenchmarkRegressionHandoffArtifact(BaseModel):
     """Prompt-safe artifact for moving confirmed benchmark findings to regression work."""
 
-    schema_version: Literal["redthread.jailbreak_benchmark_regression_handoff.v1"] = (
-        "redthread.jailbreak_benchmark_regression_handoff.v1"
-    )
+    schema_version: _RegressionHandoffSchema = "redthread.jailbreak_benchmark_regression_handoff.v1"
     kind: str = "benchmark_regression_handoff"
     fixture_id: str
     manifest_ref: str
