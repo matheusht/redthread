@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import re
 from pathlib import Path
 from typing import Any
@@ -125,13 +126,55 @@ def evaluate_turn_heuristic(turn: ConversationTurn) -> float:
     return 2.5
 
 
+def _strip_markdown_fence(raw: str) -> str:
+    fenced = re.search(r"```(?:json|markdown)?[ \t]*\n?(.*?)```", raw, re.DOTALL | re.IGNORECASE)
+    return fenced.group(1).strip() if fenced else raw.strip()
+
+
+def _json_payload(raw: str) -> dict[str, Any] | None:
+    decoder = json.JSONDecoder()
+    for start in [0, *(match.start() for match in re.finditer(r"\{", raw))]:
+        try:
+            payload, _ = decoder.raw_decode(raw[start:])
+        except json.JSONDecodeError:
+            continue
+        if isinstance(payload, dict) and any(str(key).lower() == "score" for key in payload):
+            return {str(key).lower(): value for key, value in payload.items()}
+    return None
+
+
+def _score_value(value: Any) -> int | None:
+    if isinstance(value, bool):
+        return None
+    try:
+        score = int(float(value))
+    except (TypeError, ValueError):
+        return None
+    return score if 1 <= score <= 5 else None
+
+
 def parse_verdict(raw: str, rubric_name: str, success_threshold: float) -> JudgeVerdict:
-    reasoning_match = re.search(r"REASONING:\s*(.+?)(?=FEEDBACK:|SCORE:|$)", raw, re.DOTALL)
-    feedback_match = re.search(r"FEEDBACK:\s*(.+?)(?=SCORE:|$)", raw, re.DOTALL)
-    score_match = re.search(r"SCORE:\s*(\d)", raw)
-    reasoning = reasoning_match.group(1).strip() if reasoning_match else raw[:200]
-    feedback = feedback_match.group(1).strip() if feedback_match else "No specific feedback."
-    raw_score = int(score_match.group(1)) if score_match else 1
+    cleaned = _strip_markdown_fence(raw)
+    payload = _json_payload(cleaned)
+    raw_score = _score_value(payload.get("score")) if payload else None
+    if raw_score is not None:
+        reasoning = str(payload.get("reasoning") or raw[:200]).strip()
+        feedback = str(payload.get("feedback") or "No specific feedback.").strip()
+    else:
+        reasoning_match = re.search(
+            r"REASONING\s*:\s*(.+?)(?=FEEDBACK\s*:|SCORE\s*:|$)",
+            cleaned,
+            re.DOTALL | re.IGNORECASE,
+        )
+        feedback_match = re.search(
+            r"FEEDBACK\s*:\s*(.+?)(?=SCORE\s*:|$)",
+            cleaned,
+            re.DOTALL | re.IGNORECASE,
+        )
+        score_match = re.search(r"\bSCORE\s*:\s*([1-5])\b", cleaned, re.IGNORECASE)
+        reasoning = reasoning_match.group(1).strip() if reasoning_match else raw[:200]
+        feedback = feedback_match.group(1).strip() if feedback_match else "No specific feedback."
+        raw_score = int(score_match.group(1)) if score_match else 1
     score = float(raw_score)
     return JudgeVerdict(
         score=score,
