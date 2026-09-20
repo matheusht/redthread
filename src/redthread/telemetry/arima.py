@@ -18,16 +18,16 @@ Fallback: Z-score (±2σ) when fewer than min_observations records exist.
 from __future__ import annotations
 
 import logging
-import warnings
-from typing import TYPE_CHECKING
 
 import numpy as np
 
-from redthread.telemetry.arima_helpers import constant_forecast
+from redthread.telemetry.arima_helpers import (
+    compute_z_score_fallback,
+    constant_forecast,
+    fit_arima_prediction,
+)
+from redthread.telemetry.collector import TelemetryCollector
 from redthread.telemetry.models import ArimaForecast
-
-if TYPE_CHECKING:
-    from redthread.telemetry.collector import TelemetryCollector
 
 logger = logging.getLogger(__name__)
 
@@ -60,26 +60,7 @@ class ArimaDetector:
         self, series: list[float], metric_name: str
     ) -> ArimaForecast:
         """Fallback when < min_observations. Uses ±2σ Z-score detection."""
-        arr = np.array(series, dtype=np.float64)
-        mean = float(np.mean(arr))
-        std = float(np.std(arr)) if len(arr) > 1 else 1.0
-        observed = arr[-1]
-
-        lower = mean - 2.0 * std
-        upper = mean + 2.0 * std
-        deviation_sigma = (observed - mean) / std if std > 0 else 0.0
-
-        return ArimaForecast(
-            metric_name=metric_name,
-            observed=float(observed),
-            predicted=mean,
-            lower_bound=lower,
-            upper_bound=upper,
-            is_anomaly=bool(observed < lower or observed > upper),
-            deviation_sigma=deviation_sigma,
-            n_observations=len(series),
-            fallback_method="z_score",
-        )
+        return compute_z_score_fallback(series, metric_name)
 
     def detect(self, series: list[float], metric_name: str) -> ArimaForecast | None:
         """Fit ARIMA to the historical series and flag the latest observation.
@@ -111,51 +92,32 @@ class ArimaDetector:
         observed = window[-1]
 
         try:
-            from pmdarima import auto_arima
-
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                model = auto_arima(
-                    train,
-                    stepwise=True,
-                    suppress_warnings=True,
-                    error_action="ignore",
-                    max_p=3, max_q=3,
-                    information_criterion="aic",
-                )
-
-            forecast_result = model.predict(n_periods=1, return_conf_int=True, alpha=1.0 - self.confidence_level)
-            predicted_arr, conf_int = forecast_result
-            predicted = float(predicted_arr[0])
-            lower = float(conf_int[0][0])
-            upper = float(conf_int[0][1])
-
-            residuals = np.array(model.resid(), dtype=np.float64)
-            std_err = float(np.std(residuals)) if len(residuals) > 1 else 1.0
-            deviation_sigma = (observed - predicted) / std_err if std_err > 0 else 0.0
-
-            result = ArimaForecast(
+            result = fit_arima_prediction(
+                train=train,
+                observed=observed,
+                confidence_level=self.confidence_level,
+                window_len=len(window),
                 metric_name=metric_name,
-                observed=float(observed),
-                predicted=predicted,
-                lower_bound=lower,
-                upper_bound=upper,
-                is_anomaly=bool(observed < lower or observed > upper),
-                deviation_sigma=deviation_sigma,
-                n_observations=len(window),
-                fallback_method="",
             )
 
             if result.is_anomaly:
                 logger.warning(
                     "🚨 ArimaDetector | ANOMALY | metric=%s | observed=%.2f | "
                     "predicted=%.2f | CI=[%.2f, %.2f] | σ=%.2f",
-                    metric_name, observed, predicted, lower, upper, deviation_sigma,
+                    metric_name,
+                    observed,
+                    result.predicted,
+                    result.lower_bound,
+                    result.upper_bound,
+                    result.deviation_sigma,
                 )
             else:
                 logger.debug(
                     "ArimaDetector | metric=%s | ok | observed=%.2f | CI=[%.2f, %.2f]",
-                    metric_name, observed, lower, upper,
+                    metric_name,
+                    observed,
+                    result.lower_bound,
+                    result.upper_bound,
                 )
 
             return result

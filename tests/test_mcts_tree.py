@@ -115,3 +115,20 @@ def test_derive_strategies_fallback_from_triggers() -> None:
         + TRIGGER_STRATEGY_MAP[PsychologicalTrigger.URGENCY.value]
     )
     assert all(s in expected_pool for s in strategies)
+
+
+@pytest.mark.asyncio
+async def test_mcts_resets_tokens_consumed_across_runs() -> None:
+    """MCTSAttack must reset _tokens_consumed at the start of each run() call."""
+    from redthread.core.mcts import MCTSAttack
+    from tests.test_mcts_fixtures import make_persona, make_settings
+
+    attack = MCTSAttack(make_settings(dry_run=True))
+    attack._tokens_consumed = 50000
+
+    persona = make_persona()
+    result = await attack.run(persona)
+
+    assert attack._tokens_consumed == 0
+    assert result.trace.metadata.get("tokens_consumed") == 0
+

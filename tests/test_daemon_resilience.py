@@ -80,3 +80,19 @@ async def test_daemon_cancels_active_tasks_on_shutdown(tmp_path: Path) -> None:
 
     assert task.done()
     assert len(daemon._active_tasks) == 0
+
+
+@pytest.mark.asyncio
+async def test_bootstrap_drift_baseline_existing(tmp_path: Path) -> None:
+    from redthread.daemon.warmup import bootstrap_drift_baseline
+    from redthread.telemetry.collector import TelemetryCollector
+
+    settings = make_settings(tmp_path)
+    collector = TelemetryCollector(settings)
+    mock_baseline = [[0.1] * 10, [0.2] * 10]
+    collector.storage.save_baseline(mock_baseline)
+
+    detector = await bootstrap_drift_baseline(collector, target=object())
+    assert detector._baseline_embeddings is not None
+    assert len(detector._baseline_embeddings) == 2
+
