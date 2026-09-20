@@ -79,6 +79,7 @@ class MCTSAttack:
     ) -> AttackResult:
         """Execute the full GS-MCTS loop for a given persona."""
         start_time = time.monotonic()
+        self._tokens_consumed = 0
         trace = AttackTrace(
             persona=persona,
             algorithm="mcts",
@@ -86,6 +87,7 @@ class MCTSAttack:
             metadata={"target_system_prompt": target_system_prompt} if target_system_prompt else {},
         )
         if self.settings.dry_run:
+            trace.metadata["tokens_consumed"] = self._tokens_consumed
             return self._dry_run_result(trace, rubric_name, start_time)
 
         strategies = derive_strategies(persona, use_cop=self.settings.use_cop)

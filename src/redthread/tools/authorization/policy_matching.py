@@ -5,10 +5,12 @@ from __future__ import annotations
 import posixpath
 
 from redthread.orchestration.models import (
+    ActionEffect,
     ActionEnvelope,
     AuthorizationDecision,
     AuthorizationDecisionType,
 )
+from redthread.tools.authorization.capabilities import is_high_risk_capability
 from redthread.tools.authorization.models import AuthorizationPolicy
 from redthread.tools.authorization.sensitivity import (
     REASON_SENSITIVITY_SPOOFED,
@@ -104,3 +106,63 @@ def apply_sensitivity_guard(
             "required_escalation": False,
         }
     )
+
+
+HIGH_IMPACT_EFFECTS = {
+    ActionEffect.WRITE,
+    ActionEffect.EXECUTE,
+    ActionEffect.EXFILTRATE,
+    ActionEffect.DELEGATE,
+}
+
+
+def requires_trusted_fallback_escalation(action: ActionEnvelope) -> bool:
+    if action.requested_effect in HIGH_IMPACT_EFFECTS:
+        return True
+    if exceeds_sensitivity(action.target_sensitivity, "medium"):
+        return True
+    return is_high_risk_capability(action.capability)
+
+
+def evaluate_deny_policies(
+    action: ActionEnvelope, policies: list[AuthorizationPolicy]
+) -> AuthorizationDecision | None:
+    for policy in policies:
+        if policy.denied_capabilities and matches_denied_policy(action, policy):
+            return AuthorizationDecision(
+                decision=AuthorizationDecisionType.DENY,
+                policy_id=policy.policy_id,
+                reason=policy.reason,
+                matched_rules=[policy.policy_id],
+                required_escalation=policy.require_human_approval,
+            )
+    return None
+
+
+def evaluate_decision_policies(
+    action: ActionEnvelope,
+    policies: list[AuthorizationPolicy],
+    decision: AuthorizationDecisionType,
+) -> AuthorizationDecision | None:
+    for policy in policies:
+        if policy.decision != decision:
+            continue
+        if not matches_allowed_policy(action, policy):
+            continue
+        if exceeds_sensitivity(action.target_sensitivity, policy.max_target_sensitivity):
+            return AuthorizationDecision(
+                decision=AuthorizationDecisionType.ESCALATE,
+                policy_id=policy.policy_id,
+                reason="target sensitivity exceeds preset allowance",
+                matched_rules=[policy.policy_id],
+                required_escalation=True,
+            )
+        return AuthorizationDecision(
+            decision=policy.decision,
+            policy_id=policy.policy_id,
+            reason=policy.reason,
+            matched_rules=[policy.policy_id],
+            required_escalation=policy.require_human_approval,
+        )
+    return None
+

@@ -16,79 +16,20 @@ from redthread.cli.persona_weighting import (
     PersonaWeightingPlanFileError,
     load_persona_weighting_plan_file,
 )
-from redthread.cli.run_help import RunHelpCommand, show_research_help
+from redthread.cli.run_help import RunHelpCommand
+from redthread.cli.run_options import apply_run_overrides, run_command_options
 from redthread.cli.run_render import render_campaign_header, render_campaign_results
 from redthread.cli.run_reports import write_run_reports
 from redthread.cli.shared import run_async_command, setup_logging
-from redthread.config.settings import AlgorithmType, RedThreadSettings
+from redthread.config.settings import RedThreadSettings
 from redthread.engine import RedThreadEngine
 from redthread.launch_readiness.cli import execute_launch_readiness
 from redthread.models import CampaignConfig
 
 
-def _apply_run_overrides(
-    settings: RedThreadSettings,
-    target_model: str | None,
-    algorithm: str | None,
-    depth: int | None,
-    width: int | None,
-    branching: int | None,
-    dry_run: bool,
-    turns: int | None,
-    simulations: int | None,
-    max_budget_tokens: int | None,
-    use_cop: bool,
-) -> None:
-    if target_model:
-        settings.target_model = target_model
-    if algorithm:
-        settings.algorithm = AlgorithmType(algorithm)
-    if depth is not None:
-        settings.tree_depth = depth
-    if width is not None:
-        settings.tree_width = width
-    if branching is not None:
-        settings.branching_factor = branching
-    if dry_run:
-        settings.dry_run = True
-    if turns is not None:
-        settings.crescendo_max_turns = turns
-    if simulations is not None:
-        settings.mcts_simulations = simulations
-    if max_budget_tokens is not None:
-        settings.mcts_max_budget_tokens = max_budget_tokens
-    if use_cop:
-        settings.use_cop = True
-
-
 def register_run_command(main: click.Group, console: Console) -> None:
     @main.command(cls=RunHelpCommand)
-    @click.option("--objective", "-o", default="agentic security validation", show_default=True, help='What to test for (e.g. "authorization bypass via identity impersonation")')
-    @click.option("--system-prompt", "-s", default="You are a helpful customer service assistant.", show_default=True, help="The target agent's system prompt.")
-    @click.option("--rubric", "-r", default="authorization_bypass", show_default=True, help="Judge rubric (basename). Options: authorization_bypass, authority_impersonation, urgency_and_scarcity, social_proof, fear_intimidation, reciprocity_trust, prompt_injection, insecure_output, sensitive_info.")
-    @click.option("--personas", "-n", default=3, show_default=True, type=int, help="Number of adversarial personas to generate")
-    @click.option("--target", "--target-model", "target_model", default=None, help="Target model to test")
-    @click.option("--dry-run", is_flag=True, default=False, help="Generate personas but skip actual attack execution")
-    @click.option("--verbose", "-v", is_flag=True, default=False, help="Enable debug logging")
-    @click.option("--env-file", type=click.Path(exists=False), default=".env", help="Path to .env file")
-    @click.option("--algorithm", "-a", type=click.Choice(["pair", "tap", "crescendo", "mcts", "agent_chain"], case_sensitive=False), default=None, help="Attack algorithm (default: pair)")
-    @click.option("--depth", "-d", type=int, default=None, help="TAP maximum search depth")
-    @click.option("--width", "-w", type=int, default=None, help="TAP maximum tree width")
-    @click.option("--branching", "-b", type=int, default=None, help="TAP branching factor")
-    @click.option("--trace-all", is_flag=True, default=False, hidden=True, help="Enable LangSmith tracing on ALL nodes including Attacker (local debugging)")
-    @click.option("--turns", "-t", type=int, default=None, help="Crescendo max conversation turns")
-    @click.option("--simulations", type=int, default=None, help="GS-MCTS number of simulations (overrides mcts_simulations setting)")
-    @click.option("--max-budget-tokens", type=int, default=None, help="GS-MCTS token budget ceiling for early stopping (heuristic: chars // 4)")
-    @click.option("--benchmark-fixture", multiple=True, hidden=True, help="Use safe metadata hints from a jailbreak benchmark fixture; may repeat.")
-    @click.option("--persona-weighting-plan", type=click.Path(exists=True, dir_okay=False), default=None, hidden=True, help="Use a safe adaptive persona weighting plan JSON artifact")
-    @click.option("--report-md", type=click.Path(dir_okay=False), default=None, help="Write guide-style operator report as Markdown")
-    @click.option("--report-json", type=click.Path(dir_okay=False), default=None, help="Write guide-style operator report as JSON")
-    @click.option("--report-sarif", type=click.Path(dir_okay=False), default=None, help="Write security findings as SARIF v2.1.0 JSON")
-    @click.option("--report-dir", type=click.Path(file_okay=False), default=None, help="Write standard campaign report directory")
-    @click.option("--preset", type=click.Choice(["launch-readiness"], case_sensitive=False), default=None, help="Run a named campaign preset")
-    @click.option("--include-internal-sidecars", is_flag=True, default=False, hidden=True, help="Expose adaptive-learning sidecars in the report manifest")
-    @click.option("--cop", is_flag=True, default=False, help="Enable CoP (Composition of Principles) strategy generation — composes triggers instead of atomic strategies")
-    @click.option("--show-research", is_flag=True, is_eager=True, expose_value=False, callback=show_research_help, help="Show hidden research controls and exit")
+    @run_command_options
     def run(
         objective: str,
         system_prompt: str,
@@ -119,7 +60,7 @@ def register_run_command(main: click.Group, console: Console) -> None:
         """Execute a red-team campaign against a target LLM."""
         setup_logging(console, verbose)
         settings = RedThreadSettings(_env_file=env_file)
-        _apply_run_overrides(
+        apply_run_overrides(
             settings,
             target_model,
             algorithm,

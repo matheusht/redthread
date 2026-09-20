@@ -5,7 +5,6 @@ from __future__ import annotations
 from collections.abc import Mapping
 
 from redthread.orchestration.models import (
-    ActionEffect,
     ActionEnvelope,
     AuthorizationDecision,
     AuthorizationDecisionType,
@@ -14,14 +13,14 @@ from redthread.orchestration.models import (
 from redthread.orchestration.permission_inheritance import (
     violates_permission_inheritance,
 )
-from redthread.tools.authorization.capabilities import is_high_risk_capability
+from redthread.tools.authorization.audit import AuditLogger, AuthorizationAuditRecord
 from redthread.tools.authorization.models import AuthorizationPolicy
 from redthread.tools.authorization.policy_matching import (
     apply_sensitivity_guard,
-    exceeds_sensitivity,
-    matches_allowed_policy,
-    matches_denied_policy,
+    evaluate_decision_policies,
+    evaluate_deny_policies,
     matches_scoped_allow_without_scope,
+    requires_trusted_fallback_escalation,
 )
 from redthread.tools.authorization.sensitivity import (
     DEFAULT_SENSITIVITY_CATALOG,
@@ -34,26 +33,36 @@ from redthread.tools.authorization.validation import (
     validate_arguments,
 )
 
-HIGH_IMPACT_EFFECTS = {
-    ActionEffect.WRITE,
-    ActionEffect.EXECUTE,
-    ActionEffect.EXFILTRATE,
-    ActionEffect.DELEGATE,
-}
-
 
 class AuthorizationEngine:
+    """Deterministic policy enforcement engine with immutable audit logging."""
+
     def __init__(
         self,
         policies: list[AuthorizationPolicy],
         sensitivity_catalog: Mapping[str, str] | None = None,
+        max_audit_records: int = 1000,
     ) -> None:
         self.policies = policies
         self.sensitivity_catalog = dict(DEFAULT_SENSITIVITY_CATALOG)
         self.sensitivity_catalog.update(sensitivity_catalog or {})
         self.argument_schemas = DEFAULT_ARGUMENT_SCHEMAS
+        self._audit_logger = AuditLogger(max_records=max_audit_records)
 
     def authorize(self, action: ActionEnvelope) -> AuthorizationDecision:
+        decision = self._compute_decision(action)
+        self._audit_logger.record(action, decision)
+        return decision
+
+    def get_audit_records(self) -> list[AuthorizationAuditRecord]:
+        """Retrieve chronological immutable audit records."""
+        return self._audit_logger.get_records()
+
+    def clear_audit_records(self) -> None:
+        """Clear the recorded audit trail."""
+        self._audit_logger.clear()
+
+    def _compute_decision(self, action: ActionEnvelope) -> AuthorizationDecision:
         if violates_permission_inheritance(action.provenance, action.capability):
             return AuthorizationDecision(
                 decision=AuthorizationDecisionType.DENY,
@@ -92,11 +101,13 @@ class AuthorizationEngine:
                 }
             )
 
-        decision = self._evaluate_deny_policies(action)
+        decision = evaluate_deny_policies(action, self.policies)
         if decision is not None:
             return apply_sensitivity_guard(decision, sensitivity_spoofed)
 
-        decision = self._evaluate_escalate_policies(action)
+        decision = evaluate_decision_policies(
+            action, self.policies, AuthorizationDecisionType.ESCALATE
+        )
         if decision is not None:
             return apply_sensitivity_guard(decision, sensitivity_spoofed)
 
@@ -108,7 +119,9 @@ class AuthorizationEngine:
                 matched_rules=["scope_boundary"],
             )
 
-        decision = self._evaluate_allow_policies(action)
+        decision = evaluate_decision_policies(
+            action, self.policies, AuthorizationDecisionType.ALLOW
+        )
         if decision is not None:
             return apply_sensitivity_guard(decision, sensitivity_spoofed)
 
@@ -123,7 +136,7 @@ class AuthorizationEngine:
                 sensitivity_spoofed,
             )
 
-        if self._requires_trusted_fallback_escalation(action):
+        if requires_trusted_fallback_escalation(action):
             return apply_sensitivity_guard(
                 AuthorizationDecision(
                     decision=AuthorizationDecisionType.ESCALATE,
@@ -144,53 +157,3 @@ class AuthorizationEngine:
             ),
             sensitivity_spoofed,
         )
-
-    def _evaluate_deny_policies(self, action: ActionEnvelope) -> AuthorizationDecision | None:
-        for policy in self.policies:
-            if policy.denied_capabilities and matches_denied_policy(action, policy):
-                return AuthorizationDecision(
-                    decision=AuthorizationDecisionType.DENY,
-                    policy_id=policy.policy_id,
-                    reason=policy.reason,
-                    matched_rules=[policy.policy_id],
-                    required_escalation=policy.require_human_approval,
-                )
-        return None
-
-    def _evaluate_escalate_policies(self, action: ActionEnvelope) -> AuthorizationDecision | None:
-        return self._evaluate_decision_policies(action, AuthorizationDecisionType.ESCALATE)
-
-    def _evaluate_allow_policies(self, action: ActionEnvelope) -> AuthorizationDecision | None:
-        return self._evaluate_decision_policies(action, AuthorizationDecisionType.ALLOW)
-
-    def _evaluate_decision_policies(
-        self, action: ActionEnvelope, decision: AuthorizationDecisionType
-    ) -> AuthorizationDecision | None:
-        for policy in self.policies:
-            if policy.decision != decision:
-                continue
-            if not matches_allowed_policy(action, policy):
-                continue
-            if exceeds_sensitivity(action.target_sensitivity, policy.max_target_sensitivity):
-                return AuthorizationDecision(
-                    decision=AuthorizationDecisionType.ESCALATE,
-                    policy_id=policy.policy_id,
-                    reason="target sensitivity exceeds preset allowance",
-                    matched_rules=[policy.policy_id],
-                    required_escalation=True,
-                )
-            return AuthorizationDecision(
-                decision=policy.decision,
-                policy_id=policy.policy_id,
-                reason=policy.reason,
-                matched_rules=[policy.policy_id],
-                required_escalation=policy.require_human_approval,
-            )
-        return None
-
-    def _requires_trusted_fallback_escalation(self, action: ActionEnvelope) -> bool:
-        if action.requested_effect in HIGH_IMPACT_EFFECTS:
-            return True
-        if exceeds_sensitivity(action.target_sensitivity, "medium"):
-            return True
-        return is_high_risk_capability(action.capability)

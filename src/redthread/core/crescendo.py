@@ -148,15 +148,16 @@ class CrescendoAttack:
                     turn_num, self.settings.crescendo_max_turns, attempt, score, escalation_level,
                 )
 
+                is_escalated = score >= self.settings.crescendo_escalation_threshold
                 is_last = attempt > self.settings.crescendo_backtrack_limit
-                if score >= self.settings.crescendo_escalation_threshold or is_last:
+                if is_escalated or is_last:
                     accepted = CrescendoTurn(
                         turn_number=turn_num, escalation_level=escalation_level,
                         attacker_prompt=attacker_msg, target_response=target_response,
                         score=score, backtracked=is_retry, backtrack_attempts=attempt - 1,
                     )
-                    history.append((attacker_msg, target_response))
-                    if score >= self.settings.crescendo_escalation_threshold:
+                    if is_escalated:
+                        history.append((attacker_msg, target_response))
                         escalation_level = min(escalation_level + 1, 5)
                     break
 

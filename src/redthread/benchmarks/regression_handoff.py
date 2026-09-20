@@ -2,30 +2,28 @@
 
 from __future__ import annotations
 
-import json
-from pathlib import Path
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
-from redthread.benchmarks.artifacts import (
-    BenchmarkArtifactError,
-    assert_prompt_safe_benchmark_payload,
-)
 from redthread.benchmarks.campaigns import BenchmarkCampaignDraft
 from redthread.benchmarks.jailbreak_fixtures import JailbreakBenchmarkFixture
 from redthread.benchmarks.material_vault import BenchmarkMaterialManifest
-from redthread.core.regression_cases import RegressionCaseError, regression_case_from_attack_result
+from redthread.benchmarks.regression_handoff_io import (
+    BenchmarkRegressionHandoffError,
+    load_benchmark_regression_handoff_artifact,
+    write_benchmark_regression_handoff_artifact,
+)
+from redthread.core.regression_cases import (
+    RegressionCaseError,
+    regression_case_from_attack_result,
+)
 from redthread.models import AttackResult
 
 _REDACTED_PROMPT = "[redacted: reviewed benchmark prompt material remains in private vault]"
 _REDACTED_RESPONSE = "[redacted: target response may echo reviewed benchmark material]"
 _REDACTED_TARGET_PROMPT = "[redacted: target system prompt stays outside public benchmark artifacts]"
 _RegressionHandoffSchema = Literal["redthread.jailbreak_benchmark_regression_handoff.v1"]
-
-
-class BenchmarkRegressionHandoffError(ValueError):
-    """Raised when a regression handoff artifact cannot be written."""
 
 
 class BenchmarkRegressionSkip(BaseModel):
@@ -137,29 +135,6 @@ def build_benchmark_regression_handoff(
     )
 
 
-def write_benchmark_regression_handoff_artifact(
-    artifact: BenchmarkRegressionHandoffArtifact,
-    output_path: str | Path,
-) -> str:
-    """Write a prompt-safe benchmark regression handoff JSON artifact."""
-    path = Path(output_path).expanduser()
-    if path.exists() and path.is_dir():
-        msg = f"benchmark regression handoff output path is a directory: {output_path}"
-        raise BenchmarkRegressionHandoffError(msg)
-    payload = artifact.model_dump(mode="json")
-    try:
-        assert_prompt_safe_benchmark_payload(payload)
-    except BenchmarkArtifactError as exc:
-        raise BenchmarkRegressionHandoffError(str(exc)) from exc
-    try:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
-    except OSError as exc:
-        msg = f"could not write benchmark regression handoff artifact: {output_path}"
-        raise BenchmarkRegressionHandoffError(msg) from exc
-    return str(path)
-
-
 def _single_fixture(draft: BenchmarkCampaignDraft) -> JailbreakBenchmarkFixture:
     if len(draft.fixtures) != 1:
         msg = "benchmark regression handoff requires exactly one fixture"
@@ -198,3 +173,14 @@ def _redacted_turn(turn: object) -> object:
     if "target_response" in safe_turn:
         safe_turn["target_response"] = _REDACTED_RESPONSE
     return safe_turn
+
+
+__all__ = [
+    "BenchmarkRegressionCaseSummary",
+    "BenchmarkRegressionHandoffArtifact",
+    "BenchmarkRegressionHandoffError",
+    "BenchmarkRegressionSkip",
+    "build_benchmark_regression_handoff",
+    "load_benchmark_regression_handoff_artifact",
+    "write_benchmark_regression_handoff_artifact",
+]

@@ -1,5 +1,6 @@
 """Deterministic authorization helpers for agentic-security phases."""
 
+from redthread.tools.authorization.audit import AuditLogger, AuthorizationAuditRecord
 from redthread.tools.authorization.capabilities import CapabilityClass, classify_capability
 from redthread.tools.authorization.engine import AuthorizationEngine
 from redthread.tools.authorization.live_intercept import (
@@ -23,6 +24,8 @@ from redthread.tools.authorization.validation import REASON_INVALID_ARGUMENTS
 
 __all__ = [
     "AuthorizationEngine",
+    "AuthorizationAuditRecord",
+    "AuditLogger",
     "ArgumentRule",
     "DEFAULT_SENSITIVITY_CATALOG",
     "REASON_INVALID_ARGUMENTS",
