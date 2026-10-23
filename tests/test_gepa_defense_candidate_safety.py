@@ -16,12 +16,10 @@ def test_assignment_standard_string() -> None:
 
 
 def test_assignment_invalid_escape_fallback() -> None:
-    # An invalid unicode escape sequence like \\U123 without 8 hex digits causes SyntaxError in normal strings
     raw_val = "Special pattern \\U123 and \\x not hex"
     code = _assignment("VAR", raw_val)
     parsed = ast.parse(code)
     assert len(parsed.body) == 1
-    # Check that execution/ast evaluation recovers the exact string
     executed: dict[str, str] = {}
     exec(code, {}, executed)
     assert executed["VAR"] == raw_val

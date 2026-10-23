@@ -28,10 +28,8 @@ class DriftDetector:
         self.k_neighbors = k_neighbors
         self.distance_metric = distance_metric
         
-        # Baseline matrix shape (N, D) where N=samples, D=dimensions
         self._baseline_embeddings: NDArray[np.float64] | None = None
         
-        # Precomputed distances from each point in baseline to its k-th nearest neighbor
         self._core_distances: NDArray[np.float64] | None = None
 
     def _cosine_distance(self, a: NDArray[np.float64], b: NDArray[np.float64]) -> NDArray[np.float64]:
@@ -57,15 +55,12 @@ class DriftDetector:
             logger.warning("Baseline size (%d) < k_neighbors (%d). Reducing k.", N, self.k_neighbors)
             self.k_neighbors = max(1, N - 1)
 
-        # Compute pairwise distance of baseline to itself
         if self.distance_metric == "cosine":
             dist_matrix = self._cosine_distance(self._baseline_embeddings, self._baseline_embeddings)
         else:
-            # Euclidean distance fallback
             diff = self._baseline_embeddings[:, np.newaxis, :] - self._baseline_embeddings[np.newaxis, :, :]
             dist_matrix = np.sqrt(np.sum(diff**2, axis=-1))
 
-        # Sort distances to find k-th neighbor
         sorted_dist = np.sort(dist_matrix, axis=1)
         self._core_distances = sorted_dist[:, self.k_neighbors]
 
@@ -82,23 +77,20 @@ class DriftDetector:
 
         test_mat = np.array(test_embeddings, dtype=np.float64)
         
-        # Compute distance from test set to baseline set
         if self.distance_metric == "cosine":
             dist_matrix = self._cosine_distance(test_mat, self._baseline_embeddings)
         else:
             diff = test_mat[:, np.newaxis, :] - self._baseline_embeddings[np.newaxis, :, :]
-            dist_matrix = np.sqrt(np.sum(diff**2, axis=-1)) # (M, N)
+            dist_matrix = np.sqrt(np.sum(diff**2, axis=-1))
 
         results: list[DriftMetric] = []
         
-        # For each test sample, find distance to k-th nearest baseline neighbor
         for i in range(test_mat.shape[0]):
             dists_to_baseline = dist_matrix[i, :]
             sorted_dists = np.sort(dists_to_baseline)
             
             k_dist = sorted_dists[self.k_neighbors]
             
-            # Anomaly heuristic: distance > 2.0x average baseline core distance
             avg_baseline = float(np.mean(self._core_distances))
             is_anomaly = float(k_dist) > (2.0 * avg_baseline)
 

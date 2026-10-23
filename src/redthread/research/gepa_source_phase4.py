@@ -42,7 +42,7 @@ def run_source_mutation_spike(
     optimize_fn: OptimizeFn | None = None,
 ) -> dict[str, Any]:
     """Run hidden GEPA selection, then apply one bounded Phase 5 source patch."""
-    _ = settings  # SourceMutationWorker owns actual patch application today.
+    _ = settings
     workspace = ResearchWorkspace(root)
     workspace.ensure_layout()
     config = ensure_config(workspace.runtime_config_path, workspace.template_config_path)

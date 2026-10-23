@@ -66,5 +66,4 @@ async def send_with_retry(
                 delay *= backoff_factor
                 continue
             raise
-    # ponytail: unreachable fallback
     return await call()

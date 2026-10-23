@@ -25,7 +25,6 @@ async def test_crescendo_excludes_refusal_at_backtrack_limit_from_history() -> N
     )
     persona = make_persona()
 
-    # Turn 1 succeeds (score 3.5). Turn 2 attempt 1 fails (1.0). Turn 2 attempt 2 (retry) fails (1.0).
     mock_attacker, mock_target, mock_judge = _make_mocks(
         attacker_responses=["opener", "try1", "try2"],
         target_responses=["safe_context", "hard refusal 1", "hard refusal 2"],
@@ -39,12 +38,10 @@ async def test_crescendo_excludes_refusal_at_backtrack_limit_from_history() -> N
         )
         result = await cres.run(persona)
 
-    # 2 turns in trace
     assert len(result.trace.crescendo_turns) == 2
     assert result.trace.crescendo_turns[0].score == 3.5
     assert result.trace.crescendo_turns[1].score == 1.0
     assert result.trace.crescendo_turns[1].backtracked is True
-    # Verification: mock_target.send received prompt containing "safe_context", not a refusal
     turn2_calls = [
         call.kwargs.get("prompt", "") for call in mock_target.send.call_args_list
     ]

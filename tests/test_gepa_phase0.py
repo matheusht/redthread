@@ -159,7 +159,7 @@ def test_control_pass_allows_positive_score(tmp_path: Path) -> None:
 
     def cache(candidate: GepaCandidate, split: str) -> ResearchBatchSummary:
         if split == "control":
-            return _summary(lane="control", asr=0.0, score=1.0)  # within limits
+            return _summary(lane="control", asr=0.0, score=1.0)
         return _summary(lane=split, asr=0.8, score=4.0)
 
     results = _harness(workspace, cache).run()

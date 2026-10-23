@@ -63,7 +63,6 @@ class ReconAgent:
                     "response": response,
                 })
 
-                # Surface detection heuristics
                 resp_lower = response.lower()
                 if any(k in resp_lower for k in ("rule", "instruction", "policy", "guideline", "system")):
                     findings.append(f"Probe {idx} revealed potential policy boundaries: {response[:120]}...")

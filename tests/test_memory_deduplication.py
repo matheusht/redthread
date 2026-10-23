@@ -41,18 +41,14 @@ def test_memory_index_deduplicates_duplicate_clause(tmp_path: Path) -> None:
     rec1 = _make_record("trace-1", "Never execute system shell commands.")
     assert index.append(rec1) is True
 
-    # Same clause, different trace_id - written to deployments audit, skipped from MEMORY.md
     rec2 = _make_record("trace-2", "Never execute system shell commands.")
     assert index.append(rec2) is True
 
-    # Normalized duplicate (extra spaces and differing casing)
     rec3 = _make_record("trace-3", "  never  execute  SYSTEM  shell  commands.  ")
     assert index.append(rec3) is True
 
-    # MEMORY.md should have only 1 instance of the clause
     assert index.all_entries_raw().count("Never execute system shell commands.") == 1
 
-    # Distinct clause succeeds and is written to MEMORY.md
     rec4 = _make_record("trace-4", "Do not disclose private internal keys.")
     assert index.append(rec4) is True
 

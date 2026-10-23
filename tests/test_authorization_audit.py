@@ -97,7 +97,6 @@ def test_audit_logger_ring_buffer_eviction() -> None:
 
     records = engine.get_audit_records()
     assert len(records) == 3
-    # Most recent entries should be agent-2, agent-3, agent-4
     assert [r.action_hash for r in records] == [
         compute_action_hash(_make_action(actor_id=f"agent-{i}")) for i in range(2, 5)
     ]

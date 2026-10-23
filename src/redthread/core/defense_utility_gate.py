@@ -32,7 +32,6 @@ def evaluate_defense_record(record: DeploymentRecord) -> DefenseUtilityGateResul
     if not validation.exploit_replay_passed:
         failed_checks.append("exploit_replay_not_blocked")
 
-    # Bidirectional Utility Gate: require 100% benign pass rate without false refusals
     benign_failures = False
     if not validation.benign_passed:
         benign_failures = True

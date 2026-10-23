@@ -28,7 +28,6 @@ async def test_daemon_rolls_back_workspace_on_cycle_failure(tmp_path: Path) -> N
     daemon.git.has_non_artifact_changes = MagicMock(return_value=True)
     daemon.mutator.revert_latest = MagicMock()
 
-    # Simulate failure handling
     daemon._handle_failure("test failure occurred during cycle")
 
     assert daemon.mutator.revert_latest.called

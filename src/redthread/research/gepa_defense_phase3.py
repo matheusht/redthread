@@ -39,7 +39,7 @@ def run_defense_prompt_spike(
     optimize_fn: OptimizeFn | None = None,
 ) -> dict[str, Any]:
     """Run hidden Phase 3 GEPA over defense architect prompt templates."""
-    _ = settings  # Reserved for future live Phase 6 validation wiring.
+    _ = settings
     workspace = ResearchWorkspace(root)
     workspace.ensure_layout()
     config = ensure_config(workspace.runtime_config_path, workspace.template_config_path)

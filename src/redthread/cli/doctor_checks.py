@@ -19,7 +19,7 @@ class DoctorCheck:
     """Single diagnostic check result."""
 
     name: str
-    status: str  # "pass", "info", "warn", "fail"
+    status: str
     detail: str
 
 

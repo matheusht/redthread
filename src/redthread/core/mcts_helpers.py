@@ -6,7 +6,6 @@ import math
 
 from redthread.models import MCTSNode, Persona, PsychologicalTrigger
 
-# Canonical trigger -> strategies mapping for MCTS expansion fallback
 TRIGGER_STRATEGY_MAP: dict[str, list[str]] = {
     PsychologicalTrigger.AUTHORITY.value: [
         "claim executive authority",
@@ -57,10 +56,8 @@ def derive_strategies(persona: Persona, use_cop: bool = False) -> list[str]:
         strategies.extend(TRIGGER_STRATEGY_MAP.get(trigger.value, []))
 
     if not strategies:
-        # Last-resort fallback: always returns something usable
         return ["establish rapport and escalate gradually"]
 
-    # Deduplicate while preserving order
     seen: set[str] = set()
     unique: list[str] = []
     for s in strategies:
@@ -70,7 +67,6 @@ def derive_strategies(persona: Persona, use_cop: bool = False) -> list[str]:
     return unique
 
 
-# ── Tree management ───────────────────────────────────────────────────────────
 
 class MCTSTree:
     """Registry and navigation helpers for the GS-MCTS search tree.
@@ -138,7 +134,6 @@ class MCTSTree:
         return list(self._nodes.values())
 
 
-# ── Prompt builders ───────────────────────────────────────────────────────────
 
 def format_mcts_history(history: list[tuple[str, str]]) -> str:
     """Format a list of (attacker, target) turns into readable conversation text."""
